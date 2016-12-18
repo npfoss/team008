@@ -2,23 +2,23 @@
 //---branching philosophy---//
 (will be better defined after we discuss it)
 'master' branch should always be our best stable version, and be the one up on the site
-'dev' branch is what we branch, merge, pull-request, etc on to improve the bot. will be pushed to master only when stable and better
+'dev' branch is what we branch, merge, merge-request, etc on to improve the bot. will be pushed to master only when stable and better
 create new branches for new features! for example 'mobile-turrets'
 	make changes and add cool things on that branch. does NOT have to be be bug-free!
-	submit pull request back into 'dev' ONLY WHEN IT *IS* BUG FREE (and has been merged with the current 'dev' version)
+	submit merge request back into 'dev' ONLY WHEN IT *IS* BUG FREE (and has been merged with the current 'dev' version)
 note1: this is not actually as complicated as we thought. yay
-note2: branches like 'nav' will probably be used throughout. same rules apply: does not have to be bug free, but do pull requests when it is
+note2: branches like 'nav' will probably be used throughout. same rules apply: does not have to be bug free, but do merge requests when it is
 
 //---commands---------------//
-git branch <branch name> //creates new branch **DO NEXT COMMAND IMMEDIATELY after you do this one**
-git push --set-upstream origin <branch name> //makes pushing and pulling use the <branch name> branch on GitHub by default (always do this for new branches)
+git branch <branch name> //creates new branch **DO NEXT TWO COMMANDS IMMEDIATELY after you do this one**
 git checkout <branch name> //switch to that branch. (master is the main original one)
+git push --set-upstream origin <current branch name> //makes pushing and pulling use current branch on GitHub by default (always do this for new branches)
 git merge origin/<diff branch> //update current branch with changes from <diff branch> (effectively 'pull' but from <diff branch> instead of <current branch>) *will usually be origin/dev since that's what we'll be actively working on
 
 // how to push changes made in a branch back to its parent branch! (usually 'dev') (for when you are done with the feature being developed in that branch)
 1) git merge origin/<parent branch>
 2) //resolve conflicts and stuff the usual way
-3) GO TO THE REPO ONLINE and submit a pull request **make sure you are pulling into the correct branch (not usually master!)**
+3) GO TO THE REPO ONLINE and submit a merge request **make sure you are merging into the correct branch (not usually master!)**
 
 ONLY WHEN THERE ARE NO BUGS IN YOUR CODE
 
