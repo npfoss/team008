@@ -21,17 +21,18 @@ public class RangedCombat extends Bot {
         MapLocation destination;
         RobotInfo target;
         RobotInfo[] robotsInSight = rc.senseNearbyRobots();
+        BulletInfo[] bulletsInSight = rc.senseNearbyBullets();
 
             if(firstAction == MOVE_FIRST){
                 //move to destination
-                destination = chooseMove();
+                destination = chooseMove(robotsInSight,bulletsInSight);
 
                 //shoot target
                 target = chooseTargetAndShotType(robotsInSight);
                 shootIfWorth(target, shotType);
             } else {
                 //move to destination
-                destination = chooseMove();
+                destination = chooseMove(robotsInSight, bulletsInSight);
 
                 //shoot target
                 target  = chooseTargetAndShotType(robotsInSight);
@@ -45,11 +46,22 @@ public class RangedCombat extends Bot {
         return MOVE_FIRST;
     }
 
-    private static MapLocation chooseMove() throws GameActionException{
-        //evade bullets
+    private static MapLocation chooseMove(RobotInfo[] robotsInSight, BulletInfo[] bulletsInSight) throws GameActionException{
+
+        if(bulletsInSight.length > 0){
+            //evade bullets
+            for(BulletInfo bullet: bulletsInSight){
+                if(willCollideWithMe(bullet))
+            }
+
+        }
+
         //decide whether to engage
+        if(robotsInSight.length>0) {
             //can we win 1v1?
             //will we have backup?
+        }
+
         //move to assist someone else
         //move to put us in best spot
         return null;
@@ -110,4 +122,5 @@ public class RangedCombat extends Bot {
         }
 
     }
+
 }
