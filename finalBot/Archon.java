@@ -1,8 +1,7 @@
 package team008.finalBot;
 
-import battlecode.common.Direction;
-import battlecode.common.MapLocation;
-import battlecode.common.RobotController;
+import battlecode.common.*;
+
 
 public class Archon extends Bot {
 
@@ -16,9 +15,9 @@ public class Archon extends Bot {
 	    Direction dir = randomDirection();
 
 	    // Randomly attempt to build a gardener in this direction
-	    /*if (rc.canHireGardener(dir) && Math.random() < .01 && false) {
-	        rc.hireGardener(dir);
-	    }*/
+	    //if (rc.canHireGardener(dir) && Math.random() < .01 && false) {
+	    //    rc.hireGardener(dir);
+	    //}
 
 	    // Move randomly
 	    tryMove(randomDirection());
