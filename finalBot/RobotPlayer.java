@@ -10,11 +10,11 @@ public strictfp class RobotPlayer {
      * If this method returns, the robot dies!
     **/
     @SuppressWarnings("unused")
-    public static void run(RobotController therc) throws GameActionException {
+    public static void run(RobotController theRc) throws GameActionException {
 
         // This is the RobotController object. You use it to perform actions from this robot,
         // and to get information on its current status.
-        RobotPlayer.rc = therc;
+        RobotPlayer.rc = theRc;
         Bot bot;
 
         // Here, we've separated the controls into a different method for each RobotType.
@@ -29,9 +29,15 @@ public strictfp class RobotPlayer {
             case SOLDIER:
                 bot = new Soldier(rc);
                 break;
+            case TANK:
+            	bot = new Tank(rc);
+            	break;
             case LUMBERJACK:
                 bot = new Lumberjack(rc);
                 break;
+            case SCOUT:
+            	bot = new Scout(rc);
+            	break;
             default:
                 System.out.println("HOLY SHIT HOW DID THIS HAPPEN?! ABORT! ABORT! ABORT!!");
                 bot = new Bot();
