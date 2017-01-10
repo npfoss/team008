@@ -29,7 +29,7 @@ public class Lumberjack extends Bot {
                 tryMove(toEnemy);
             } else {
                 // Move Randomly
-                tryMove(randomDirection());
+                tryMove(Util.randomDirection());
             }
         }
 	}
