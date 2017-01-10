@@ -4,26 +4,15 @@ import battlecode.common.*;
 
 
 public class Archon extends Bot {
-<<<<<<< HEAD
-	
-	static int numGardenersCreated = 0;
 
-=======
 	public static int numGardenersCreated = 0;
->>>>>>> origin/dev
+
 	public Archon(RobotController r){
 		super(r);
 		//anything else archon specific
 	}
 	
 	public void takeTurn() throws Exception{
-
-		if(rc.getRoundNum() + 100 > GameConstants.GAME_DEFAULT_ROUNDS){
-			rc.donate(((int)(rc.getTeamBullets()/10))*10);
-		}
-		else if(rc.getTeamBullets() > 325 || rc.getTreeCount() > numGardenersCreated * (5*GameConstants.NUMBER_OF_ARCHONS_MAX) || rc.getRoundNum() < 100 && rc.getTeamBullets() > 100){
-			hireGardener();
-		}
 
 	    // Generate a random direction
 	    Direction dir = Util.randomDirection();
@@ -58,20 +47,7 @@ public class Archon extends Bot {
 	    rc.broadcast(1,(int)myLocation.y);*/
 	}
 	
-	public void hireGardener() throws GameActionException{
-		for(int i = 15; i --> 0;){
-			Direction dir = randomDirection();
-		    if (rc.canHireGardener(dir)) {
-		        rc.hireGardener(dir);
-		        numGardenersCreated++;
-		        break;
-		    }
-		}
-	    //MapLocation myLocation = rc.getLocation();
-	    //rc.broadcast(0,(int)myLocation.x);
-	    //rc.broadcast(1,(int)myLocation.y);
-	    //rc.donate(((int)(rc.getTeamBullets()/10))*10);
-	}
+
 	public void hireGardener() throws GameActionException{
 		Direction dir = Util.randomDirection();
 		for(int i = 15; i --> 0;){
