@@ -1,8 +1,6 @@
 package team008.finalBot;
 
-import battlecode.common.MapLocation;
-import battlecode.common.RobotController;
-import battlecode.common.RobotInfo;
+import battlecode.common.*;
 
 public class Soldier extends Bot {
 
