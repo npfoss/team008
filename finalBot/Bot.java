@@ -47,23 +47,28 @@ public class Bot {
     // TODO: navigate
 	private static MapLocation dest = null;
 	
-	private enum BugState {
-		DIRECT, BUG
-	}
-
-	public enum WallSide {
-		LEFT, RIGHT
-	}
+//	private enum BugState {
+//		DIRECT, BUG
+//	}
+//
+//	public enum WallSide {
+//		LEFT, RIGHT
+//	}
 	
 	private static boolean isBugging = false;
 	private static int dangerRating(MapLocation loc){
 		BulletInfo[] bullets = rc.senseNearbyBullets();
+		RobotInfo[] lumberjacks = rc.senseNearbyRobots();
 		int danger = 0;
 		for(BulletInfo b : bullets){
 			if (willCollide(b,loc)){
 				danger++;
 			}
 		}
+		for (RobotInfo l : lumberjacks)
+			if(l.type == RobotType.LUMBERJACK && loc.distanceTo(l.location) < RobotType.LUMBERJACK.bodyRadius + RobotType.LUMBERJACK.strideRadius*2){
+				danger++;
+			}
 		return danger;
 	}
 	private static boolean tryMove(Direction dir, float dist) throws GameActionException{
@@ -75,7 +80,7 @@ public class Bot {
 			return false;
 		}
 	}
-	private static boolean tryMoveDirection(Direction dir) throws GameActionException{
+	public static boolean tryMoveDirection(Direction dir) throws GameActionException{
 		
 		if(tryMove(dir,type.strideRadius)){
 			return true;

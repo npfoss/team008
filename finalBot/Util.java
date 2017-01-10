@@ -53,7 +53,17 @@ public class Util extends Bot {
 			}
 			return ret;
 		}
-	   
+	   public static TreeInfo leastHealth(TreeInfo[] trees, boolean canWater) {
+			TreeInfo ret = null;
+			double minHealth = 1e99;
+			for (int i = 0; i < trees.length; i++) {
+				if ((!canWater || rc.canWater(trees[i].ID)) && trees[i].health < minHealth) {
+					minHealth = trees[i].health;
+					ret = trees[i];
+				}
+			}
+			return ret;
+		}
 	   public static RobotInfo[] combineTwoRIArrays( RobotInfo[] array1, RobotInfo[] array2){
 	    	RobotInfo[] combo = new RobotInfo[array1.length + array2.length];
 	    	for (int i = 0; i < array1.length; i++){
