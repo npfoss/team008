@@ -3,8 +3,8 @@ package battlecode2017.finalBot00;
 import battlecode.common.*;
 
 public class Bot {
-    public RobotController rc;
-    Team enemy;
+    public static RobotController rc;
+    public static Team enemy;
 
     public Bot(){}
 
@@ -14,7 +14,7 @@ public class Bot {
     }
 
     public void loop(){
-    	System.out.println("new bot initialized: " + rc.getType().toString());
+    	//System.out.println("new bot initialized: " + rc.getType().toString());
 
         // The code you want your robot to perform every round should be in this loop
         while (true) {
@@ -31,7 +31,10 @@ public class Bot {
         }
     }
 
-    public void takeTurn() throws Exception{}
+    public void takeTurn() throws Exception
+    {
+    	return;
+    }
 
 
 
