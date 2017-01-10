@@ -1,4 +1,4 @@
-package battlecode2017;
+package team008.finalBot;
 
 import battlecode.common.Direction;
 import battlecode.common.MapLocation;

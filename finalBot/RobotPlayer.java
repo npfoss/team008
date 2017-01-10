@@ -1,4 +1,4 @@
-package battlecode2017;
+package team008.finalBot;
 
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
