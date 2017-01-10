@@ -52,7 +52,7 @@ public class RangedCombat extends Bot {
         if(bulletsInSight.length > 0){
             //evade bullets
             for(BulletInfo bullet: bulletsInSight){
-                if(willCollideWithMe(bullet)){
+                if(willCollide(bullet,rc.getLocation())){
                     return bullet.dir.rotateLeftDegrees((float)90.0);
                 }
             }
