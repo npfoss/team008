@@ -1,6 +1,8 @@
 package battlecode2017;
 
-import battlecode.common.*;
+import battlecode.common.Direction;
+import battlecode.common.MapLocation;
+import battlecode.common.RobotController;
 
 public class Archon extends Bot {
 

@@ -1,6 +1,7 @@
 package battlecode2017;
 import battlecode.common.*;
 
+
 public strictfp class RobotPlayer {
     static RobotController rc;
 
