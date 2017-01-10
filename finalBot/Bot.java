@@ -45,25 +45,30 @@ public class Bot {
 
     /******* ALL NAVIGATION METHODS BELOW *******/
     // TODO: navigate
-private static MapLocation dest = null;
+	private static MapLocation dest = null;
 	
-	private enum BugState {
-		DIRECT, BUG
-	}
-
-	public enum WallSide {
-		LEFT, RIGHT
-	}
+//	private enum BugState {
+//		DIRECT, BUG
+//	}
+//
+//	public enum WallSide {
+//		LEFT, RIGHT
+//	}
 	
 	private static boolean isBugging = false;
 	private static int dangerRating(MapLocation loc){
 		BulletInfo[] bullets = rc.senseNearbyBullets();
+		RobotInfo[] lumberjacks = rc.senseNearbyRobots();
 		int danger = 0;
 		for(BulletInfo b : bullets){
 			if (willCollide(b,loc)){
 				danger++;
 			}
 		}
+		for (RobotInfo l : lumberjacks)
+			if(l.type == RobotType.LUMBERJACK && loc.distanceTo(l.location) < RobotType.LUMBERJACK.bodyRadius + RobotType.LUMBERJACK.strideRadius*2){
+				danger++;
+			}
 		return danger;
 	}
 	private static boolean tryMove(Direction dir, float dist) throws GameActionException{
@@ -75,7 +80,7 @@ private static MapLocation dest = null;
 			return false;
 		}
 	}
-	private static boolean tryMoveDirection(Direction dir) throws GameActionException{
+	public static boolean tryMoveDirection(Direction dir) throws GameActionException{
 		
 		if(tryMove(dir,type.strideRadius)){
 			return true;
@@ -118,13 +123,6 @@ private static MapLocation dest = null;
 		
 		
 	}
-    /**
-     * Returns a random Direction
-     * @return a random Direction
-     */
-    public Direction randomDirection() {
-        return new Direction((float)Math.random() * 2 * (float)Math.PI);
-    }
 
     /**
      * Attempts to move in a given direction, while avoiding small obstacles directly in the path.
@@ -137,15 +135,15 @@ private static MapLocation dest = null;
         return tryMove(dir,type.strideRadius);
     }
 
-    /**
-     * Attempts to move in a given direction, while avoiding small obstacles direction in the path.
-     *
-     * @param dir The intended direction of movement
-     * @param degreeOffset Spacing between checked directions (degrees)
-     * @param checksPerSide Number of extra directions checked on each side, if intended direction was unavailable
-     * @return true if a move was performed
-     * @throws GameActionException
-     */
+//    /**
+//     * Attempts to move in a given direction, while avoiding small obstacles direction in the path.
+//     *
+//     * @param dir The intended direction of movement
+//     * @param degreeOffset Spacing between checked directions (degrees)
+//     * @param checksPerSide Number of extra directions checked on each side, if intended direction was unavailable
+//     * @return true if a move was performed
+//     * @throws GameActionException
+//     */
 //    boolean tryMove(Direction dir, float degreeOffset, int checksPerSide) throws GameActionException {
 //
 //        // First, try intended direction
@@ -184,8 +182,9 @@ private static MapLocation dest = null;
      * @param bullet The bullet in question
      * @return True if the line of the bullet's path intersects with this robot's current position.
      */
-    private static boolean willCollide(BulletInfo bullet, MapLocation loc) {
-        
+
+    public static boolean willCollide(BulletInfo bullet, MapLocation loc) {
+        // TODO: check if bullet will hit something else first
 
         // Get relevant bullet information
         Direction propagationDirection = bullet.dir;
