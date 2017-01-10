@@ -4,13 +4,16 @@ import battlecode.common.*;
 
 public class Bot {
     public static RobotController rc;
+    public static RobotType type;
     public static Team enemy;
-
+    public static MapLocation here;
     public Bot(){}
 
     public Bot(RobotController r){
         rc = r;
+        type = rc.getType();
         enemy = rc.getTeam().opponent();
+        here = rc.getLocation();
     }
 
     public void loop(){
@@ -22,6 +25,7 @@ public class Bot {
 
             // Try/catch blocks stop unhandled exceptions, which cause your robot to explode
             try {
+            	here = rc.getLocation();
                 takeTurn();
             } catch (Exception e) {
                 System.out.println(rc.getType().toString() + " Exception :(");
@@ -41,12 +45,84 @@ public class Bot {
 
     /******* ALL NAVIGATION METHODS BELOW *******/
     // TODO: navigate
-    
+private static MapLocation dest = null;
+	
+	private enum BugState {
+		DIRECT, BUG
+	}
+
+	public enum WallSide {
+		LEFT, RIGHT
+	}
+	
+	private static boolean isBugging = false;
+	private static int dangerRating(MapLocation loc){
+		BulletInfo[] bullets = rc.senseNearbyBullets();
+		int danger = 0;
+		for(BulletInfo b : bullets){
+			if (willCollide(b,loc)){
+				danger++;
+			}
+		}
+		return danger;
+	}
+	private static boolean tryMove(Direction dir, float dist) throws GameActionException{
+		if (rc.canMove(dir, dist) && dangerRating(here.add(dir, dist))== 0){
+			rc.move(dir,dist);
+			return true;
+		}
+		else{
+			return false;
+		}
+	}
+	private static boolean tryMoveDirection(Direction dir) throws GameActionException{
+		
+		if(tryMove(dir,type.strideRadius)){
+			return true;
+		}
+		Direction left = dir.rotateLeftDegrees(10);
+		Direction right = dir.rotateRightDegrees(10);
+		for (int i =0; i < 17; i++){
+		if(tryMove(left,type.strideRadius)){
+			return true;
+		}
+		if(tryMove(right,type.strideRadius)){
+			return true;
+		}
+		left = left.rotateLeftDegrees(10);
+		right = right.rotateRightDegrees(10);
+		}
+		return false;
+	}
+	public static void goTo(MapLocation theDest) throws GameActionException {
+		//for now
+		if (dest != null && dest.distanceTo(theDest) < .001){
+			//continue bugging
+		}
+		else{
+			//no more bugging
+			dest = theDest;
+			isBugging = false;
+		}
+		
+		if(!isBugging || 1==1){
+			if(tryMoveDirection(here.directionTo(dest))){
+				return;
+			}
+			else{
+				isBugging = true;
+				//for now we give up
+				return;
+			}
+		}
+		
+		
+	}
     /**
      * Returns a random Direction
      * @return a random Direction
      */
-    Direction randomDirection() {
+    public Direction randomDirection() {
         return new Direction((float)Math.random() * 2 * (float)Math.PI);
     }
 
@@ -57,8 +133,8 @@ public class Bot {
      * @return true if a move was performed
      * @throws GameActionException
      */
-    boolean tryMove(Direction dir) throws GameActionException {
-        return tryMove(dir,20,3);
+    public boolean tryMove(Direction dir) throws GameActionException {
+        return tryMove(dir,type.strideRadius);
     }
 
     /**
@@ -70,36 +146,36 @@ public class Bot {
      * @return true if a move was performed
      * @throws GameActionException
      */
-    boolean tryMove(Direction dir, float degreeOffset, int checksPerSide) throws GameActionException {
-
-        // First, try intended direction
-        if (rc.canMove(dir)) {
-            rc.move(dir);
-            return true;
-        }
-
-        // Now try a bunch of similar angles
-        boolean moved = false;
-        int currentCheck = 1;
-
-        while(currentCheck<=checksPerSide) {
-            // Try the offset of the left side
-            if(rc.canMove(dir.rotateLeftDegrees(degreeOffset*currentCheck))) {
-                rc.move(dir.rotateLeftDegrees(degreeOffset*currentCheck));
-                return true;
-            }
-            // Try the offset on the right side
-            if(rc.canMove(dir.rotateRightDegrees(degreeOffset*currentCheck))) {
-                rc.move(dir.rotateRightDegrees(degreeOffset*currentCheck));
-                return true;
-            }
-            // No move performed, try slightly further
-            currentCheck++;
-        }
-
-        // A move never happened, so return false.
-        return false;
-    }
+//    boolean tryMove(Direction dir, float degreeOffset, int checksPerSide) throws GameActionException {
+//
+//        // First, try intended direction
+//        if (rc.canMove(dir)) {
+//            rc.move(dir);
+//            return true;
+//        }
+//
+//        // Now try a bunch of similar angles
+//        boolean moved = false;
+//        int currentCheck = 1;
+//
+//        while(currentCheck<=checksPerSide) {
+//            // Try the offset of the left side
+//            if(rc.canMove(dir.rotateLeftDegrees(degreeOffset*currentCheck))) {
+//                rc.move(dir.rotateLeftDegrees(degreeOffset*currentCheck));
+//                return true;
+//            }
+//            // Try the offset on the right side
+//            if(rc.canMove(dir.rotateRightDegrees(degreeOffset*currentCheck))) {
+//                rc.move(dir.rotateRightDegrees(degreeOffset*currentCheck));
+//                return true;
+//            }
+//            // No move performed, try slightly further
+//            currentCheck++;
+//        }
+//
+//        // A move never happened, so return false.
+//        return false;
+//    }
 
     /**
      * A slightly more complicated example function, this returns true if the given bullet is on a collision
@@ -108,16 +184,16 @@ public class Bot {
      * @param bullet The bullet in question
      * @return True if the line of the bullet's path intersects with this robot's current position.
      */
-    boolean willCollideWithMe(BulletInfo bullet) {
-        MapLocation myLocation = rc.getLocation();
+    private static boolean willCollide(BulletInfo bullet, MapLocation loc) {
+        
 
         // Get relevant bullet information
         Direction propagationDirection = bullet.dir;
         MapLocation bulletLocation = bullet.location;
 
         // Calculate bullet relations to this robot
-        Direction directionToRobot = bulletLocation.directionTo(myLocation);
-        float distToRobot = bulletLocation.distanceTo(myLocation);
+        Direction directionToRobot = bulletLocation.directionTo(loc);
+        float distToRobot = bulletLocation.distanceTo(loc);
         float theta = propagationDirection.radiansBetween(directionToRobot);
 
         // If theta > 90 degrees, then the bullet is traveling away from us and we can break early
