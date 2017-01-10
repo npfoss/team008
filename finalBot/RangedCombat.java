@@ -26,6 +26,7 @@ public class RangedCombat extends Bot {
             if(firstAction == MOVE_FIRST){
                 //move to destination
                 destinationDir = chooseMove(robotsInSight,bulletsInSight);
+                tryMoveDirection(destinationDir);
 
                 //shoot target
                 target = chooseTargetAndShotType(robotsInSight);
