@@ -1,7 +1,6 @@
 package team008.finalBot;
+import battlecode.common.*;
 
-import battlecode.common.GameActionException;
-import battlecode.common.RobotController;
 
 public strictfp class RobotPlayer {
     static RobotController rc;
