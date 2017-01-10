@@ -3,7 +3,15 @@ package team008.finalBot;
 import battlecode.common.*;
 
 public class Util extends Bot {
-	   public static RobotInfo closestRobot(RobotInfo[] robots, MapLocation toHere) {
+    /**
+     * Returns a random Direction
+     * @return a random Direction
+     */
+    public static Direction randomDirection() {
+        return new Direction((float)Math.random() * 2 * (float)Math.PI);
+    }
+
+    public static RobotInfo closestRobot(RobotInfo[] robots, MapLocation toHere) {
 	        RobotInfo closest = null;
 	        float bestDist = 999999;
 	        float dist;
