@@ -56,7 +56,7 @@ private static MapLocation dest = null;
 	}
 	
 	private static boolean isBugging = false;
-	public static int dangerRating(MapLocation loc){
+	private static int dangerRating(MapLocation loc){
 		BulletInfo[] bullets = rc.senseNearbyBullets();
 		int danger = 0;
 		for(BulletInfo b : bullets){
@@ -66,7 +66,7 @@ private static MapLocation dest = null;
 		}
 		return danger;
 	}
-	public static boolean tryMove(Direction dir, float dist) throws GameActionException{
+	private static boolean tryMove(Direction dir, float dist) throws GameActionException{
 		if (rc.canMove(dir, dist) && dangerRating(here.add(dir, dist))== 0){
 			rc.move(dir,dist);
 			return true;
@@ -75,7 +75,7 @@ private static MapLocation dest = null;
 			return false;
 		}
 	}
-	public static boolean tryMoveDirection(Direction dir) throws GameActionException{
+	private static boolean tryMoveDirection(Direction dir) throws GameActionException{
 		
 		if(tryMove(dir,type.strideRadius)){
 			return true;
@@ -122,7 +122,7 @@ private static MapLocation dest = null;
      * Returns a random Direction
      * @return a random Direction
      */
-    Direction randomDirection() {
+    public Direction randomDirection() {
         return new Direction((float)Math.random() * 2 * (float)Math.PI);
     }
 
@@ -133,9 +133,9 @@ private static MapLocation dest = null;
      * @return true if a move was performed
      * @throws GameActionException
      */
-//    boolean tryMove(Direction dir) throws GameActionException {
-//        return tryMove(dir,20,3);
-//    }
+    public boolean tryMove(Direction dir) throws GameActionException {
+        return tryMove(dir,type.strideRadius);
+    }
 
     /**
      * Attempts to move in a given direction, while avoiding small obstacles direction in the path.
@@ -184,7 +184,7 @@ private static MapLocation dest = null;
      * @param bullet The bullet in question
      * @return True if the line of the bullet's path intersects with this robot's current position.
      */
-    public static boolean willCollide(BulletInfo bullet, MapLocation loc) {
+    private static boolean willCollide(BulletInfo bullet, MapLocation loc) {
         
 
         // Get relevant bullet information
