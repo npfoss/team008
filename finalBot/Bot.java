@@ -177,6 +177,7 @@ public class Bot {
      * @param bullet The bullet in question
      * @return True if the line of the bullet's path intersects with this robot's current position.
      */
+
     private static boolean willCollide(BulletInfo bullet, MapLocation loc) {
         // TODO: check if bullet will hit something else first
 
