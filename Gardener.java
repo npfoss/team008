@@ -1,6 +1,9 @@
-package battlecode2017.finalBot00;
+package battlecode2017;
 
-import battlecode.common.*;
+import battlecode.common.Direction;
+import battlecode.common.MapLocation;
+import battlecode.common.RobotController;
+import battlecode.common.RobotType;
 
 public class Gardener extends Bot {
 

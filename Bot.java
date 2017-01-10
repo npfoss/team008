@@ -1,4 +1,4 @@
-package battlecode2017.finalBot00;
+package battlecode2017;
 
 import battlecode.common.*;
 
@@ -14,6 +14,7 @@ public class Bot {
     }
 
     public void loop(){
+
     	System.out.println("new bot initialized: " + rc.getType().toString());
 
         // The code you want your robot to perform every round should be in this loop

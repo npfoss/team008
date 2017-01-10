@@ -1,6 +1,8 @@
-package battlecode2017.finalBot00;
+package battlecode2017;
 
-import battlecode.common.*;
+import battlecode.common.MapLocation;
+import battlecode.common.RobotController;
+import battlecode.common.RobotInfo;
 
 public class Soldier extends Bot {
 
