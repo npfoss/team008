@@ -12,7 +12,7 @@ public class Archon extends Bot {
 	
 	public void takeTurn() throws Exception{
 	    // Generate a random direction
-	    Direction dir = randomDirection();
+	    //Direction dir = randomDirection();
 
 	    // Randomly attempt to build a gardener in this direction
 	    //if (rc.canHireGardener(dir) && Math.random() < .01 && false) {
@@ -20,12 +20,16 @@ public class Archon extends Bot {
 	    //}
 
 	    // Move randomly
+		if(rc.senseBroadcastingRobotLocations().length > 0){
+	    goTo(rc.senseBroadcastingRobotLocations()[0]);
+		}
+		else{
 	    tryMove(randomDirection());
-
+		}
 	    // Broadcast archon's location for other robots on the team to know
-	    MapLocation myLocation = rc.getLocation();
-	    rc.broadcast(0,(int)myLocation.x);
-	    rc.broadcast(1,(int)myLocation.y);
+	    //MapLocation myLocation = rc.getLocation();
+	    //rc.broadcast(0,(int)myLocation.x);
+	    //rc.broadcast(1,(int)myLocation.y);
 	    rc.donate(((int)(rc.getTeamBullets()/10))*10);
 	}
 }
