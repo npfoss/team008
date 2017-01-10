@@ -20,7 +20,7 @@ public class RangedCombat extends Bot {
         String firstAction = determineFirstAction();
         Direction destinationDir;
         RobotInfo target;
-        RobotInfo[] robotsInSight = rc.senseNearbyRobots();
+        RobotInfo[] robotsInSight = rc.senseNearbyRobots(-1,enemy);
         BulletInfo[] bulletsInSight = rc.senseNearbyBullets();
 
             if(firstAction == MOVE_FIRST){
@@ -34,6 +34,7 @@ public class RangedCombat extends Bot {
             } else {
                 //move to destination
                 destinationDir = chooseMove(robotsInSight, bulletsInSight);
+                tryMoveDirection(destinationDir);
 
                 //shoot target
                 target  = chooseTargetAndShotType(robotsInSight);
@@ -72,7 +73,7 @@ public class RangedCombat extends Bot {
 
         //move to assist someone else
         //move to put us in best spot
-        return moveDir;
+        return Util.randomDirection();
     }
     public static boolean canWin1v1(RobotInfo enemy) {
         if (enemy.type == RobotType.ARCHON )
@@ -91,7 +92,7 @@ public class RangedCombat extends Bot {
         for(RobotInfo robot: robotsInSight){
             //add other factors for choosing best bot
             //value based on num nearby bots including trees
-            score = (robot.getType().maxHealth - (int)robot.getHealth());
+            score = (int)robot.getHealth();
 
             if(score < bestScore){
                 bestScore = score;
@@ -121,19 +122,19 @@ public class RangedCombat extends Bot {
 
     ///////////////////// These Might Belong in Util/////////////////////
     private static void shootSingleShot(RobotInfo target) throws GameActionException{
-        if (rc.canFireSingleShot()) {
+        if (rc.canFireSingleShot() && target!= null) {
             rc.fireSingleShot(rc.getLocation().directionTo(target.location));
         }
 
     }
     private static void shootTriadShot(RobotInfo target) throws GameActionException{
-        if (rc.canFireTriadShot()) {
+        if (rc.canFireTriadShot() && target!= null) {
             rc.fireSingleShot(rc.getLocation().directionTo(target.location));
         }
 
     }
     private static void shootPentadShot(RobotInfo target) throws GameActionException{
-        if (rc.canFirePentadShot()) {
+        if (rc.canFirePentadShot() && target!= null) {
             rc.fireSingleShot(rc.getLocation().directionTo(target.location));
         }
 
