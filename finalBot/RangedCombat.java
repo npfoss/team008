@@ -18,21 +18,21 @@ public class RangedCombat extends Bot {
     public static void execute() throws GameActionException{
 
         String firstAction = determineFirstAction();
-        MapLocation destination;
+        Direction destinationDir;
         RobotInfo target;
         RobotInfo[] robotsInSight = rc.senseNearbyRobots();
         BulletInfo[] bulletsInSight = rc.senseNearbyBullets();
 
             if(firstAction == MOVE_FIRST){
                 //move to destination
-                destination = chooseMove(robotsInSight,bulletsInSight);
+                destinationDir = chooseMove(robotsInSight,bulletsInSight);
 
                 //shoot target
                 target = chooseTargetAndShotType(robotsInSight);
                 shootIfWorth(target, shotType);
             } else {
                 //move to destination
-                destination = chooseMove(robotsInSight, bulletsInSight);
+                destinationDir = chooseMove(robotsInSight, bulletsInSight);
 
                 //shoot target
                 target  = chooseTargetAndShotType(robotsInSight);
@@ -46,26 +46,41 @@ public class RangedCombat extends Bot {
         return MOVE_FIRST;
     }
 
-    private static MapLocation chooseMove(RobotInfo[] robotsInSight, BulletInfo[] bulletsInSight) throws GameActionException{
-
+    ///////////////////// Movement Micro/////////////////////
+    private static Direction chooseMove(RobotInfo[] robotsInSight, BulletInfo[] bulletsInSight) throws GameActionException{
+        Direction moveDir = null;
         if(bulletsInSight.length > 0){
             //evade bullets
             for(BulletInfo bullet: bulletsInSight){
-                if(willCollideWithMe(bullet))
+                if(willCollideWithMe(bullet)){
+                    return bullet.dir.rotateLeftDegrees((float)90.0);
+                }
             }
 
         }
 
         //decide whether to engage
         if(robotsInSight.length>0) {
-            //can we win 1v1?
+            if(robotsInSight.length ==1){
+                if(canWin1v1(robotsInSight[0])){
+                    return rc.getLocation().directionTo(robotsInSight[0].getLocation());
+                }
+            }
             //will we have backup?
         }
 
         //move to assist someone else
         //move to put us in best spot
-        return null;
+        return moveDir;
     }
+    public static boolean canWin1v1(RobotInfo enemy) {
+        if (enemy.type == RobotType.ARCHON )
+            return true;
+        int turnsToKillEnemy = (int) (enemy.health / rc.getType().attackPower);
+        int turnsForEnemyToKillUs = (int) (rc.getHealth() / enemy.getType().attackPower);
+        return turnsToKillEnemy <= turnsForEnemyToKillUs;
+    }
+
 
     ///////////////////// Shooting and Target Micro/////////////////////
     private static RobotInfo chooseTargetAndShotType(RobotInfo[] robotsInSight) throws GameActionException{
