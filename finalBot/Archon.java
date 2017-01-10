@@ -13,14 +13,14 @@ public class Archon extends Bot {
 	}
 	
 	public void takeTurn() throws Exception{
-<<<<<<< HEAD
+
 		if(rc.getRoundNum() + 100 > GameConstants.GAME_DEFAULT_ROUNDS){
 			rc.donate(((int)(rc.getTeamBullets()/10))*10);
 		}
 		else if(rc.getTeamBullets() > 325 || rc.getTreeCount() > numGardenersCreated * (5*GameConstants.NUMBER_OF_ARCHONS_MAX) || rc.getRoundNum() < 100 && rc.getTeamBullets() > 100){
 			hireGardener();
 		}
-=======
+
 	    // Generate a random direction
 	    //Direction dir = randomDirection();
 
@@ -28,7 +28,7 @@ public class Archon extends Bot {
 	    //if (rc.canHireGardener(dir) && Math.random() < .01 && false) {
 	    //    rc.hireGardener(dir);
 	    //}
->>>>>>> origin/dev
+
 
 	    // Move randomly
 		if(rc.senseBroadcastingRobotLocations().length > 0){
@@ -38,7 +38,6 @@ public class Archon extends Bot {
 	    tryMove(randomDirection());
 		}
 	    // Broadcast archon's location for other robots on the team to know
-<<<<<<< HEAD
 	    /*
 	    MapLocation myLocation = rc.getLocation();
 	    rc.broadcast(0,(int)myLocation.x);
@@ -54,11 +53,9 @@ public class Archon extends Bot {
 		        break;
 		    }
 		}
-=======
 	    //MapLocation myLocation = rc.getLocation();
 	    //rc.broadcast(0,(int)myLocation.x);
 	    //rc.broadcast(1,(int)myLocation.y);
 	    rc.donate(((int)(rc.getTeamBullets()/10))*10);
->>>>>>> origin/dev
 	}
 }
