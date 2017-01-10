@@ -38,7 +38,7 @@ public class Gardener extends Bot {
 		TreeInfo[] treesToWater = rc.senseNearbyTrees(1);
 		TreeInfo treeToHeal = Util.leastHealth(treesToWater);
 		if(treeToHeal != null){
-			rc.water(treeToHeal.location);
+			rc.water(treeToHeal.getID());
 		}
 	}
 
@@ -46,7 +46,6 @@ public class Gardener extends Bot {
 		if(numTreesBuilt < 2){
 			if(rc.getTeamBullets() >= GameConstants.BULLET_TREE_COST){
 				plantATree();
-				numTreesBuilt++;
 			}
 		}
 		else if (numScoutsBuilt < 1){
@@ -64,7 +63,6 @@ public class Gardener extends Bot {
 		else if(numTreesBuilt < 4){
 			if(rc.getTeamBullets() >= GameConstants.BULLET_TREE_COST){
 				plantATree();
-				numTreesBuilt++;
 			}
 		}
 		else {
@@ -91,6 +89,7 @@ public class Gardener extends Bot {
 			Direction dir = randomDirection();
 		    if (rc.canPlantTree(dir)) {
 		        rc.plantTree(dir);
+		        numTreesBuilt++;
 		        break;
 		    }
 		}

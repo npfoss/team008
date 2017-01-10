@@ -16,7 +16,7 @@ public class Archon extends Bot {
 		if(rc.getRoundNum() + 100 > GameConstants.GAME_DEFAULT_ROUNDS){
 			rc.donate(((int)(rc.getTeamBullets()/10))*10);
 		}
-		else if(rc.getTeamBullets() > 325 || rc.getTreeCount() > numGardenersCreated * 5 || rc.getRoundNum() < 100 && rc.getTeamBullets() > 100){
+		else if(rc.getTeamBullets() > 325 || rc.getTreeCount() > numGardenersCreated * (5*GameConstants.NUMBER_OF_ARCHONS_MAX) || rc.getRoundNum() < 100 && rc.getTeamBullets() > 100){
 			hireGardener();
 		}
 
@@ -35,6 +35,7 @@ public class Archon extends Bot {
 			Direction dir = randomDirection();
 		    if (rc.canHireGardener(dir)) {
 		        rc.hireGardener(dir);
+		        numGardenersCreated++;
 		        break;
 		    }
 		}
