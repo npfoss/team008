@@ -108,7 +108,7 @@ public class Bot {
      * @param bullet The bullet in question
      * @return True if the line of the bullet's path intersects with this robot's current position.
      */
-    boolean willCollideWithMe(BulletInfo bullet) {
+    public static boolean willCollideWithMe(BulletInfo bullet) {
         MapLocation myLocation = rc.getLocation();
 
         // Get relevant bullet information
