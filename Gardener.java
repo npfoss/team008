@@ -1,4 +1,4 @@
-package battlecode2017.finalBot00;
+package battlecode2017;
 
 import battlecode.common.*;
 
