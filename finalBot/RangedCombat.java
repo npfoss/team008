@@ -224,10 +224,10 @@ public class RangedCombat extends Bot {
      */
     private static boolean isDirectionSafe(MapLocation target, RobotInfo[] alliesICouldHit) throws GameActionException{
     	Direction intendedAttackDir = here.directionTo(target);
-        RobotInfo[] importantAllies = rc.senseNearbyRobots(here.distanceTo(target), us);
+        RobotInfo[] importantAllies = rc.senseNearbyRobots(here.distanceTo(target) - (2*type.bodyRadius), us);
         for(RobotInfo friend: importantAllies){
             if(intendedAttackDir.radiansBetween(here.directionTo(friend.location)) < Math.PI/6){
-                rc.setIndicatorDot(here,0,0,0);
+                rc.setIndicatorDot(here,1,1,1);
                 return false;
             }
         }
