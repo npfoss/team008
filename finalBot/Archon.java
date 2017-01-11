@@ -1,5 +1,6 @@
 package team008.finalBot;
 
+import aaronBot.Messaging;
 import battlecode.common.*;
 
 
@@ -38,7 +39,7 @@ public class Archon extends Bot {
 	    if(rc.getRoundNum() + 5 > GameConstants.GAME_DEFAULT_ROUNDS || rc.getTeamVictoryPoints() + rc.getTeamBullets()/10 > 1000){
 			rc.donate(((int)(rc.getTeamBullets()/10))*10);
 		}
-	    else if(rc.getTreeCount() == 0 && rc.getTeamBullets() > 100  && rc.getRoundNum() > 500|| rc.getTeamBullets() > 120 || rc.getRoundNum() < 400 && rc.getTeamBullets() > 100  && Messaging.getStrategy() == 0 || rc.getRoundNum() < 100&& rc.getTeamBullets() > 100){
+	    else if(rc.getTreeCount() < 20 && rc.getTeamBullets() > 100  && rc.getRoundNum() > 500|| rc.getTeamBullets() > 120 || rc.getRoundNum() < 400 && rc.getTeamBullets() > 100  && Messaging.getStrategy() == 0 || rc.getRoundNum() < 100&& rc.getTeamBullets() > 100){
 	    	hireGardener();
 		}
 

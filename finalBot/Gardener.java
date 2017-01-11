@@ -75,13 +75,13 @@ public class Gardener extends Bot {
 				buildRobot(RobotType.SCOUT);
 			}
 		}
-		else if(numTreesBuilt < 5 && (Messaging.getStrategy() == 0 || rc.getRoundNum()>500)){
+		else if(numTreesBuilt < 5 && (Messaging.getStrategy() == 0 || rc.getRoundNum()>400)){
 			if(rc.getTeamBullets() >= GameConstants.BULLET_TREE_COST){
 				plantATree();
 			}
 		}
 		if(rc.getTeamBullets() > 100){
-			if(rc.getRoundNum() > 500){	
+			if(rc.getRoundNum() > 300){	
 				numSoldiersBuilt++;
 				buildRobot(RobotType.SOLDIER);
 			}

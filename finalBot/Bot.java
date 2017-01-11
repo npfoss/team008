@@ -87,12 +87,16 @@ public class Bot {
 		int danger = 0;
 		for(BulletInfo b : bullets){
 			if (willCollide(b,loc)){
-				danger++;
+				danger+=10;
 			}
 		}
 		for (RobotInfo l : lumberjacks)
 			if(l.type == RobotType.LUMBERJACK && loc.distanceTo(l.location) < RobotType.LUMBERJACK.bodyRadius + RobotType.LUMBERJACK.strideRadius*2){
-				danger++;
+				danger+= (5-loc.distanceTo(l.location));
+			}
+		lumberjacks = rc.senseNearbyRobots(-1, us);
+		for (RobotInfo l : lumberjacks)
+			if(l.type == RobotType.LUMBERJACK && loc.distanceTo(l.location) < RobotType.LUMBERJACK.bodyRadius + RobotType.LUMBERJACK.strideRadius){
 				danger+= (5-loc.distanceTo(l.location));
 			}
 		return danger;
