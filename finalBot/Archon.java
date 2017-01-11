@@ -3,6 +3,7 @@ package team008.finalBot;
 import battlecode.common.*;
 
 
+
 public class Archon extends Bot {
 	public static Direction lastDirection = new Direction(0);
 	public static int numGardenersCreated = 0;
@@ -10,7 +11,7 @@ public class Archon extends Bot {
 		super(r);
 		//anything else archon specific
 	}
-	
+
 	public static Direction findOpenSpaces(){
 		int spaces = 0;
 		Direction dir = new Direction(0);
@@ -28,7 +29,7 @@ public class Archon extends Bot {
 		return here.directionTo(new MapLocation(xavg/spaces, yavg/spaces));
 		
 	}
-	public void takeTurn() throws Exception{
+	public void takeTurn(TreeInfo[] nearbyNeutralTrees) throws Exception{
 	    // Generate a random direction
 		if(rc.getRoundNum() % 10==0){
 	    lastDirection = findOpenSpaces();
@@ -36,7 +37,7 @@ public class Archon extends Bot {
 	    if(rc.getRoundNum() + 5 > GameConstants.GAME_DEFAULT_ROUNDS || rc.getTeamVictoryPoints() + rc.getTeamBullets()/10 > 1000){
 			rc.donate(((int)(rc.getTeamBullets()/10))*10);
 		}
-	    else if(rc.getTeamBullets() > 120 || rc.getRoundNum() < 400 && rc.getTeamBullets() > 100  && Messaging.getStrategy() == 0 || rc.getRoundNum() < 100&& rc.getTeamBullets() > 100){
+	    else if(rc.getTreeCount() == 0 && rc.getTeamBullets() > 100  && rc.getRoundNum() > 500|| rc.getTeamBullets() > 120 || rc.getRoundNum() < 400 && rc.getTeamBullets() > 100  && Messaging.getStrategy() == 0 || rc.getRoundNum() < 100&& rc.getTeamBullets() > 100){
 	    	hireGardener();
 		}
 	    // Randomly attempt to build a gardener in this direction

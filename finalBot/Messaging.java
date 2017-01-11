@@ -32,6 +32,21 @@ public class Messaging extends Bot{
 	public float getMaxY() throws GameActionException{
 		return (float) (rc.readBroadcast(3)/10.0);
 	}
+
+	
+	public static boolean duplicateInRange(MapLocation loc, int start, int end) throws GameActionException{
+		for(int i = start; i <= end; i++){
+			int code = rc.readBroadcast(i);
+			if(code == 0)
+				continue;
+			MapLocation decoded = new MapLocation((float)((code/6000)/10.0),(float)((code % 6000)/10.0));
+			if(decoded != null && loc.distanceTo(decoded) < 7){
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public static void setStrategy(int strat) throws GameActionException{
 		rc.broadcast(4, strat);
 	}
@@ -40,6 +55,8 @@ public class Messaging extends Bot{
 	}
 	public void updateNeutralUnitTreeLocation(MapLocation loc) throws GameActionException{
 		int index = rc.readBroadcast(50);
+		if(duplicateInRange(loc,51,50+index))
+			return;
 		int x = (int) (loc.x * 10);
 		int y = (int) (loc.y*10);
 		rc.broadcast(50 + index + 1, (x*6000 + y));
@@ -54,9 +71,9 @@ public class Messaging extends Bot{
 			if(code == 0){
 				continue;
 			}
-			MapLocation decoded = new MapLocation(code/60000, (code % 60000)/10);
-			if(toHere.distanceTo(decoded) < dist){
-				dist = toHere.distanceTo(toHere);
+			MapLocation decoded = new MapLocation((float)((code/6000)/10.0),(float)((code % 6000)/10.0));
+			if(decoded != null && toHere.distanceTo(decoded) < dist){
+				dist = toHere.distanceTo(decoded);
 				ret = decoded;
 			}
 		}
@@ -74,8 +91,10 @@ public class Messaging extends Bot{
 		return false;
 	}
 	
-	public void updateNeutralTreeLocation(MapLocation loc) throws GameActionException{
+	public static void updateNeutralTreeLocation(MapLocation loc) throws GameActionException{
 		int index = rc.readBroadcast(100);
+		if(duplicateInRange(loc,101,100+index))
+			return;
 		int x = (int) (loc.x * 10);
 		int y = (int) (loc.y*10);
 		rc.broadcast(100 + index + 1, (x*6000 + y));
@@ -90,9 +109,9 @@ public class Messaging extends Bot{
 			if(code == 0){
 				continue;
 			}
-			MapLocation decoded = new MapLocation(code/60000, (code % 60000)/10);
-			if(toHere.distanceTo(decoded) < dist){
-				dist = toHere.distanceTo(toHere);
+			MapLocation decoded = new MapLocation((float)((code/6000)/10.0),(float)((code % 6000)/10.0));
+			if(decoded != null && toHere.distanceTo(decoded) < dist){
+				dist = toHere.distanceTo(decoded);
 				ret = decoded;
 			}
 		}
@@ -110,8 +129,10 @@ public class Messaging extends Bot{
 		return false;
 	}
 	
-	public void updateEnemyTreeLocation(MapLocation loc) throws GameActionException{
+	public static void updateEnemyTreeLocation(MapLocation loc) throws GameActionException{
 		int index = rc.readBroadcast(200);
+		if(duplicateInRange(loc,201,200+index))
+			return;
 		int x = (int) (loc.x * 10);
 		int y = (int) (loc.y*10);
 		rc.broadcast(200 + index + 1, (x*6000 + y));
@@ -126,9 +147,9 @@ public class Messaging extends Bot{
 			if(code == 0){
 				continue;
 			}
-			MapLocation decoded = new MapLocation(code/60000, (code % 60000)/10);
-			if(toHere.distanceTo(decoded) < dist){
-				dist = toHere.distanceTo(toHere);
+			MapLocation decoded = new MapLocation((float)((code/6000)/10.0),(float)((code % 6000)/10.0));
+			if(decoded != null && toHere.distanceTo(decoded) < dist){
+				dist = toHere.distanceTo(decoded);
 				ret = decoded;
 			}
 		}
@@ -146,15 +167,17 @@ public class Messaging extends Bot{
 		return false;
 	}
 	
-	public void updateEnemyArmyLocation(MapLocation loc) throws GameActionException{
+	public static void updateEnemyArmyLocation(MapLocation loc) throws GameActionException{
 		int index = rc.readBroadcast(300);
+		if(duplicateInRange(loc,301,300+index))
+			return;
 		int x = (int) (loc.x * 10);
 		int y = (int) (loc.y* 10);
 		rc.broadcast(300 + index + 1, (x*6000 + y));
 		rc.broadcast(300, index+1);
 	}
 	
-	public MapLocation getClosestEnemyArmyLocation(MapLocation toHere) throws GameActionException{
+	public static MapLocation getClosestEnemyArmyLocation(MapLocation toHere) throws GameActionException{
 		MapLocation ret = null;
 		float dist = 999999;
 		for(int i = 1; i <= rc.readBroadcast(300); i++){
@@ -162,16 +185,16 @@ public class Messaging extends Bot{
 			if(code == 0){
 				continue;
 			}
-			MapLocation decoded = new MapLocation(code/60000, (code % 60000)/10);
-			if(toHere.distanceTo(decoded) < dist){
-				dist = toHere.distanceTo(toHere);
+			MapLocation decoded = new MapLocation((float)((code/6000)/10.0),(float)((code % 6000)/10.0));
+			if(decoded != null && toHere.distanceTo(decoded) < dist){
+				dist = toHere.distanceTo(decoded);
 				ret = decoded;
 			}
 		}
 		return ret;
 	}
 	
-	public boolean removeEnemyArmyLocation(MapLocation loc) throws GameActionException{
+	public static boolean removeEnemyArmyLocation(MapLocation loc) throws GameActionException{
 		int code = (int)(loc.x*10)*6000 + (int)(loc.y*10);
 		for(int i = 1; i <= rc.readBroadcast(300); i++){
 			if(rc.readBroadcast(300 + i) == code){
@@ -182,36 +205,38 @@ public class Messaging extends Bot{
 		return false;
 	}
 	
-	public void updateEnemyUnitLocation(MapLocation loc) throws GameActionException{
-		int index = rc.readBroadcast(400);
+	public static void updateEnemyUnitLocation(MapLocation loc) throws GameActionException{
+		int index = rc.readBroadcast(700);
+		if(duplicateInRange(loc,701,700+index))
+			return;
 		int x = (int) (loc.x * 10);
-		int y = (int) (loc.y*10);
-		rc.broadcast(400 + index + 1, (x*6000 + y));
-		rc.broadcast(400, index+1);
+		int y = (int) (loc.y * 10);
+		rc.broadcast(700 + index + 1, (x*6000 + y));
+		rc.broadcast(700, index+1);
 	}
 	
-	public MapLocation getClosestEnemyUnitLocation(MapLocation toHere) throws GameActionException{
+	public static MapLocation getClosestEnemyUnitLocation(MapLocation toHere) throws GameActionException{
 		MapLocation ret = null;
 		float dist = 999999;
-		for(int i = 1; i <= rc.readBroadcast(400); i++){
-			int code = rc.readBroadcast(400 + i);
+		for(int i = 1; i <= rc.readBroadcast(700); i++){
+			int code = rc.readBroadcast(700 + i);
 			if(code == 0){
 				continue;
 			}
-			MapLocation decoded = new MapLocation(code/60000, (code % 60000)/10);
-			if(toHere.distanceTo(decoded) < dist){
-				dist = toHere.distanceTo(toHere);
+			MapLocation decoded = new MapLocation((float)((code/6000)/10.0),(float)((code % 6000)/10.0));
+			if(decoded != null && toHere.distanceTo(decoded) < dist){
+				dist = toHere.distanceTo(decoded);
 				ret = decoded;
 			}
 		}
 		return ret;
 	}
 	
-	public boolean removeEnemyUnitLocation(MapLocation loc) throws GameActionException{
+	public static boolean removeEnemyUnitLocation(MapLocation loc) throws GameActionException{
 		int code = (int)(loc.x*10)*6000 + (int)(loc.y*10);
-		for(int i = 1; i <= rc.readBroadcast(400); i++){
-			if(rc.readBroadcast(400 + i) == code){
-				rc.broadcast(400 + i, 0);
+		for(int i = 1; i <= rc.readBroadcast(700); i++){
+			if(rc.readBroadcast(700 + i) == code){
+				rc.broadcast(700 + i, 0);
 				return true;
 			}
 		}

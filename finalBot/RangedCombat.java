@@ -80,8 +80,13 @@ public class RangedCombat extends Bot {
             return rc.getLocation().directionTo(closestTree.getLocation());
         }
 
-
-        return Util.randomDirection();
+        //TODO: go to where the scout tells them to go
+        if(Math.random() < .1){
+        return here.directionTo(Util.rc.getInitialArchonLocations(enemy)[0]);
+        }
+        else{
+        	return Util.randomDirection();
+        }
     }
 
     public static boolean canWin1v1(RobotInfo enemy) {
@@ -160,14 +165,16 @@ public class RangedCombat extends Bot {
     }
 
     private static boolean isDirectionSafe(MapLocation target, RobotInfo[] alliesNestToMe) throws GameActionException{
-        Direction intendedAttackDir = here.directionTo(target);
-        for(RobotInfo friend: alliesNestToMe){
+    	Direction intendedAttackDir = here.directionTo(target);
+        RobotInfo[] importantAllies = rc.senseNearbyRobots(here.distanceTo(target), us);
+        for(RobotInfo friend: importantAllies){
             if(intendedAttackDir.radiansBetween(here.directionTo(friend.location)) < Math.PI/6){
                 return false;
             }
         }
         return true;
     }
+
 
 
     ///////////////////// These Might Belong in Util/////////////////////

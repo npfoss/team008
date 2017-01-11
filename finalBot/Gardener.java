@@ -13,7 +13,7 @@ public class Gardener extends Bot {
 		//anything else gardener specific
 	}
 	
-	public void takeTurn() throws GameActionException{
+	public void takeTurn(TreeInfo[] nearbyNeutralTrees) throws GameActionException{
 //		// Listen for home archon's location
 //        int xPos = rc.readBroadcast(0);
 //        int yPos = rc.readBroadcast(1);
@@ -74,9 +74,15 @@ public class Gardener extends Bot {
 				plantATree();
 			}
 		}
-		if(rc.getTeamBullets() >= 100){
+		if(rc.getTeamBullets() > 100){
+			if(Math.random()>0.2){	
 				numSoldiersBuilt++;
 				buildRobot(RobotType.SOLDIER);
+			}
+			else{
+				numLumberjacksBuilt++;
+				buildRobot(RobotType.LUMBERJACK);
+			}
 		}	
 	}
 

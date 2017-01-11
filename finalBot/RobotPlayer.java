@@ -37,7 +37,7 @@ public strictfp class RobotPlayer {
             	bot = new Scout(theRc);
             	break;
             default:
-                System.out.println("HOLY SHIT HOW DID THIS HAPPEN?! ABORT! ABORT! ABORT!!");
+                System.out.println("HOLY SHIT HOW DID THIS HAPPEN?! ABORT! ABORT! ABORT!! (got to default switch statement in RobotPlayer.java)");
                 bot = new Bot();
         }
         bot.loop();
