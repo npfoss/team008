@@ -1,4 +1,5 @@
-package team008.finalBot;
+package team008.aaron_shit_poop;
+
 import battlecode.common.*;
 
 /**
@@ -57,7 +58,7 @@ public class RangedCombat extends Bot {
     ///////////////////// Movement Micro/////////////////////
     private static Direction chooseMove(RobotInfo[] robotsInSight, BulletInfo[] bulletsInSight, TreeInfo[] treesInSight, RobotInfo[] alliesICanSee) throws GameActionException{
         //decide whether to engage
-        RobotInfo closestBadGuy = Util.closestRobot(robotsInSight,here);
+        RobotInfo closestBadGuy = Util.closest(robotsInSight,here);
         if(robotsInSight.length>0) {
             if(robotsInSight.length ==1){
                 if(canWin1v1(closestBadGuy)){
@@ -71,16 +72,13 @@ public class RangedCombat extends Bot {
                 return here.directionTo(closestBadGuy.location).opposite();
             }
         }
-
-        //This should be where signals are read.
-
-        //we dont have an objective so go for trees?
         TreeInfo closestTree = Util.closestTree(treesInSight,here);
         if(treesInSight.length>0){
             return rc.getLocation().directionTo(closestTree.getLocation());
         }
 
-
+        //move to assist someone else
+        //move to put us in best spot
         return Util.randomDirection();
     }
 
@@ -101,7 +99,7 @@ public class RangedCombat extends Bot {
         return ret;
     }
 
-
+    
 
     ///////////////////// Shooting and Target Micro/////////////////////
     private static RobotInfo chooseTargetAndShotType(RobotInfo[] robotsInSight, TreeInfo[] treesInSight, RobotInfo[] alliesNextToMe, RobotInfo[] alliesICanSee) throws GameActionException{
@@ -111,10 +109,7 @@ public class RangedCombat extends Bot {
         for(RobotInfo robot: robotsInSight){
             //add other factors for choosing best bot
             //value based on num nearby bots including trees
-            score = (int) (( -robot.getHealth()
-                    + robot.getType().attackPower/300
-                    + robot.getType().attackPower)
-                    + numOtherAlliesInSightRange(robot.location,alliesICanSee) / robot.getHealth());
+            score = (int) ( -robot.getHealth() + robot.getType().attackPower/300 + robot.getType().attackPower);
 
             if(score > bestScore && isDirectionSafe(robot.location,alliesNextToMe)){
                 bestScore = score;
@@ -135,18 +130,12 @@ public class RangedCombat extends Bot {
             }
 
 
-        shotType = calculateShotType(robotsInSight);
+        shotType = calculateShotType(bestTarget,treeTarget,bestScore);
         return bestTarget;
     }
 
-    private static String calculateShotType(RobotInfo[] robotsInSight) throws GameActionException{
+    private static String calculateShotType(RobotInfo target, TreeInfo treeTarget, int score) throws GameActionException{
         //come up with some sort of formula for choosing the kind of shot
-        if(robotsInSight.length>8){
-            return PENTAD_SHOT;
-        }
-        if(robotsInSight.length>4) {
-            return SINGLE_SHOT;
-        }
         return SINGLE_SHOT;
     }
 
