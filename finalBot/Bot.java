@@ -101,7 +101,51 @@ public class Bot {
 		left = left.rotateLeftDegrees(10);
 		right = right.rotateRightDegrees(10);
 		}
+		if(dangerRating(here) > 0){
+			//oh shiz we under attack
+			minimizeDanger();
+			return true;
+		}
 		return false;
+	}
+	public static void minimizeDanger() throws GameActionException{
+		int[] dangers = new int[73];
+		dangers[0] = dangerRating(here)+1;//as to check that it was changed
+		Direction dir = new Direction(0);
+		for (int i = 1; i < 37; i++){
+			if(rc.canMove(dir,type.strideRadius)){
+				dangers[i] = dangerRating(here.add(dir,type.strideRadius))+1;
+			}
+			dir = dir.rotateLeftDegrees(10);
+			
+		}
+		dir = new Direction(0);
+		for (int i = 17; i < 73; i++){
+			if(rc.canMove(dir,type.strideRadius/2)){
+				dangers[i] = dangerRating(here.add(dir,type.strideRadius/2))+1;
+			}
+			dir = dir.rotateLeftDegrees(10);
+		}
+		int minIndex = 0;
+		int minDanger = 100;
+		for(int i = 0; i < 73; i++){
+			if(dangers[i] < minDanger && dangers[i] > 0){
+				minDanger = dangers[i];
+				minIndex = i;
+			}
+		}
+		dir = new Direction(0);
+		if (minIndex == 0){
+			return;
+		}
+		else if (minIndex < 17){
+			dir= dir.rotateLeftDegrees(10 * (minIndex-1));
+			rc.move(dir, type.strideRadius);
+		}
+		else{
+			dir= dir.rotateLeftDegrees(10 * (minIndex-17));
+			rc.move(dir, type.strideRadius/2);
+		}
 	}
 	public static void goTo(MapLocation theDest) throws GameActionException {
 		//for now
@@ -131,7 +175,7 @@ public class Bot {
 	public static void explore() throws GameActionException{
 		if(Math.random() < 0.1){
 			//System.out.println(dirIAmMoving);
-			dirIAmMoving = dirIAmMoving.rotateLeftDegrees(80);
+			dirIAmMoving = dirIAmMoving.rotateLeftDegrees(100);
 		}
 		tryMoveDirection(dirIAmMoving);
 	}

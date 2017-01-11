@@ -65,7 +65,7 @@ public class Gardener extends Bot {
 				buildRobot(RobotType.SCOUT);
 			}
 		}
-		else if(numTreesBuilt < 3){
+		else if(numTreesBuilt < 5){
 			if(rc.getTeamBullets() >= GameConstants.BULLET_TREE_COST){
 				plantATree();
 			}
@@ -93,15 +93,24 @@ public class Gardener extends Bot {
 	public void plantATree() throws GameActionException{
 
 		Direction dir = new Direction(0);
-		for(int i = 3; i --> 0;){
+		Boolean skipped = false;
+		for(int i = 35; i --> 0;){
 		    if (rc.canPlantTree(dir)) {
-		        rc.plantTree(dir);
-		        numTreesBuilt++;
+		        if (skipped){
+		    	rc.plantTree(dir);
 		        break;
+		        }
+		        else{
+		        	skipped = true;
+		        }
 		    }
-		    else{
-		    	dir = dir.rotateLeftDegrees(120);
+		    if(skipped){
+		    	dir = dir.rotateLeftDegrees(60);
+		    	i-=5;
+		    	}
+		    	else{
+		    		dir = dir.rotateLeftDegrees(10);
+		    	}
 		    }
 		}
-	}
 }
