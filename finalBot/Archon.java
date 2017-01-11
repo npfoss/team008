@@ -10,7 +10,7 @@ public class Archon extends Bot {
 		//anything else archon specific
 	}
 	
-	public void takeTurn() throws Exception{
+	public void takeTurn(TreeInfo[] nearbyNeutralTrees) throws Exception{
 	    // Generate a random direction
 	    Direction dir = Util.randomDirection();
 	    if(rc.getRoundNum() + 5 > GameConstants.GAME_DEFAULT_ROUNDS || rc.getTeamVictoryPoints() + rc.getTeamBullets()/10 > 1000){

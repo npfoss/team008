@@ -2,6 +2,8 @@ package team008.finalBot;
 
 import battlecode.common.*;
 
+import javax.transaction.TransactionRequiredException;
+
 public class Gardener extends Bot {
 	static int numTreesBuilt = 0;
 	static int numLumberjacksBuilt = 0;
@@ -13,7 +15,7 @@ public class Gardener extends Bot {
 		//anything else gardener specific
 	}
 	
-	public void takeTurn() throws GameActionException{
+	public void takeTurn(TreeInfo[] nearbyNeutralTrees) throws GameActionException{
 //		// Listen for home archon's location
 //        int xPos = rc.readBroadcast(0);
 //        int yPos = rc.readBroadcast(1);
@@ -68,8 +70,6 @@ public class Gardener extends Bot {
 				numSoldiersBuilt++;
 				buildRobot(RobotType.SOLDIER);
 			}
-		
-		
 	}
 
 	public void buildRobot(RobotType type) throws GameActionException{

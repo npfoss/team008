@@ -9,7 +9,7 @@ public class Soldier extends Bot {
         //anything else soldier specific
     }
     
-	public void takeTurn() throws Exception{
+	public void takeTurn(TreeInfo[] nearbyNeutralTrees) throws Exception{
         MapLocation myLocation = rc.getLocation();
 
         // See if there are any nearby enemy robots

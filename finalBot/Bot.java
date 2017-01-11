@@ -6,12 +6,15 @@ public class Bot {
     public static RobotController rc;
     public static RobotType type;
     public static Team enemy;
+    public static Team allies;
     public static MapLocation here;
+
     public Bot(){}
 
     public Bot(RobotController r){
         rc = r;
         type = rc.getType();
+        allies = rc.getTeam();
         enemy = rc.getTeam().opponent();
         here = rc.getLocation();
     }
@@ -26,7 +29,11 @@ public class Bot {
             // Try/catch blocks stop unhandled exceptions, which cause your robot to explode
             try {
             	here = rc.getLocation();
-                takeTurn();
+            	TreeInfo[] nearbyNeutralTrees = shakeNearbyTrees();
+                takeTurn(nearbyNeutralTrees);
+            	if( rc. canShake()){
+            	    shakeNearbyTrees();
+                }
             } catch (Exception e) {
                 System.out.println(rc.getType().toString() + " Exception :(");
                 e.printStackTrace();
@@ -36,11 +43,22 @@ public class Bot {
         }
     }
 
-    public void takeTurn() throws Exception
+    public void takeTurn(TreeInfo[] nearbyNeutralTrees) throws Exception
     {
     	return;
     }
 
+	public TreeInfo[] shakeNearbyTrees() throws Exception{
+		TreeInfo[] nearbyNeutralTrees = rc.senseNearbyTrees((float)99, Team.NEUTRAL);
+		TreeInfo shakeMe = Util.highestShakeableBulletTree(nearbyNeutralTrees);
+		if (shakeMe != null){
+			rc.shake(shakeMe.getID());
+			if (rc.getType() != RobotType.SCOUT){
+			    System.out.println("***A robot that isn't a scout just shook a tree!!!");
+            }
+		}
+		return nearbyNeutralTrees;
+	}
 
 
     /******* ALL NAVIGATION METHODS BELOW *******/
