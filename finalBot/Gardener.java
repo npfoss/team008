@@ -13,7 +13,7 @@ public class Gardener extends Bot {
 		//anything else gardener specific
 	}
 	
-	public void takeTurn() throws GameActionException{
+	public void takeTurn(TreeInfo[] nearbyNeutralTrees) throws GameActionException{
 //		// Listen for home archon's location
 //        int xPos = rc.readBroadcast(0);
 //        int yPos = rc.readBroadcast(1);

@@ -8,7 +8,7 @@ public class Scout extends Bot {
 		super(r);
 	}
 	
-	public void takeTurn() throws Exception{
+	public void takeTurn(TreeInfo[] nearbyNeutralTrees) throws Exception{
 	   if(dealWithNearbyTrees()){
 		   return;
 	   }  

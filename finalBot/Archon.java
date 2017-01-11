@@ -10,7 +10,7 @@ public class Archon extends Bot {
 		super(r);
 		//anything else archon specific
 	}
-	
+
 	public static Direction findOpenSpaces(){
 		int spaces = 0;
 		Direction dir = new Direction(0);
@@ -28,7 +28,7 @@ public class Archon extends Bot {
 		return here.directionTo(new MapLocation(xavg/spaces, yavg/spaces));
 		
 	}
-	public void takeTurn() throws Exception{
+	public void takeTurn(TreeInfo[] nearbyNeutralTrees) throws Exception{
 	    // Generate a random direction
 		if(rc.getRoundNum() % 10==0){
 	    lastDirection = findOpenSpaces();

@@ -8,8 +8,8 @@ public class Soldier extends Bot {
         super(r);
         //anything else soldier specific
     }
-    
-	public void takeTurn() throws Exception{
+
+	public void takeTurn(TreeInfo[] nearbyNeutralTrees) throws Exception{
         RangedCombat.execute();
     }
 }
