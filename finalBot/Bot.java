@@ -6,6 +6,7 @@ public class Bot {
     public static RobotController rc;
     public static RobotType type;
     public static Team enemy;
+    public static Team us;
     public static MapLocation here;
     public Bot(){}
 
@@ -13,6 +14,7 @@ public class Bot {
         rc = r;
         type = rc.getType();
         enemy = rc.getTeam().opponent();
+        us = rc.getTeam();
         here = rc.getLocation();
     }
 
