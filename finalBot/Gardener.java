@@ -42,6 +42,10 @@ public class Gardener extends Bot {
 		}
 	}
 	public void buildSomething() throws GameActionException {
+		RobotInfo[] enemyRobots = rc.senseNearbyRobots(-1, enemy);
+	    if(enemyRobots.length > 0){
+	    	Messaging.setStrategy(1);
+	    }
 //		if(numTreesBuilt < 2){
 //			if(rc.getTeamBullets() >= GameConstants.BULLET_TREE_COST){
 //				plantATree();
@@ -65,7 +69,7 @@ public class Gardener extends Bot {
 				buildRobot(RobotType.SCOUT);
 			}
 		}
-		else if(numTreesBuilt < 5){
+		else if(numTreesBuilt < 5 && (Messaging.getStrategy() == 0 || rc.getRoundNum()<1000)){
 			if(rc.getTeamBullets() >= GameConstants.BULLET_TREE_COST){
 				plantATree();
 			}

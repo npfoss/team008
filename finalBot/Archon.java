@@ -37,7 +37,7 @@ public class Archon extends Bot {
 	    if(rc.getRoundNum() + 5 > GameConstants.GAME_DEFAULT_ROUNDS || rc.getTeamVictoryPoints() + rc.getTeamBullets()/10 > 1000){
 			rc.donate(((int)(rc.getTeamBullets()/10))*10);
 		}
-	    else if(rc.getTeamBullets() > 120 || rc.getRoundNum() < 400 && rc.getTeamBullets() > 100){
+	    else if(rc.getTeamBullets() > 120 || rc.getRoundNum() < 400 && rc.getTeamBullets() > 100  && Messaging.getStrategy() == 0 || rc.getRoundNum() < 100&& rc.getTeamBullets() > 100){
 	    	hireGardener();
 		}
 	    // Randomly attempt to build a gardener in this direction
@@ -54,6 +54,7 @@ public class Archon extends Bot {
 
 	    RobotInfo[] enemyRobots = rc.senseNearbyRobots(-1, enemy);
 	    if(enemyRobots.length > 0){
+	    	Messaging.setStrategy(1);
 	    	lastDirection = Util.closest(enemyRobots, here).location.directionTo(here);
 	    }
 	    tryMoveDirection(lastDirection);

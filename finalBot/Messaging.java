@@ -32,7 +32,12 @@ public class Messaging extends Bot{
 	public float getMaxY() throws GameActionException{
 		return (float) (rc.readBroadcast(3)/10.0);
 	}
-	
+	public static void setStrategy(int strat) throws GameActionException{
+		rc.broadcast(4, strat);
+	}
+	public static int getStrategy() throws GameActionException{
+		return rc.readBroadcast(4);
+	}
 	public void updateNeutralUnitTreeLocation(MapLocation loc) throws GameActionException{
 		int index = rc.readBroadcast(50);
 		int x = (int) (loc.x * 10);
