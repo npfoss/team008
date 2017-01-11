@@ -6,13 +6,16 @@ public class Bot {
     public static RobotController rc;
     public static RobotType type;
     public static Team enemy;
-    public static MapLocation here;
+	public static Team us;
+
+	public static MapLocation here;
     public Bot(){}
 
     public Bot(RobotController r){
         rc = r;
         type = rc.getType();
         enemy = rc.getTeam().opponent();
+		us = rc.getTeam();
         here = rc.getLocation();
     }
 
@@ -127,7 +130,7 @@ private static MapLocation dest = null;
      * Returns a random Direction
      * @return a random Direction
      */
-    public Direction randomDirection() {
+    public static Direction randomDirection() {
         return new Direction((float)Math.random() * 2 * (float)Math.PI);
     }
 

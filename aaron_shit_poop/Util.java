@@ -16,8 +16,21 @@ public class Util extends Bot {
 	        }
 	        return closest;
 	    }
-	   
-	   public static int closestLocation(MapLocation[] locs, MapLocation toHere, int size) {
+	public static TreeInfo closestTree(TreeInfo[] trees, MapLocation toHere) {
+		TreeInfo closest = null;
+		float bestDist = 999999;
+		float dist;
+		for (int i = trees.length; i-- > 0;) {
+			dist = toHere.distanceTo(trees[i].location);
+			if (dist < bestDist) {
+				bestDist = dist;
+				closest = trees[i];
+			}
+		}
+		return closest;
+	}
+
+	public static int closestLocation(MapLocation[] locs, MapLocation toHere, int size) {
 	        float bestDist = 999999;
 	        float dist;
 	        int bestIndex = -1;
