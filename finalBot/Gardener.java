@@ -59,7 +59,7 @@ public class Gardener extends Bot {
 //				buildRobot(RobotType.LUMBERJACK);
 //			}
 //		}
-		if(numScoutsBuilt < 1){
+		if(numScoutsBuilt < 1 && rc.getRoundNum() < 100){
 			if(rc.getTeamBullets() > 80){
 				numScoutsBuilt++;
 				buildRobot(RobotType.SCOUT);

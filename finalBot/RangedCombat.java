@@ -145,7 +145,7 @@ public class RangedCombat extends Bot {
             return PENTAD_SHOT;
         }
         if(robotsInSight.length>4) {
-            return SINGLE_SHOT;
+            return TRIAD_SHOT;
         }
         return SINGLE_SHOT;
     }
