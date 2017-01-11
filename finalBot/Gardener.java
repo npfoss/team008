@@ -59,17 +59,21 @@ public class Gardener extends Bot {
 //				buildRobot(RobotType.LUMBERJACK);
 //			}
 //		}
-		if(numTreesBuilt < 3){
+		if(numScoutsBuilt < 1){
+			if(rc.getTeamBullets() > 80){
+				numScoutsBuilt++;
+				buildRobot(RobotType.SCOUT);
+			}
+		}
+		else if(numTreesBuilt < 3){
 			if(rc.getTeamBullets() >= GameConstants.BULLET_TREE_COST){
 				plantATree();
 			}
 		}
-		if(rc.getTeamBullets() >= 100){
+		else if(rc.getTeamBullets() >= 100){
 				numSoldiersBuilt++;
 				buildRobot(RobotType.SOLDIER);
-			}
-		
-		
+		}	
 	}
 
 	public void buildRobot(RobotType type) throws GameActionException{
