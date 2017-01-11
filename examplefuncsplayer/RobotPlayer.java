@@ -15,6 +15,9 @@ public strictfp class RobotPlayer {
         // and to get information on its current status.
         RobotPlayer.rc = rc;
 
+        // what size is the messaging array anyways?
+        System.out.println("num channels: " + GameConstants.BROADCAST_MAX_CHANNELS);
+
         // Here, we've separated the controls into a different method for each RobotType.
         // You can add the missing ones or rewrite this into your own control structure.
         switch (rc.getType()) {

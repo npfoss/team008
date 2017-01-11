@@ -6,14 +6,18 @@ public class Bot {
     public static RobotController rc;
     public static RobotType type;
     public static Team enemy;
+    public static Team us;
     public static MapLocation here;
+    public static Direction dirIAmMoving;
     public Bot(){}
 
     public Bot(RobotController r){
         rc = r;
         type = rc.getType();
         enemy = rc.getTeam().opponent();
+        us = rc.getTeam();
         here = rc.getLocation();
+        dirIAmMoving = Util.randomDirection();
     }
 
     public void loop(){
@@ -45,7 +49,7 @@ public class Bot {
 
     /******* ALL NAVIGATION METHODS BELOW *******/
     // TODO: navigate
-private static MapLocation dest = null;
+	private static MapLocation dest = null;
 	
 //	private enum BugState {
 //		DIRECT, BUG
@@ -58,7 +62,7 @@ private static MapLocation dest = null;
 	private static boolean isBugging = false;
 	private static int dangerRating(MapLocation loc){
 		BulletInfo[] bullets = rc.senseNearbyBullets();
-		RobotInfo[] lumberjacks = rc.senseNearbyRobots();
+		RobotInfo[] lumberjacks = rc.senseNearbyRobots(-1, enemy);
 		int danger = 0;
 		for(BulletInfo b : bullets){
 			if (willCollide(b,loc)){
@@ -68,6 +72,7 @@ private static MapLocation dest = null;
 		for (RobotInfo l : lumberjacks)
 			if(l.type == RobotType.LUMBERJACK && loc.distanceTo(l.location) < RobotType.LUMBERJACK.bodyRadius + RobotType.LUMBERJACK.strideRadius*2){
 				danger++;
+				danger+= (5-loc.distanceTo(l.location));
 			}
 		return danger;
 	}
@@ -97,7 +102,101 @@ private static MapLocation dest = null;
 		left = left.rotateLeftDegrees(10);
 		right = right.rotateRightDegrees(10);
 		}
+		if(dangerRating(here) > 0){
+			//oh shiz we under attack
+			minimizeDanger();
+			return true;
+		}
 		return false;
+	}
+	private static int scoutDangerRating(MapLocation loc){
+		BulletInfo[] bullets = rc.senseNearbyBullets();
+		RobotInfo[] enemies = rc.senseNearbyRobots(-1,enemy);
+		int danger = 0;
+		for(BulletInfo b : bullets){
+			if (willCollide(b,loc)){
+				danger+=10;
+			}
+		}
+		for (RobotInfo l : enemies)
+			if( l.type != RobotType.ARCHON && l.type != RobotType.GARDENER && loc.distanceTo(l.location) < l.type.bodyRadius + type.strideRadius + (type==RobotType.LUMBERJACK?0:type.strideRadius) + .5){
+				danger+= 5-(loc.distanceTo(l.location));
+				
+			}
+		return danger;
+	}
+	private static boolean scoutTryMove(Direction dir, float dist) throws GameActionException{
+		if (rc.canMove(dir, dist) && scoutDangerRating(here.add(dir, dist))== 0){
+			rc.move(dir,dist);
+			return true;
+		}
+		else{
+			return false;
+		}
+	}
+	public static boolean scoutTryMoveDirection(Direction dir) throws GameActionException{
+		
+		if(scoutTryMove(dir,type.strideRadius)){
+			return true;
+		}
+		Direction left = dir.rotateLeftDegrees(10);
+		Direction right = dir.rotateRightDegrees(10);
+		for (int i =0; i < 17; i++){
+		if(scoutTryMove(left,type.strideRadius)){
+			return true;
+		}
+		if(scoutTryMove(right,type.strideRadius)){
+			return true;
+		}
+		left = left.rotateLeftDegrees(10);
+		right = right.rotateRightDegrees(10);
+		}
+		if(dangerRating(here) > 0 && rc.senseNearbyBullets().length > 0){
+			//oh shiz we under attack
+			minimizeDanger();
+			return true;
+		}
+		
+		return false;
+	}
+	public static void minimizeDanger() throws GameActionException{
+		int[] dangers = new int[73];
+		dangers[0] = dangerRating(here)+1;//as to check that it was changed
+		Direction dir = new Direction(0);
+		for (int i = 1; i < 37; i++){
+			if(rc.canMove(dir,type.strideRadius)){
+				dangers[i] = dangerRating(here.add(dir,type.strideRadius))+1;
+			}
+			dir = dir.rotateLeftDegrees(10);
+			
+		}
+		dir = new Direction(0);
+		for (int i = 17; i < 73; i++){
+			if(rc.canMove(dir,type.strideRadius/2)){
+				dangers[i] = dangerRating(here.add(dir,type.strideRadius/2))+1;
+			}
+			dir = dir.rotateLeftDegrees(10);
+		}
+		int minIndex = 0;
+		int minDanger = 100;
+		for(int i = 0; i < 73; i++){
+			if(dangers[i] < minDanger && dangers[i] > 0){
+				minDanger = dangers[i];
+				minIndex = i;
+			}
+		}
+		dir = new Direction(0);
+		if (minIndex == 0){
+			return;
+		}
+		else if (minIndex < 17){
+			dir= dir.rotateLeftDegrees(10 * (minIndex-1));
+			rc.move(dir, type.strideRadius);
+		}
+		else{
+			dir= dir.rotateLeftDegrees(10 * (minIndex-17));
+			rc.move(dir, type.strideRadius/2);
+		}
 	}
 	public static void goTo(MapLocation theDest) throws GameActionException {
 		//for now
@@ -123,13 +222,14 @@ private static MapLocation dest = null;
 		
 		
 	}
-    /**
-     * Returns a random Direction
-     * @return a random Direction
-     */
-    public Direction randomDirection() {
-        return new Direction((float)Math.random() * 2 * (float)Math.PI);
-    }
+	
+	public static void explore() throws GameActionException{
+		if(Math.random() < 0.1){
+			//System.out.println(dirIAmMoving);
+			dirIAmMoving = dirIAmMoving.rotateLeftDegrees(100);
+		}
+		scoutTryMoveDirection(dirIAmMoving);
+	}
 
     /**
      * Attempts to move in a given direction, while avoiding small obstacles directly in the path.
@@ -142,15 +242,15 @@ private static MapLocation dest = null;
         return tryMove(dir,type.strideRadius);
     }
 
-    /**
-     * Attempts to move in a given direction, while avoiding small obstacles direction in the path.
-     *
-     * @param dir The intended direction of movement
-     * @param degreeOffset Spacing between checked directions (degrees)
-     * @param checksPerSide Number of extra directions checked on each side, if intended direction was unavailable
-     * @return true if a move was performed
-     * @throws GameActionException
-     */
+//    /**
+//     * Attempts to move in a given direction, while avoiding small obstacles direction in the path.
+//     *
+//     * @param dir The intended direction of movement
+//     * @param degreeOffset Spacing between checked directions (degrees)
+//     * @param checksPerSide Number of extra directions checked on each side, if intended direction was unavailable
+//     * @return true if a move was performed
+//     * @throws GameActionException
+//     */
 //    boolean tryMove(Direction dir, float degreeOffset, int checksPerSide) throws GameActionException {
 //
 //        // First, try intended direction
@@ -189,9 +289,9 @@ private static MapLocation dest = null;
      * @param bullet The bullet in question
      * @return True if the line of the bullet's path intersects with this robot's current position.
      */
+
     public static boolean willCollide(BulletInfo bullet, MapLocation loc) {
-
-
+        // TODO: check if bullet will hit something else first
         // Get relevant bullet information
         Direction propagationDirection = bullet.dir;
         MapLocation bulletLocation = bullet.location;
