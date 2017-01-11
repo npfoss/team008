@@ -7,6 +7,7 @@ public class Bot {
     public static RobotType type;
     public static Team enemy;
     public static MapLocation here;
+    public static Direction dirIAmMoving;
     public Bot(){}
 
     public Bot(RobotController r){
@@ -14,6 +15,7 @@ public class Bot {
         type = rc.getType();
         enemy = rc.getTeam().opponent();
         here = rc.getLocation();
+        dirIAmMoving = Util.randomDirection();
     }
 
     public void loop(){
@@ -122,6 +124,14 @@ public class Bot {
 		}
 		
 		
+	}
+	
+	public static void explore() throws GameActionException{
+		if(Math.random() < 0.1){
+			//System.out.println(dirIAmMoving);
+			dirIAmMoving = dirIAmMoving.rotateLeftDegrees(80);
+		}
+		tryMoveDirection(dirIAmMoving);
 	}
 
     /**
