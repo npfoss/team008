@@ -14,6 +14,12 @@ public class Gardener extends Bot {
 	}
 	
 	public void takeTurn(TreeInfo[] nearbyNeutralTrees) throws GameActionException{
+		//
+		RobotInfo[] enemyRobots = rc.senseNearbyRobots(-1, enemy);
+	    if(enemyRobots.length > 0){
+	    	Messaging.setStrategy(1);
+	    }
+	    rc.setIndicatorDot(here, 0, 0, 255);
 //		// Listen for home archon's location
 //        int xPos = rc.readBroadcast(0);
 //        int yPos = rc.readBroadcast(1);
@@ -32,20 +38,18 @@ public class Gardener extends Bot {
 //        // Move randomly
 //        tryMove(randomDirection());
 		waterLowestHealthTree();
+		//rc.setIndicatorDot(here, 0, 0, 255);
 		buildSomething();
 	}
 	public void waterLowestHealthTree() throws GameActionException {
-		TreeInfo[] treesToWater = rc.senseNearbyTrees();
+		TreeInfo[] treesToWater = rc.senseNearbyTrees(-1,us);
 		TreeInfo treeToHeal = Util.leastHealth(treesToWater, true);
 		if(treeToHeal != null){
 			rc.water(treeToHeal.getID());
 		}
 	}
 	public void buildSomething() throws GameActionException {
-		RobotInfo[] enemyRobots = rc.senseNearbyRobots(-1, enemy);
-	    if(enemyRobots.length > 0){
-	    	Messaging.setStrategy(1);
-	    }
+
 //		if(numTreesBuilt < 2){
 //			if(rc.getTeamBullets() >= GameConstants.BULLET_TREE_COST){
 //				plantATree();
@@ -63,19 +67,21 @@ public class Gardener extends Bot {
 //				buildRobot(RobotType.LUMBERJACK);
 //			}
 //		}
-		if(numScoutsBuilt < 1 && rc.getRoundNum() < 100){
+	//	rc.setIndicatorDot(here, 0, 255, 0);
+		if(numScoutsBuilt < 1 && rc.getRoundNum() < 50){
 			if(rc.getTeamBullets() > 80){
+				//rc.setIndicatorDot(here, 255, 0, 0);
 				numScoutsBuilt++;
 				buildRobot(RobotType.SCOUT);
 			}
 		}
-		else if(numTreesBuilt < 5 && (Messaging.getStrategy() == 0 || rc.getRoundNum()<1000)){
+		else if(numTreesBuilt < 5 && (Messaging.getStrategy() == 0 || rc.getRoundNum()>400)){
 			if(rc.getTeamBullets() >= GameConstants.BULLET_TREE_COST){
 				plantATree();
 			}
 		}
 		if(rc.getTeamBullets() > 100){
-			if(Math.random()>0.2){	
+			if(rc.getRoundNum() > 300){	
 				numSoldiersBuilt++;
 				buildRobot(RobotType.SOLDIER);
 			}
@@ -108,6 +114,7 @@ public class Gardener extends Bot {
 		    if (rc.canPlantTree(dir)) {
 		        if (skipped){
 		    	rc.plantTree(dir);
+		    	numTreesBuilt++;
 		        break;
 		        }
 		        else{

@@ -12,7 +12,7 @@ public class Util extends Bot {
 	public static Direction randomDirection() {
 		return new Direction((float) Math.random() * 2 * (float) Math.PI);
 	}
-	
+
 	public static void notifyFriendsOfEnemies(RobotInfo[] enemies) throws GameActionException{
 		if(enemies.length == 1){
 			Messaging.updateEnemyUnitLocation(enemies[0].location);
@@ -21,7 +21,6 @@ public class Util extends Bot {
 			Messaging.updateEnemyArmyLocation(Util.centroidOfUnits(enemies));
 		}
 	}
-
     public static MapLocation closestLocation(MapLocation[] locs, MapLocation toHere) {
         float bestDist = 999999;
         float dist;
