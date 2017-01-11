@@ -8,11 +8,16 @@ public class Scout extends Bot {
 		super(r);
 	}
 	
-	public void takeTurn() throws Exception{
+	public void takeTurn(TreeInfo[] nearbyNeutralTrees) throws Exception{
 	   if(dealWithNearbyTrees()){
 		   return;
 	   }  
 	   explore();
+	   RobotInfo[] enemies = rc.senseNearbyRobots(-1,rc.getTeam().opponent());
+		if(enemies.length > 0 && rc.getRoundNum() % 10 == 0){
+			//rc.setIndicatorDot(enemies[0].location, 255, 0, 0);
+			Util.notifyFriendsOfEnemies(enemies);
+		}
        return;
 	}
 	

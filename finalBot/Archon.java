@@ -3,37 +3,58 @@ package team008.finalBot;
 import battlecode.common.*;
 
 
+
 public class Archon extends Bot {
-
+	public static Direction lastDirection = new Direction(0);
 	public static int numGardenersCreated = 0;
-	private static Direction lastRetreatDir;
-	private static int lastTurnFled;
-
 
 	public Archon(RobotController r){
 		super(r);
 		//anything else archon specific
 	}
-	
-	public void takeTurn() throws Exception{
 
-	    // Generate a random direction
+	public static Direction findOpenSpaces(){
+		int spaces = 0;
+		Direction dir = new Direction(0);
+		float xavg = 0;
+		float yavg = 0;
+		for(int i =0; i < 36; i++){
+			if (rc.canMove(dir, type.sensorRadius)){
+				MapLocation temp = here.add(dir, type.sensorRadius);
+				xavg+= temp.x;
+				yavg+= temp.y;
+				spaces++;
+			}
+			dir = dir.rotateLeftDegrees(10);
+		}
+		return here.directionTo(new MapLocation(xavg/spaces, yavg/spaces));
+		
+	}
+	public void takeTurn(TreeInfo[] nearbyNeutralTrees) throws Exception{
+
+		if(rc.getRoundNum() % 10==0){
+	    lastDirection = findOpenSpaces();
+		}
 	    if(rc.getRoundNum() + 5 > GameConstants.GAME_DEFAULT_ROUNDS || rc.getTeamVictoryPoints() + rc.getTeamBullets()/10 > 1000){
 			rc.donate(((int)(rc.getTeamBullets()/10))*10);
 		}
-	    else if(rc.getTeamBullets() > 150 || rc.getTreeCount() > numGardenersCreated * (3*GameConstants.NUMBER_OF_ARCHONS_MAX) || rc.getRoundNum() < 400 && rc.getTeamBullets() > 100){
+	    else if(rc.getTreeCount() == 0 && rc.getTeamBullets() > 100  && rc.getRoundNum() > 500|| rc.getTeamBullets() > 120 || rc.getRoundNum() < 400 && rc.getTeamBullets() > 100  && Messaging.getStrategy() == 0 || rc.getRoundNum() < 100&& rc.getTeamBullets() > 100){
 	    	hireGardener();
 		}
 
 
 	    RobotInfo[] enemies = rc.senseNearbyRobots(-1,enemy);
 		RobotInfo[] allies = rc.senseNearbyRobots(-1,us);
-		runAway(enemies ,allies);
+	    if(enemies.length > 0){
+	    	Messaging.setStrategy(1);
+			runAway(enemies ,allies);
+	    }
+	    tryMoveDirection(lastDirection);
 	}
 	
 
 	public void hireGardener() throws GameActionException{
-		Direction dir = Util.randomDirection();
+		Direction dir = lastDirection.opposite();
 		for(int i = 15; i --> 0;){
 		    if (rc.canHireGardener(dir)) {
 		        rc.hireGardener(dir);
@@ -45,7 +66,16 @@ public class Archon extends Bot {
 		    }
 		}
 	}
+	private static double wallModCalc(MapLocation retreatLoc,Direction dir) throws GameActionException{
+		double mod = 0;
+		while(here.distanceTo(retreatLoc)<type.sensorRadius && rc.onTheMap(retreatLoc)){
+			retreatLoc = retreatLoc.add(dir);
+			mod+=1.0;
 
+		}
+		return mod;
+
+	}
 	public void runAway(RobotInfo[] enemies, RobotInfo[] allies) throws GameActionException{
 		Direction bestRetreatDir = null;
 		double bestValue = -10000;
@@ -59,13 +89,14 @@ public class Archon extends Bot {
 
 			float dist = retreatLoc.distanceTo(closestEnemy.location);
 			double allyMod = RangedCombat.numOtherAlliesInSightRange( here.add(dir,rc.getType().strideRadius), allies);
+			double wallMod = wallModCalc(retreatLoc,dir);
 
-			if (dist+allyMod > bestValue) {
-				bestValue = dist+allyMod;
+			if (dist+allyMod+wallMod> bestValue) {
+				bestValue = dist+allyMod+wallMod;
 				bestRetreatDir = dir;
 			}
 			count++;
-			Direction right = dir.rotateRightDegrees(10);
+			dir = dir.rotateRightDegrees(10);
 
 		}
 
