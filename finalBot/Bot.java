@@ -128,7 +128,8 @@ public class Bot {
 	
 	public static void explore() throws GameActionException{
 		if(Math.random() < 0.1){
-			dirIAmMoving.rotateLeftDegrees(80);
+			//System.out.println(dirIAmMoving);
+			dirIAmMoving = dirIAmMoving.rotateLeftDegrees(80);
 		}
 		tryMoveDirection(dirIAmMoving);
 	}
