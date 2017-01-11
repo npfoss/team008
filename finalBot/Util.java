@@ -12,6 +12,20 @@ public class Util extends Bot {
 		return new Direction((float) Math.random() * 2 * (float) Math.PI);
 	}
 
+	public static BulletInfo closestBullet(BulletInfo[] bullets, MapLocation toHere) {
+        BulletInfo closest = null;
+        float bestDist = 999999;
+        float dist;
+        for (int i = bullets.length; i-- > 0;) {
+            dist = toHere.distanceTo(bullets[i].location);
+            if (dist < bestDist) {
+                bestDist = dist;
+                closest = bullets[i];
+            }
+        }
+        return closest;
+    }
+
     public static RobotInfo closestRobot(RobotInfo[] robots, MapLocation toHere) {
 	        RobotInfo closest = null;
 	        float bestDist = 999999;
