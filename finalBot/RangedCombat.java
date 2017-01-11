@@ -191,10 +191,10 @@ public class RangedCombat extends Bot {
      */
     private static String calculateShotType(RobotInfo[] robotsInSight) throws GameActionException{
         //come up with some sort of formula for choosing the kind of shot
-        if(robotsInSight.length>8){
+        if(robotsInSight.length>4){
             return PENTAD_SHOT;
         }
-        if(robotsInSight.length>4) {
+        if(robotsInSight.length>2) {
             return TRIAD_SHOT;
         }
         return SINGLE_SHOT;
