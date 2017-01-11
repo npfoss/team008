@@ -50,7 +50,7 @@ public class RangedCombat extends Bot {
     }
 
     private static String determineFirstAction() throws GameActionException{
-        //check if our best shot is in the direction we’re moving
+        //check if our best shot is in the direction we're moving
         return MOVE_FIRST;
     }
 
