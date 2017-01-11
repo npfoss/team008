@@ -30,7 +30,12 @@ public class Lumberjack extends Bot {
                 optimizeLocForWoodcutting(nearbyNeutralTrees, nearbyEnemyTrees);
             } else { // no trees in sight
                 // for now just move towards enemy
-                goTo(rc.getInitialArchonLocations(enemy)[0]);
+            	if(Math.random() < .1){
+                    goTo(rc.getInitialArchonLocations(enemy)[0]);
+                    }
+                    else{
+                    	tryMoveDirection( Util.randomDirection());
+                    }
                 // TODO: move to where the scout tells us instead
 
             }

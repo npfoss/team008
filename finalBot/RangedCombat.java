@@ -80,8 +80,13 @@ public class RangedCombat extends Bot {
             return rc.getLocation().directionTo(closestTree.getLocation());
         }
 
-
-        return Util.randomDirection();
+        //TODO: go to where the scout tells them to go
+        if(Math.random() < .1){
+        return here.directionTo(Util.rc.getInitialArchonLocations(enemy)[0]);
+        }
+        else{
+        	return Util.randomDirection();
+        }
     }
 
     public static boolean canWin1v1(RobotInfo enemy) {

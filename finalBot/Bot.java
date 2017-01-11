@@ -9,7 +9,6 @@ public class Bot {
     public static Team us;
     public static MapLocation here;
     public static Direction dirIAmMoving;
-
     public Bot(){}
 
     public Bot(RobotController r){

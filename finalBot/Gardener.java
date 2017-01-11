@@ -74,9 +74,15 @@ public class Gardener extends Bot {
 				plantATree();
 			}
 		}
-		if(rc.getTeamBullets() >= 100){
+		if(rc.getTeamBullets() > 100){
+			if(Math.random()>0.4){	
 				numSoldiersBuilt++;
 				buildRobot(RobotType.SOLDIER);
+			}
+			else{
+				numLumberjacksBuilt++;
+				buildRobot(RobotType.LUMBERJACK);
+			}
 		}	
 	}
 
