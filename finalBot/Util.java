@@ -26,11 +26,11 @@ public class Util extends Bot {
 		return closest;
 	}
 
-	public static TreeInfo closestTree(TreeInfo[] robots, MapLocation toHere) {
+	public static TreeInfo closestTree(TreeInfo[] robots, MapLocation toHere, int size) {
 		TreeInfo closest = null;
 		float bestDist = 999999;
 		float dist;
-		for (int i = robots.length; i-- > 0;) {
+		for (int i = 0; i < size; i++) {
 			dist = toHere.distanceTo(robots[i].location);
 			if (dist < bestDist) {
 				bestDist = dist;

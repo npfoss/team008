@@ -29,7 +29,7 @@ public class Scout extends Bot {
 		if(i == 0){
 			return false;
 		}
-		TreeInfo closestBulletTree = Util.closestTree(bulletTrees, rc.getLocation());
+		TreeInfo closestBulletTree = Util.closestTree(bulletTrees, rc.getLocation(), i);
 		if(rc.canShake(closestBulletTree.ID)){
 			rc.shake(closestBulletTree.ID);
 		}
