@@ -2,8 +2,6 @@ package team008.finalBot;
 
 import battlecode.common.*;
 
-import javax.transaction.TransactionRequiredException;
-
 public class Gardener extends Bot {
 	static int numTreesBuilt = 0;
 	static int numLumberjacksBuilt = 0;
@@ -44,6 +42,10 @@ public class Gardener extends Bot {
 		}
 	}
 	public void buildSomething() throws GameActionException {
+		RobotInfo[] enemyRobots = rc.senseNearbyRobots(-1, enemy);
+	    if(enemyRobots.length > 0){
+	    	Messaging.setStrategy(1);
+	    }
 //		if(numTreesBuilt < 2){
 //			if(rc.getTeamBullets() >= GameConstants.BULLET_TREE_COST){
 //				plantATree();
@@ -61,7 +63,13 @@ public class Gardener extends Bot {
 //				buildRobot(RobotType.LUMBERJACK);
 //			}
 //		}
-		if(numTreesBuilt < 3){
+		if(numScoutsBuilt < 1 && rc.getRoundNum() < 100){
+			if(rc.getTeamBullets() > 80){
+				numScoutsBuilt++;
+				buildRobot(RobotType.SCOUT);
+			}
+		}
+		else if(numTreesBuilt < 5 && (Messaging.getStrategy() == 0 || rc.getRoundNum()<1000)){
 			if(rc.getTeamBullets() >= GameConstants.BULLET_TREE_COST){
 				plantATree();
 			}
@@ -69,7 +77,7 @@ public class Gardener extends Bot {
 		if(rc.getTeamBullets() >= 100){
 				numSoldiersBuilt++;
 				buildRobot(RobotType.SOLDIER);
-			}
+		}	
 	}
 
 	public void buildRobot(RobotType type) throws GameActionException{
@@ -89,15 +97,24 @@ public class Gardener extends Bot {
 	public void plantATree() throws GameActionException{
 
 		Direction dir = new Direction(0);
-		for(int i = 3; i --> 0;){
+		Boolean skipped = false;
+		for(int i = 35; i --> 0;){
 		    if (rc.canPlantTree(dir)) {
-		        rc.plantTree(dir);
-		        numTreesBuilt++;
+		        if (skipped){
+		    	rc.plantTree(dir);
 		        break;
+		        }
+		        else{
+		        	skipped = true;
+		        }
 		    }
-		    else{
-		    	dir = dir.rotateLeftDegrees(120);
+		    if(skipped){
+		    	dir = dir.rotateLeftDegrees(60);
+		    	i-=5;
+		    	}
+		    	else{
+		    		dir = dir.rotateLeftDegrees(10);
+		    	}
 		    }
 		}
-	}
 }

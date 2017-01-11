@@ -3,12 +3,30 @@ package team008.finalBot;
 import battlecode.common.*;
 
 public class Util extends Bot {
-    /**
-     * Returns a random Direction
-     * @return a random Direction
-     */
-    public static Direction randomDirection() {
-        return new Direction((float)Math.random() * 2 * (float)Math.PI);
+	/**
+	 * Returns a random Direction
+	 * 
+	 * @return a random Direction
+	 */
+	public static Direction randomDirection() {
+		return new Direction((float) Math.random() * 2 * (float) Math.PI);
+	}
+
+    public static MapLocation closestLocation(MapLocation[] locs, MapLocation toHere) {
+        float bestDist = 999999;
+        float dist;
+        MapLocation bestLoc = null;
+        for (MapLocation loc : locs) {
+            if(loc == null){
+                continue;
+            }
+            dist = toHere.distanceTo(loc);
+            if (dist < bestDist) {
+                bestDist = dist;
+                bestLoc = loc;
+            }
+        }
+        return bestLoc;
     }
 
     public static BodyInfo closestBody(BodyInfo[] robots, MapLocation toHere) {
@@ -20,6 +38,64 @@ public class Util extends Bot {
             if (dist < bestDist) {
                 bestDist = dist;
                 closest = robots[i];
+            }
+        }
+        return closest;
+    }
+
+    public static RobotInfo closestRobot(RobotInfo[] robots, MapLocation toHere) {
+        RobotInfo closest = null;
+        float bestDist = 999999;
+        float dist;
+        for (int i = robots.length; i-- > 0;) {
+            dist = toHere.distanceTo(robots[i].location);
+            if (dist < bestDist) {
+                bestDist = dist;
+                closest = robots[i];
+            }
+        }
+        return closest;
+    }
+
+    public static TreeInfo closestTree(TreeInfo[] trees, MapLocation toHere) {
+        TreeInfo closest = null;
+        float bestDist = 999999;
+        float dist;
+        for (int i = trees.length; i-- > 0;) {
+            dist = toHere.distanceTo(trees[i].location);
+            if (dist < bestDist) {
+                bestDist = dist;
+                closest = trees[i];
+            }
+        }
+        return closest;
+    }
+
+    public static TreeInfo closestTree(TreeInfo[] robots, MapLocation toHere, int size) {
+        TreeInfo closest = null;
+        float bestDist = 999999;
+        float dist;
+        for (int i = 0; i < size; i++) {
+            dist = toHere.distanceTo(robots[i].location);
+            if (dist < bestDist) {
+                bestDist = dist;
+                closest = robots[i];
+            }
+        }
+        return closest;
+    }
+
+    public static RobotInfo closestSpecificType(RobotInfo[] robots, MapLocation toHere, RobotType type) {
+        RobotInfo closest = null;
+        float bestDist = 99999;
+        float dist;
+        for (int i = robots.length; i-- > 0;) {
+            if (robots[i].type == type) {
+                dist = toHere.distanceTo(robots[i].location);
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    closest = robots[i];
+                }
             }
         }
         return closest;
@@ -44,23 +120,6 @@ public class Util extends Bot {
         return count;
     }
 
-    public static MapLocation closestLocation(MapLocation[] locs, MapLocation toHere) {
-        float bestDist = 999999;
-        float dist;
-        MapLocation bestLoc = null;
-        for (MapLocation loc : locs) {
-            if(loc == null){
-                continue;
-            }
-            dist = toHere.distanceTo(loc);
-            if (dist < bestDist) {
-                bestDist = dist;
-                bestLoc = loc;
-            }
-        }
-        return bestLoc;
-    }
-	   
     public static RobotInfo leastHealth(RobotInfo[] robots, boolean excludeArchons) {
         RobotInfo ret = null;
         double minHealth = 99999;
@@ -109,6 +168,20 @@ public class Util extends Bot {
         return ret;
     }
 
+    public static TreeInfo highestShakeableBulletTree(TreeInfo[] trees){
+        int mostBullets = 0;
+        TreeInfo bestTree = null;
+        for (TreeInfo tree : trees){
+            if (tree.getContainedBullets() > mostBullets && rc.canShake(tree.getID())){
+                mostBullets = tree.getContainedBullets();
+                bestTree = tree;
+            }
+        }
+        return bestTree;
+    }
+
+    ///--------- UNUSED METHODS FROM LAST YEAR--------///
+
     public static RobotInfo[] combineTwoRIArrays( RobotInfo[] array1, RobotInfo[] array2){
         RobotInfo[] combo = new RobotInfo[array1.length + array2.length];
         for (int i = 0; i < array1.length; i++){
@@ -141,22 +214,6 @@ public class Util extends Bot {
             }
         }
         return false;
-    }
-
-    public static RobotInfo closestSpecificType(RobotInfo[] robots, MapLocation toHere, RobotType type) {
-        RobotInfo closest = null;
-        float bestDist = 99999;
-        float dist;
-        for (int i = robots.length; i-- > 0;) {
-            if (robots[i].type == type) {
-                dist = toHere.distanceTo(robots[i].location);
-                if (dist < bestDist) {
-                    bestDist = dist;
-                    closest = robots[i];
-                }
-            }
-        }
-        return closest;
     }
 
     public static void removeIndexFromArray(Object[] array, int index, int size){
@@ -206,17 +263,5 @@ public class Util extends Bot {
             if(array[i] != null && array[i].equals(loc))
                 return i;
         return -1;
-    }
-
-    public static TreeInfo highestShakeableBulletTree(TreeInfo[] trees){
-        int mostBullets = 0;
-        TreeInfo bestTree = null;
-        for (TreeInfo tree : trees){
-            if (tree.getContainedBullets() > mostBullets && rc.canShake(tree.getID())){
-                mostBullets = tree.getContainedBullets();
-                bestTree = tree;
-            }
-        }
-        return bestTree;
     }
 }

@@ -11,7 +11,7 @@ public class Lumberjack extends Bot {
 	
 	public void takeTurn(TreeInfo[] nearbyNeutralTrees) throws Exception{
         RobotInfo[] nearbyEnemies = rc.senseNearbyRobots(99, enemy);
-        RobotInfo[] nearbyFriends = rc.senseNearbyRobots(99, allies);
+        RobotInfo[] nearbyFriends = rc.senseNearbyRobots(99, us);
         // TreeInfo[] nearbyEnemyTrees = rc.senseNearbyTrees(99, enemy);
         // ^ this was put elsewhere because it might not need to happen if we doMicro
 
