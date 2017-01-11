@@ -1,7 +1,5 @@
 package team008.finalBot;
-import apple.laf.JRSUIUtils;
 import battlecode.common.*;
-import battlecode.util.SquareArray;
 
 /**
  * Created by jmac on 1/10/17.
@@ -225,18 +223,16 @@ public class RangedCombat extends Bot {
      * @throws GameActionException
      */
     private static boolean isDirectionSafe(MapLocation target, RobotInfo[] alliesICouldHit) throws GameActionException{
-        Boolean isSafe = true;
     	Direction intendedAttackDir = here.directionTo(target);
         RobotInfo[] importantAllies = rc.senseNearbyRobots(here.distanceTo(target), us);
         for(RobotInfo friend: importantAllies){
-            if(intendedAttackDir.radiansBetween(here.directionTo(friend.location)) < Math.PI/8){
-                isSafe =  false;
+            if(intendedAttackDir.radiansBetween(here.directionTo(friend.location)) < Math.PI/6){
+                rc.setIndicatorDot(here,0,0,0);
+                return false;
             }
         }
-        if(!isSafe){
-            rc.setIndicatorDot(here,255,255,255);
-        }
-        return isSafe;
+
+        return true;
     }
 
 
