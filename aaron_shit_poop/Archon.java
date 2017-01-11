@@ -1,4 +1,4 @@
-package team008.aarons_shitty_bot;
+package team008.aaron_shit_poop;
 
 import battlecode.common.*;
 
@@ -8,6 +8,7 @@ public class Archon extends Bot {
 	public static Direction lastDirection = new Direction(0);
 	public Archon(RobotController r){
 		super(r);
+		
 		//anything else archon specific
 	}
 	

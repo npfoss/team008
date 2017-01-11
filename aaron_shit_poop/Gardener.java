@@ -1,4 +1,4 @@
-package team008.aarons_shitty_bot;
+package team008.aaron_shit_poop;
 
 import battlecode.common.*;
 
@@ -59,15 +59,18 @@ public class Gardener extends Bot {
 //				buildRobot(RobotType.LUMBERJACK);
 //			}
 //		}
-		if(numTreesBuilt < 4){
+		if(rc.isBuildReady()){
+		if(numTreesBuilt < 5){
 			if(rc.getTeamBullets() >= GameConstants.BULLET_TREE_COST){
 				plantATree();
+				numTreesBuilt++;
 			}
 		}
-		if(rc.getTeamBullets() >= 150){
+		if(rc.getTeamBullets() >= 110){
 				numSoldiersBuilt++;
 				buildRobot(RobotType.SOLDIER);
 			}
+		}
 		
 		
 	}
@@ -89,14 +92,25 @@ public class Gardener extends Bot {
 	public void plantATree() throws GameActionException{
 
 		Direction dir = new Direction(0);
-		for(int i = 12; i --> 0;){
+		Boolean skipped = false;
+		for(int i = 35; i --> 0;){
 		    if (rc.canPlantTree(dir)) {
-		        rc.plantTree(dir);
-		        numTreesBuilt++;
+		        if (skipped){
+		    	rc.plantTree(dir);
 		        break;
+		        }
+		        else{
+		        	skipped = true;
+		        }
 		    }
 		    else{
-		    	dir = dir.rotateLeftDegrees(30);
+		    	if(skipped){
+		    	dir = dir.rotateLeftDegrees(60);
+		    	i-=5;
+		    	}
+		    	else{
+		    		dir = dir.rotateLeftDegrees(10);
+		    	}
 		    }
 		}
 	}
