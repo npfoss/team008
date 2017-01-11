@@ -1,5 +1,4 @@
 package team008.finalBot;
-
 import battlecode.common.*;
 
 public class Tank extends Bot {
