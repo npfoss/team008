@@ -30,7 +30,11 @@ public class Bot {
             // Try/catch blocks stop unhandled exceptions, which cause your robot to explode
             try {
             	here = rc.getLocation();
-                takeTurn();
+            	TreeInfo[] nearbyNeutralTrees = shakeNearbyTrees();
+                takeTurn(nearbyNeutralTrees);
+            	if( rc. canShake()){
+            	    shakeNearbyTrees();
+                }
             } catch (Exception e) {
                 System.out.println(rc.getType().toString() + " Exception :(");
                 e.printStackTrace();
@@ -40,11 +44,22 @@ public class Bot {
         }
     }
 
-    public void takeTurn() throws Exception
+    public void takeTurn(TreeInfo[] nearbyNeutralTrees) throws Exception
     {
     	return;
     }
 
+	public TreeInfo[] shakeNearbyTrees() throws Exception{
+		TreeInfo[] nearbyNeutralTrees = rc.senseNearbyTrees((float)99, Team.NEUTRAL);
+		TreeInfo shakeMe = Util.highestShakeableBulletTree(nearbyNeutralTrees);
+		if (shakeMe != null){
+			rc.shake(shakeMe.getID());
+			if (rc.getType() != RobotType.SCOUT){
+			    System.out.println("***A robot that isn't a scout just shook a tree!!!");
+            }
+		}
+		return nearbyNeutralTrees;
+	}
 
 
     /******* ALL NAVIGATION METHODS BELOW *******/
@@ -62,7 +77,7 @@ public class Bot {
 	private static boolean isBugging = false;
 	private static int dangerRating(MapLocation loc){
 		BulletInfo[] bullets = rc.senseNearbyBullets();
-		RobotInfo[] lumberjacks = rc.senseNearbyRobots();
+		RobotInfo[] lumberjacks = rc.senseNearbyRobots(-1, enemy);
 		int danger = 0;
 		for(BulletInfo b : bullets){
 			if (willCollide(b,loc)){
@@ -72,6 +87,7 @@ public class Bot {
 		for (RobotInfo l : lumberjacks)
 			if(l.type == RobotType.LUMBERJACK && loc.distanceTo(l.location) < RobotType.LUMBERJACK.bodyRadius + RobotType.LUMBERJACK.strideRadius*2){
 				danger++;
+				danger+= (5-loc.distanceTo(l.location));
 			}
 		return danger;
 	}
@@ -106,6 +122,56 @@ public class Bot {
 			minimizeDanger();
 			return true;
 		}
+		return false;
+	}
+	private static int scoutDangerRating(MapLocation loc){
+		BulletInfo[] bullets = rc.senseNearbyBullets();
+		RobotInfo[] enemies = rc.senseNearbyRobots(-1,enemy);
+		int danger = 0;
+		for(BulletInfo b : bullets){
+			if (willCollide(b,loc)){
+				danger+=10;
+			}
+		}
+		for (RobotInfo l : enemies)
+			if( l.type != RobotType.ARCHON && l.type != RobotType.GARDENER && loc.distanceTo(l.location) < l.type.bodyRadius + type.strideRadius + (type==RobotType.LUMBERJACK?0:type.strideRadius) + .5){
+				danger+= 5-(loc.distanceTo(l.location));
+				
+			}
+		return danger;
+	}
+	private static boolean scoutTryMove(Direction dir, float dist) throws GameActionException{
+		if (rc.canMove(dir, dist) && scoutDangerRating(here.add(dir, dist))== 0){
+			rc.move(dir,dist);
+			return true;
+		}
+		else{
+			return false;
+		}
+	}
+	public static boolean scoutTryMoveDirection(Direction dir) throws GameActionException{
+		
+		if(scoutTryMove(dir,type.strideRadius)){
+			return true;
+		}
+		Direction left = dir.rotateLeftDegrees(10);
+		Direction right = dir.rotateRightDegrees(10);
+		for (int i =0; i < 17; i++){
+		if(scoutTryMove(left,type.strideRadius)){
+			return true;
+		}
+		if(scoutTryMove(right,type.strideRadius)){
+			return true;
+		}
+		left = left.rotateLeftDegrees(10);
+		right = right.rotateRightDegrees(10);
+		}
+		if(dangerRating(here) > 0 && rc.senseNearbyBullets().length > 0){
+			//oh shiz we under attack
+			minimizeDanger();
+			return true;
+		}
+		
 		return false;
 	}
 	public static void minimizeDanger() throws GameActionException{
@@ -177,7 +243,7 @@ public class Bot {
 			//System.out.println(dirIAmMoving);
 			dirIAmMoving = dirIAmMoving.rotateLeftDegrees(100);
 		}
-		tryMoveDirection(dirIAmMoving);
+		scoutTryMoveDirection(dirIAmMoving);
 	}
 
     /**

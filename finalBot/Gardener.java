@@ -13,7 +13,7 @@ public class Gardener extends Bot {
 		//anything else gardener specific
 	}
 	
-	public void takeTurn() throws GameActionException{
+	public void takeTurn(TreeInfo[] nearbyNeutralTrees) throws GameActionException{
 //		// Listen for home archon's location
 //        int xPos = rc.readBroadcast(0);
 //        int yPos = rc.readBroadcast(1);
@@ -42,6 +42,10 @@ public class Gardener extends Bot {
 		}
 	}
 	public void buildSomething() throws GameActionException {
+		RobotInfo[] enemyRobots = rc.senseNearbyRobots(-1, enemy);
+	    if(enemyRobots.length > 0){
+	    	Messaging.setStrategy(1);
+	    }
 //		if(numTreesBuilt < 2){
 //			if(rc.getTeamBullets() >= GameConstants.BULLET_TREE_COST){
 //				plantATree();
@@ -59,20 +63,26 @@ public class Gardener extends Bot {
 //				buildRobot(RobotType.LUMBERJACK);
 //			}
 //		}
-		if(numScoutsBuilt < 1){
+		if(numScoutsBuilt < 1 && rc.getRoundNum() < 100){
 			if(rc.getTeamBullets() > 80){
 				numScoutsBuilt++;
 				buildRobot(RobotType.SCOUT);
 			}
 		}
-		else if(numTreesBuilt < 5){
+		else if(numTreesBuilt < 5 && (Messaging.getStrategy() == 0 || rc.getRoundNum()<1000)){
 			if(rc.getTeamBullets() >= GameConstants.BULLET_TREE_COST){
 				plantATree();
 			}
 		}
-		if(rc.getTeamBullets() >= 100){
+		if(rc.getTeamBullets() > 100){
+			if(Math.random()>0.4){	
 				numSoldiersBuilt++;
 				buildRobot(RobotType.SOLDIER);
+			}
+			else{
+				numLumberjacksBuilt++;
+				buildRobot(RobotType.LUMBERJACK);
+			}
 		}	
 	}
 

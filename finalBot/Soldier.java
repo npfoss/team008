@@ -34,7 +34,6 @@ public class Soldier extends Bot {
 		else{
 			tryMoveDirection(Util.randomDirection());
 		}
-    }
 	
 	public void assignNewTarget() throws GameActionException{
 		target = Messaging.getClosestEnemyArmyLocation(rc.getLocation());

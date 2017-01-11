@@ -16,7 +16,7 @@ public strictfp class RobotPlayer {
         RobotPlayer.rc = rc;
 
         // what size is the messaging array anyways?
-        System.out.println("num channels: " + GameConstants.BROADCAST_MAX_CHANNELS);
+        //System.out.println("num channels: " + GameConstants.BROADCAST_MAX_CHANNELS);
 
         // Here, we've separated the controls into a different method for each RobotType.
         // You can add the missing ones or rewrite this into your own control structure.
@@ -37,7 +37,7 @@ public strictfp class RobotPlayer {
 	}
 
     static void runArchon() throws GameActionException {
-        System.out.println("I'm an archon!");
+        //System.out.println("I'm an archon!");
 
         // The code you want your robot to perform every round should be in this loop
         while (true) {
@@ -65,14 +65,14 @@ public strictfp class RobotPlayer {
                 Clock.yield();
 
             } catch (Exception e) {
-                System.out.println("Archon Exception");
+                //System.out.println("Archon Exception");
                 e.printStackTrace();
             }
         }
     }
 
 	static void runGardener() throws GameActionException {
-        System.out.println("I'm a gardener!");
+        //System.out.println("I'm a gardener!");
 
         // The code you want your robot to perform every round should be in this loop
         while (true) {
@@ -102,14 +102,14 @@ public strictfp class RobotPlayer {
                 Clock.yield();
 
             } catch (Exception e) {
-                System.out.println("Gardener Exception");
+                //System.out.println("Gardener Exception");
                 e.printStackTrace();
             }
         }
     }
 
     static void runSoldier() throws GameActionException {
-        System.out.println("I'm an soldier!");
+        //System.out.println("I'm an soldier!");
         Team enemy = rc.getTeam().opponent();
 
         // The code you want your robot to perform every round should be in this loop
@@ -138,14 +138,14 @@ public strictfp class RobotPlayer {
                 Clock.yield();
 
             } catch (Exception e) {
-                System.out.println("Soldier Exception");
+//                System.out.println("Soldier Exception");
                 e.printStackTrace();
             }
         }
     }
 
     static void runLumberjack() throws GameActionException {
-        System.out.println("I'm a lumberjack!");
+//        System.out.println("I'm a lumberjack!");
         Team enemy = rc.getTeam().opponent();
 
         // The code you want your robot to perform every round should be in this loop
@@ -181,7 +181,7 @@ public strictfp class RobotPlayer {
                 Clock.yield();
 
             } catch (Exception e) {
-                System.out.println("Lumberjack Exception");
+//                System.out.println("Lumberjack Exception");
                 e.printStackTrace();
             }
         }

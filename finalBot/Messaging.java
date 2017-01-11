@@ -32,6 +32,7 @@ public class Messaging extends Bot{
 	public float getMaxY() throws GameActionException{
 		return (float) (rc.readBroadcast(3)/10.0);
 	}
+
 	
 	public static boolean duplicateInRange(MapLocation loc, int start, int end) throws GameActionException{
 		for(int i = start; i <= end; i++){
@@ -45,8 +46,14 @@ public class Messaging extends Bot{
 		}
 		return false;
 	}
-	
-	public static void updateNeutralUnitTreeLocation(MapLocation loc) throws GameActionException{
+
+	public static void setStrategy(int strat) throws GameActionException{
+		rc.broadcast(4, strat);
+	}
+	public static int getStrategy() throws GameActionException{
+		return rc.readBroadcast(4);
+	}
+	public void updateNeutralUnitTreeLocation(MapLocation loc) throws GameActionException{
 		int index = rc.readBroadcast(50);
 		if(duplicateInRange(loc,51,50+index))
 			return;
