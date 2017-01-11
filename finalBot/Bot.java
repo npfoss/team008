@@ -6,6 +6,7 @@ public class Bot {
     public static RobotController rc;
     public static RobotType type;
     public static Team enemy;
+    public static Team us;
     public static MapLocation here;
     public static Direction dirIAmMoving;
     public Bot(){}
@@ -14,6 +15,7 @@ public class Bot {
         rc = r;
         type = rc.getType();
         enemy = rc.getTeam().opponent();
+        us = rc.getTeam();
         here = rc.getLocation();
         dirIAmMoving = Util.randomDirection();
     }
@@ -195,7 +197,6 @@ public class Bot {
 
     public static boolean willCollide(BulletInfo bullet, MapLocation loc) {
         // TODO: check if bullet will hit something else first
-
         // Get relevant bullet information
         Direction propagationDirection = bullet.dir;
         MapLocation bulletLocation = bullet.location;

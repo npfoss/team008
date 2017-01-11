@@ -12,18 +12,71 @@ public class Util extends Bot {
 		return new Direction((float) Math.random() * 2 * (float) Math.PI);
 	}
 
-	public static RobotInfo closestRobot(RobotInfo[] robots, MapLocation toHere) {
-		RobotInfo closest = null;
+    public static RobotInfo closestRobot(RobotInfo[] robots, MapLocation toHere) {
+	        RobotInfo closest = null;
+	        float bestDist = 999999;
+	        float dist;
+	        for (int i = robots.length; i-- > 0;) {
+	            dist = toHere.distanceTo(robots[i].location);
+	            if (dist < bestDist) {
+	                bestDist = dist;
+	                closest = robots[i];
+	            }
+	        }
+	        return closest;
+	    }
+	public static TreeInfo closestTree(TreeInfo[] trees, MapLocation toHere) {
+		TreeInfo closest = null;
 		float bestDist = 999999;
 		float dist;
-		for (int i = robots.length; i-- > 0;) {
-			dist = toHere.distanceTo(robots[i].location);
+		for (int i = trees.length; i-- > 0;) {
+			dist = toHere.distanceTo(trees[i].location);
 			if (dist < bestDist) {
 				bestDist = dist;
-				closest = robots[i];
+				closest = trees[i];
 			}
 		}
 		return closest;
+	}
+	   
+	   public static MapLocation closestLocation(MapLocation[] locs, MapLocation toHere) {
+	        float bestDist = 999999;
+	        float dist;
+            MapLocation bestLoc = null;
+            for (MapLocation loc : locs) {
+	        	if(loc == null){
+	        		continue;
+	        	}
+	            dist = toHere.distanceTo(loc);
+	            if (dist < bestDist) {
+	                bestDist = dist;
+                    bestLoc = loc;
+	            }
+	        }
+	        return bestLoc;
+	    }
+	   
+	   public static RobotInfo leastHealth(RobotInfo[] robots, boolean excludeArchons) {
+			RobotInfo ret = null;
+			double minHealth = 99999;
+			for (int i = 0; i < robots.length; i++) {
+				if (robots[i].health < minHealth && ( !excludeArchons || robots[i].type != RobotType.ARCHON)) {
+					minHealth = robots[i].health;
+					ret = robots[i];
+				}
+			}
+			return ret;
+		}
+	   public static TreeInfo leastHealth(TreeInfo[] trees, boolean canWater) {
+			TreeInfo ret = null;
+			double minHealth = 1e99;
+			for (int i = 0; i < trees.length; i++) {
+                if ((!canWater || rc.canWater(trees[i].ID)) && trees[i].health < minHealth) {
+                    minHealth = trees[i].health;
+                    ret = trees[i];
+                }
+            }
+        return ret;
 	}
 
 	public static TreeInfo closestTree(TreeInfo[] robots, MapLocation toHere, int size) {
@@ -38,47 +91,6 @@ public class Util extends Bot {
 			}
 		}
 		return closest;
-	}
-	
-	public static MapLocation closestLocation(MapLocation[] locs, MapLocation toHere) {
-		float bestDist = 999999;
-		float dist;
-		MapLocation bestLoc = null;
-		for (MapLocation loc : locs) {
-			if (loc == null) {
-				continue;
-			}
-			dist = toHere.distanceTo(loc);
-			if (dist < bestDist) {
-				bestDist = dist;
-				bestLoc = loc;
-			}
-		}
-		return bestLoc;
-	}
-
-	public static RobotInfo leastHealth(RobotInfo[] robots, boolean excludeArchons) {
-		RobotInfo ret = null;
-		double minHealth = 99999;
-		for (int i = 0; i < robots.length; i++) {
-			if (robots[i].health < minHealth && (!excludeArchons || robots[i].type != RobotType.ARCHON)) {
-				minHealth = robots[i].health;
-				ret = robots[i];
-			}
-		}
-		return ret;
-	}
-
-	public static TreeInfo leastHealth(TreeInfo[] trees, boolean canWater) {
-		TreeInfo ret = null;
-		double minHealth = 1e99;
-		for (int i = 0; i < trees.length; i++) {
-			if ((!canWater || rc.canWater(trees[i].ID)) && trees[i].health < minHealth) {
-				minHealth = trees[i].health;
-				ret = trees[i];
-			}
-		}
-		return ret;
 	}
 
 	public static RobotInfo[] combineTwoRIArrays(RobotInfo[] array1, RobotInfo[] array2) {
