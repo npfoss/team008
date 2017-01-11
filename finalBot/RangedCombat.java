@@ -220,16 +220,16 @@ public class RangedCombat extends Bot {
     /**
      * Determines if shooting at a target will cause friendly fire.
      * @param target
-     * @param alliesNestToMe
+     * @param alliesICouldHit
      * @return true if it could also hit a friend
      * @throws GameActionException
      */
-    private static boolean isDirectionSafe(MapLocation target, RobotInfo[] alliesNestToMe) throws GameActionException{
+    private static boolean isDirectionSafe(MapLocation target, RobotInfo[] alliesICouldHit) throws GameActionException{
         Boolean isSafe = true;
     	Direction intendedAttackDir = here.directionTo(target);
         RobotInfo[] importantAllies = rc.senseNearbyRobots(here.distanceTo(target), us);
         for(RobotInfo friend: importantAllies){
-            if(intendedAttackDir.radiansBetween(here.directionTo(friend.location)) < Math.PI/6){
+            if(intendedAttackDir.radiansBetween(here.directionTo(friend.location)) < Math.PI/8){
                 isSafe =  false;
             }
         }
