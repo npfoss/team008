@@ -12,6 +12,7 @@ public class Scout extends Bot {
 	   if(dealWithNearbyTrees()){
 		   return;
 	   }  
+	   explore();
        return;
 	}
 	
