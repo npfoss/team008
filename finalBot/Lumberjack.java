@@ -3,7 +3,6 @@ package team008.finalBot;
 import battlecode.common.*;
 
 public class Lumberjack extends Bot {
-
 	public Lumberjack(RobotController r){
 		super(r);
 		//anything else lumberjack specific
@@ -16,6 +15,10 @@ public class Lumberjack extends Bot {
         // ^ this was put elsewhere because it might not need to happen if we doMicro
 
         if(nearbyEnemies.length > 0) {
+        	//Let other robots know where you are!
+        	if(rc.getRoundNum() % 25 == 0){
+				Util.notifyFriendsOfEnemies(nearbyEnemies);
+			}
             // Use strike() to hit all nearby robots!
             doLumberjackMicro(nearbyFriends, nearbyEnemies);
             if ( rc.canStrike() ){
@@ -30,14 +33,22 @@ public class Lumberjack extends Bot {
                 optimizeLocForWoodcutting(nearbyNeutralTrees, nearbyEnemyTrees);
             } else { // no trees in sight
                 // for now just move towards enemy
-            	if(Math.random() < .1){
-                    goTo(rc.getInitialArchonLocations(enemy)[0]);
-                    }
-                    else{
-                    	tryMoveDirection( Util.randomDirection());
-                    }
                 // TODO: move to where the scout tells us instead
-
+        		if(target == null){
+        			assignNewTarget();
+        		}
+        		else if (target != null && rc.getLocation().distanceTo(target) < 2){
+        			Messaging.removeEnemyArmyLocation(target);
+        			Messaging.removeEnemyUnitLocation(target);
+        			target = null;
+        			assignNewTarget();
+        		}
+        		if(target != null){
+        			goTo(target);
+        		}
+        		else{
+        			tryMoveDirection(here.directionTo(Util.rc.getInitialArchonLocations(enemy)[0]));
+        		}
             }
             // chop best trees
             cutDownTrees(nearbyNeutralTrees, nearbyEnemyTrees, nearbyFriends);

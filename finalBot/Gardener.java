@@ -75,7 +75,7 @@ public class Gardener extends Bot {
 			}
 		}
 		if(rc.getTeamBullets() > 100){
-			if(Math.random()>0.4){	
+			if(Math.random()>0.2){	
 				numSoldiersBuilt++;
 				buildRobot(RobotType.SOLDIER);
 			}

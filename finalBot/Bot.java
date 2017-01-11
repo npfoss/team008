@@ -9,6 +9,7 @@ public class Bot {
     public static Team us;
     public static MapLocation here;
     public static Direction dirIAmMoving;
+    public static MapLocation target;
     public Bot(){}
 
     public Bot(RobotController r){
@@ -61,7 +62,12 @@ public class Bot {
 		return nearbyNeutralTrees;
 	}
 
-
+	public void assignNewTarget() throws GameActionException{
+		target = Messaging.getClosestEnemyArmyLocation(rc.getLocation());
+		if(target == null){
+			target = Messaging.getClosestEnemyUnitLocation(rc.getLocation());
+		}
+	}
     /******* ALL NAVIGATION METHODS BELOW *******/
     // TODO: navigate
 	private static MapLocation dest = null;

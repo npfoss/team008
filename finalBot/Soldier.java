@@ -3,23 +3,25 @@ import battlecode.common.*;
 
 
 public class Soldier extends Bot {
-	MapLocation target;
 
     public Soldier(RobotController r){
         super(r);
         //anything else soldier specific
     }
     
-	public void takeTurn() throws Exception{
-		if(target != null){
-			rc.setIndicatorDot(target, 255, 0, 0);
-		}
-		RobotInfo[] enemies = rc.senseNearbyRobots(-1,rc.getTeam().opponent());
+	public void takeTurn(TreeInfo[] nearbyNeutralTrees) throws Exception{
+//		if(target != null){
+//			rc.setIndicatorDot(target, 255, 0, 0);
+//		}
+		RobotInfo[] enemies = rc.senseNearbyRobots(-1,enemy);
 		if(enemies.length > 0){
+			if(rc.getRoundNum() % 25 == 0){
+				Util.notifyFriendsOfEnemies(enemies);
+			}
 			RangedCombat.execute();
 			return;
 		}
-		if(target == null && rc.getRoundNum() % 10 == 1){
+		if(target == null){
 			assignNewTarget();
 		}
 		else if (target != null && rc.getLocation().distanceTo(target) < 2 && enemies.length == 0){
@@ -32,13 +34,8 @@ public class Soldier extends Bot {
 			goTo(target);
 		}
 		else{
-			tryMoveDirection(Util.randomDirection());
-		}
-	
-	public void assignNewTarget() throws GameActionException{
-		target = Messaging.getClosestEnemyArmyLocation(rc.getLocation());
-		if(target == null){
-			target = Messaging.getClosestEnemyUnitLocation(rc.getLocation());
+			tryMoveDirection(here.directionTo(Util.rc.getInitialArchonLocations(enemy)[0]));
 		}
 	}
+	
 }
