@@ -1,7 +1,7 @@
 package team008.finalBot;
 
 import battlecode.common.*;
-import finalBot01.Util;
+
 
 
 public class Archon extends Bot {
@@ -41,10 +41,10 @@ public class Archon extends Bot {
 	    RobotInfo[] enemyRobots = rc.senseNearbyRobots(-1, enemy);
 	    if(nearbyRobots.length > 0){
 	    	if(enemyRobots.length> 0){
-	    		lastDirection = Util.closest(enemyRobots, here).location.directionTo(here);
+	    		lastDirection = Util.closestRobot(enemyRobots, here).location.directionTo(here);
 	    	}
 	    	else{
-	    		lastDirection = Util.closest(nearbyRobots, here).location.directionTo(here);
+	    		lastDirection = Util.closestRobot(nearbyRobots, here).location.directionTo(here);
 	    	}
 	    }
 	    tryMoveDirection(lastDirection);
