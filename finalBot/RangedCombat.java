@@ -197,7 +197,8 @@ public class RangedCombat extends Bot {
             } else if(treeTarget != null)  {
                 rc.fireTriadShot(rc.getLocation().directionTo(treeTarget.location));
 
-            }        }
+            }
+        }
 
     }
 
@@ -208,7 +209,8 @@ public class RangedCombat extends Bot {
             } else if(treeTarget != null) {
                 rc.firePentadShot(rc.getLocation().directionTo(treeTarget.location));
 
-            }        }
+            }
+        }
 
     }
 
