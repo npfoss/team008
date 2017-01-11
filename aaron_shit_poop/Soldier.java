@@ -1,4 +1,4 @@
-package team008.aarons_shitty_bot;
+package team008.aaron_shit_poop;
 
 import battlecode.common.Direction;
 import battlecode.common.MapLocation;
