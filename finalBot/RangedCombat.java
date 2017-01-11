@@ -240,27 +240,21 @@ public class RangedCombat extends Bot {
     ///////////////////// These Might Belong in Util/////////////////////
     private static void shootSingleShot(BodyInfo target) throws GameActionException{
         if (rc.canFireSingleShot()) {
-            if (target != null) {
                 rc.fireSingleShot(rc.getLocation().directionTo(target.getLocation()));
-            }
         }
 
     }
 
     private static void shootTriadShot(BodyInfo target) throws GameActionException{
         if (rc.canFireTriadShot() && target!= null) {
-            if (target != null) {
                 rc.fireTriadShot(rc.getLocation().directionTo(target.getLocation()));
-            }
         }
 
     }
 
     private static void shootPentadShot(BodyInfo target) throws GameActionException{
         if (rc.canFirePentadShot() && target!= null) {
-            if (target != null) {
                 rc.firePentadShot(rc.getLocation().directionTo(target.getLocation()));
-            }
         }
 
     }
