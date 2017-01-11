@@ -1,8 +1,6 @@
 package team008.finalBot;
+import battlecode.common.*;
 
-import battlecode.common.MapLocation;
-import battlecode.common.RobotController;
-import battlecode.common.RobotInfo;
 
 public class Soldier extends Bot {
 
@@ -11,22 +9,33 @@ public class Soldier extends Bot {
         //anything else soldier specific
     }
     
-	public void takeTurn() throws Exception{
-        MapLocation myLocation = rc.getLocation();
-
-        // See if there are any nearby enemy robots
-        RobotInfo[] robots = rc.senseNearbyRobots(-1, enemy);
-
-        // If there are some...
-        if (robots.length > 0) {
-            // And we have enough bullets, and haven't attacked yet this turn...
-            if (rc.canFireSingleShot()) {
-                // ...Then fire a bullet in the direction of the enemy.
-                rc.fireSingleShot(rc.getLocation().directionTo(robots[0].location));
-            }
-        }
-
-        // Move randomly
-        tryMove(randomDirection());
-    }
+	public void takeTurn(TreeInfo[] nearbyNeutralTrees) throws Exception{
+//		if(target != null){
+//			rc.setIndicatorDot(target, 255, 0, 0);
+//		}
+		RobotInfo[] enemies = rc.senseNearbyRobots(-1,enemy);
+		if(enemies.length > 0){
+			if(rc.getRoundNum() % 25 == 0){
+				Util.notifyFriendsOfEnemies(enemies);
+			}
+			RangedCombat.execute();
+			return;
+		}
+		if(target == null){
+			assignNewTarget();
+		}
+		else if (target != null && rc.getLocation().distanceTo(target) < 2 && enemies.length == 0){
+			Messaging.removeEnemyArmyLocation(target);
+			Messaging.removeEnemyUnitLocation(target);
+			target = null;
+			assignNewTarget();
+		}
+		if(target != null){
+			goTo(target);
+		}
+		else{
+			tryMoveDirection(here.directionTo(Util.rc.getInitialArchonLocations(enemy)[0]));
+		}
+	}
+	
 }
