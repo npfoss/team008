@@ -222,12 +222,12 @@ public class Bot {
 		
 	}
 	public static void explore() throws GameActionException{
-		rc.setIndicatorDot(here.add(dirIAmMoving,type.strideRadius*2), rc.getRoundNum(), rc.getRoundNum(), rc.getRoundNum());
 		if (nearbyAlliedRobots != null){
 			for(RobotInfo r : nearbyAlliedRobots){
 				if(r.type == RobotType.SCOUT && dirIAmMoving.degreesBetween(here.directionTo(r.location))< 90 ){
 					dirIAmMoving = dirIAmMoving.opposite();
 					goTo(dirIAmMoving);
+					rc.setIndicatorDot(here, 0, 255, 0);
 					return;
 				}
 			}
