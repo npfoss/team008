@@ -1,7 +1,6 @@
 package team008.finalBot;
 
 import battlecode.common.*;
-import sun.reflect.generics.tree.Tree;
 
 public class Scout extends Bot {
 
