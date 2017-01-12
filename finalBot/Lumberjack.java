@@ -8,7 +8,7 @@ public class Lumberjack extends Bot {
 		//anything else lumberjack specific
 	}
 	
-	public void takeTurn(TreeInfo[] nearbyNeutralTrees) throws Exception{
+	public void takeTurn() throws Exception{
         RobotInfo[] nearbyEnemies = rc.senseNearbyRobots(99, enemy);
         RobotInfo[] nearbyFriends = rc.senseNearbyRobots(99, us);
         // TreeInfo[] nearbyEnemyTrees = rc.senseNearbyTrees(99, enemy);
@@ -47,7 +47,7 @@ public class Lumberjack extends Bot {
         			goTo(target);
         		}
         		else{
-        			tryMoveDirection(here.directionTo(Util.rc.getInitialArchonLocations(enemy)[0]));
+        			goTo(here.directionTo(Util.rc.getInitialArchonLocations(enemy)[0]));
         		}
             }
             // chop best trees
@@ -77,7 +77,7 @@ public class Lumberjack extends Bot {
             // definitely prioritize, might have goodies
             if (lowestStrengthNeutral.getHealth() > RobotType.LUMBERJACK.attackPower) {
                 rc.chop(lowestStrengthNeutral.getID());
-                rc.setIndicatorLine(rc.getLocation(), lowestStrengthNeutral.getLocation(),0, 255, 0);
+                //rc.setIndicatorLine(rc.getLocation(), lowestStrengthNeutral.getLocation(),0, 255, 0);
                 return;
             } else {
                 prioritizeNeutral = true;
@@ -88,18 +88,18 @@ public class Lumberjack extends Bot {
         if (!prioritizeNeutral && lowestStrengthEnemy != null && lowestStrengthEnemy.getHealth() <= GameConstants.LUMBERJACK_CHOP_DAMAGE && lowestStrengthEnemy.getHealth() > RobotType.LUMBERJACK.attackPower) {
             // seems optimal to take out enemy trees when possible, but if low enough to strike then maybe do that
             rc.chop(lowestStrengthEnemy.getID());
-            rc.setIndicatorLine(rc.getLocation(), lowestStrengthEnemy.getLocation(),0, 255, 0);
+            //rc.setIndicatorLine(rc.getLocation(), lowestStrengthEnemy.getLocation(),0, 255, 0);
         } else if (Util.containsBodiesTouchingRadius(nearbyAllies, rc.getLocation(), RobotType.LUMBERJACK.bodyRadius + GameConstants.LUMBERJACK_STRIKE_RADIUS)){
             // not safe to strike, would hit friends
             if (prioritizeNeutral) {
                 rc.chop(lowestStrengthNeutral.getID());
-                rc.setIndicatorLine(rc.getLocation(), lowestStrengthNeutral.getLocation(),0, 255, 0);
+                //rc.setIndicatorLine(rc.getLocation(), lowestStrengthNeutral.getLocation(),0, 255, 0);
             } else if (lowestStrengthEnemy != null) {
                 rc.chop(lowestStrengthEnemy.getID());
-                rc.setIndicatorLine(rc.getLocation(), lowestStrengthEnemy.getLocation(),0, 255, 0);
+                //rc.setIndicatorLine(rc.getLocation(), lowestStrengthEnemy.getLocation(),0, 255, 0);
             } else {
                 rc.chop(lowestStrengthNeutral.getID());
-                rc.setIndicatorLine(rc.getLocation(), lowestStrengthNeutral.getLocation(),0, 255, 0);
+                //rc.setIndicatorLine(rc.getLocation(), lowestStrengthNeutral.getLocation(),0, 255, 0);
             }
         } else {
             // could strike, is it a good idea?
@@ -111,13 +111,13 @@ public class Lumberjack extends Bot {
             } else { // chopping does more total damage
                 if (prioritizeNeutral) {
                     rc.chop(lowestStrengthNeutral.getID());
-                    rc.setIndicatorLine(rc.getLocation(), lowestStrengthNeutral.getLocation(),0, 255, 0);
+                    //rc.setIndicatorLine(rc.getLocation(), lowestStrengthNeutral.getLocation(),0, 255, 0);
                 } else if (lowestStrengthEnemy != null) {
                     rc.chop(lowestStrengthEnemy.getID());
-                    rc.setIndicatorLine(rc.getLocation(), lowestStrengthEnemy.getLocation(),0, 255, 0);
+                    //rc.setIndicatorLine(rc.getLocation(), lowestStrengthEnemy.getLocation(),0, 255, 0);
                 } else {
                     rc.chop(lowestStrengthNeutral.getID());
-                    rc.setIndicatorLine(rc.getLocation(), lowestStrengthNeutral.getLocation(),0, 255, 0);
+                    //rc.setIndicatorLine(rc.getLocation(), lowestStrengthNeutral.getLocation(),0, 255, 0);
                 }
             }
         }
@@ -144,7 +144,7 @@ public class Lumberjack extends Bot {
 	public void doLumberjackMicro(RobotInfo[] nearbyFriends, RobotInfo[] nearbyEnemies) throws Exception{
 	    // gets called when there are enemies that can be seen
         // don't worry about chopping trees here, that's checked for after. only enemies
-        rc.setIndicatorDot(rc.getLocation(), 255,0,0); //red dot == doing micro
+        //rc.setIndicatorDot(rc.getLocation(), 255,0,0); //red dot == doing micro
 
         //BulletInfo[] nearbyBullets = rc.senseNearbyBullets();
 
