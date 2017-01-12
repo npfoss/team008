@@ -244,8 +244,6 @@ public class Bot {
 				return;
 			}
 		}
-		
-		
 	}
 	
 	public static void explore() throws GameActionException{
