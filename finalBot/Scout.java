@@ -10,9 +10,11 @@ public class Scout extends Bot {
 	
 	public void takeTurn(TreeInfo[] nearbyNeutralTrees) throws Exception{
 	   if(dealWithNearbyTrees()){
+	   		rc.setIndicatorDot(here,0,0,255);
 		   return;
 	   }  
 	   explore();
+	   rc.setIndicatorDot(here,0,255,0);
 	   RobotInfo[] enemies = rc.senseNearbyRobots(-1,rc.getTeam().opponent());
 		if(enemies.length > 0 && rc.getRoundNum() % 10 == 0){
 			//rc.setIndicatorDot(enemies[0].location, 255, 0, 0);
