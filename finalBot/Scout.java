@@ -9,7 +9,6 @@ public class Scout extends Bot {
 	}
 	
 	public void takeTurn() throws Exception{
-		nearbyAlliedRobots = rc.senseNearbyRobots(-1, us);
 	   dealWithNearbyTrees();
 	   explore();
 	  // rc.setIndicatorDot(here,0,255,0);
