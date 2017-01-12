@@ -16,7 +16,10 @@ public class Bot {
     
     //finding these is expensive so lets only do it once
     public static TreeInfo[] nearbyNeutralTrees;
+    public static TreeInfo[] nearbyEnemyTrees;
+    public static TreeInfo[] nearbyAlliedTrees;
     public static RobotInfo[] nearbyAlliedRobots;
+    public static RobotInfo[] nearbyEnemyRobots;
     public static BulletInfo[] nearbyBullets;
     public static RobotInfo[] nearbyRobots;
     public static Random myRand;
@@ -39,9 +42,14 @@ public class Bot {
             // Try/catch blocks stop unhandled exceptions, which cause your robot to explode
             try {
             	here = rc.getLocation();
+            	//TODO: have our Util sort a single call rather than calling multiple times
             	nearbyNeutralTrees = rc.senseNearbyTrees(-1,Team.NEUTRAL);
+            	nearbyEnemyTrees = rc.senseNearbyTrees(-1,enemy);
+            	nearbyAlliedTrees = rc.senseNearbyTrees(-1, us);
             	nearbyBullets = rc.senseNearbyBullets();
             	nearbyRobots = rc.senseNearbyRobots();
+        		nearbyAlliedRobots = rc.senseNearbyRobots(-1, us);
+        		nearbyEnemyRobots = rc.senseNearbyRobots(-1,enemy);
             	shakeNearbyTrees();
                 takeTurn();
               
@@ -166,6 +174,7 @@ public class Bot {
 	private static boolean tryMove(Direction dir, float dist) throws GameActionException{
 		if (rc.canMove(dir, dist) && dangerRating(here.add(dir, dist))== 0){
 			rc.move(dir,dist);
+			here = rc.getLocation();
 			return true;
 		}
 		else{

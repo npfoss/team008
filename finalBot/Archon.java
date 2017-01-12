@@ -90,7 +90,7 @@ public class Archon extends Bot {
 			RobotInfo closestEnemy = Util.closestRobot(enemies, retreatLoc);
 
 			float dist = retreatLoc.distanceTo(closestEnemy.location);
-			double allyMod = RangedCombat.numOtherAlliesInSightRange( here.add(dir,rc.getType().strideRadius), allies);
+			double allyMod = RangedCombat.numOtherAlliesInSightRange( here.add(dir,rc.getType().strideRadius));
 			double wallMod = wallModCalc(retreatLoc,dir);
 
 			if (dist+allyMod+wallMod> bestValue) {
