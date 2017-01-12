@@ -10,9 +10,7 @@ public class Scout extends Bot {
 	
 	public void takeTurn() throws Exception{
 		nearbyAlliedRobots = rc.senseNearbyRobots(-1, us);
-	   if(dealWithNearbyTrees()){
-		   return;
-	   }  
+	   dealWithNearbyTrees();
 	   explore();
 	   RobotInfo[] enemies = rc.senseNearbyRobots(-1,rc.getTeam().opponent());
 		if(enemies.length > 0 && rc.getRoundNum() % 10 == 0){
@@ -35,12 +33,9 @@ public class Scout extends Bot {
 			return false;
 		}
 		TreeInfo closestBulletTree = Util.closestTree(bulletTrees, rc.getLocation(), i);
-		if(rc.canShake(closestBulletTree.ID)){
-			rc.shake(closestBulletTree.ID);
-		}
-		else{
+
 			goTo(closestBulletTree.location);
-		}
+
 		return true;
 	}
 }

@@ -44,6 +44,7 @@ public class Bot {
             	nearbyRobots = rc.senseNearbyRobots();
             	shakeNearbyTrees();
                 takeTurn();
+              
             	if( rc.canShake()){
             		//don't need to update nearbyNeutralTrees since sensorRadius >>> strideRadius
             	    shakeNearbyTrees();
@@ -113,6 +114,9 @@ public class Bot {
 			for (RobotInfo l : nearbyRobots){
 			if(l.type == RobotType.LUMBERJACK && loc.distanceTo(l.location) < RobotType.LUMBERJACK.bodyRadius + RobotType.LUMBERJACK.strideRadius* (l.team == us ? 1:2) + type.bodyRadius){
 				danger+= (10-loc.distanceTo(l.location));
+				if(l.team==us){
+					danger+=10;
+				}
 			}
 			}
 		}
@@ -228,7 +232,7 @@ public class Bot {
 				}
 			}
 		}
-		if(!rc.onTheMap(here.add(dirIAmMoving,type.sensorRadius))  || myRand.nextFloat() < 0.05){
+		if(myRand.nextFloat() < 0.1){
 			//System.out.println(dirIAmMoving);
 			dirIAmMoving = dirIAmMoving.rotateLeftDegrees(100);
 		}
