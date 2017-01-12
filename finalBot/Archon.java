@@ -1,6 +1,4 @@
 package team008.finalBot;
-
-import aaronBot.Messaging;
 import battlecode.common.*;
 
 
@@ -31,7 +29,7 @@ public class Archon extends Bot {
 		return here.directionTo(new MapLocation(xavg/spaces, yavg/spaces));
 		
 	}
-	public void takeTurn(TreeInfo[] nearbyNeutralTrees) throws Exception{
+	public void takeTurn() throws Exception{
 
 		if(rc.getRoundNum() % 10==0){
 	    lastDirection = findOpenSpaces();

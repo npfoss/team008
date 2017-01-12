@@ -13,7 +13,7 @@ public class Gardener extends Bot {
 		//anything else gardener specific
 	}
 	
-	public void takeTurn(TreeInfo[] nearbyNeutralTrees) throws GameActionException{
+	public void takeTurn() throws GameActionException{
 		//
 		RobotInfo[] enemyRobots = rc.senseNearbyRobots(-1, enemy);
 	    if(enemyRobots.length > 0){
