@@ -28,7 +28,8 @@ public class Archon extends Bot {
 		
 	}
 
-	public void takeTurn(TreeInfo[] nearbyNeutralTrees) throws Exception{
+	public void takeTurn() throws Exception{
+
 
 		if(rc.getRoundNum() % 10==0){
 	    lastDirection = findOpenSpaces();

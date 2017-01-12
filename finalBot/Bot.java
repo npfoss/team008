@@ -3,13 +3,19 @@ package team008.finalBot;
 import battlecode.common.*;
 
 public class Bot {
+	//for everyone to use
     public static RobotController rc;
     public static RobotType type;
     public static Team enemy;
     public static Team us;
     public static MapLocation here;
+    
+    //most units will need this
     public static Direction dirIAmMoving;
     public static MapLocation target;
+    
+    //finding these is expensive so lets only do it once
+    public static TreeInfo[] nearbyNeutralTrees;
     public Bot(){}
 
     public Bot(RobotController r){
@@ -22,18 +28,17 @@ public class Bot {
     }
 
     public void loop(){
-
-    	//System.out.println("new bot initialized: " + rc.getType().toString());
-
         // The code you want your robot to perform every round should be in this loop
         while (true) {
 
             // Try/catch blocks stop unhandled exceptions, which cause your robot to explode
             try {
             	here = rc.getLocation();
-            	TreeInfo[] nearbyNeutralTrees = shakeNearbyTrees();
-                takeTurn(nearbyNeutralTrees);
-            	if( rc. canShake()){
+            	nearbyNeutralTrees = rc.senseNearbyTrees(-1,Team.NEUTRAL);
+            	shakeNearbyTrees();
+                takeTurn();
+            	if( rc.canShake()){
+            		//don't need to update nearbyNeutralTrees since sensorRadius >>> strideRadius
             	    shakeNearbyTrees();
                 }
             } catch (Exception e) {
@@ -45,13 +50,12 @@ public class Bot {
         }
     }
 
-    public void takeTurn(TreeInfo[] nearbyNeutralTrees) throws Exception
+    public void takeTurn() throws Exception
     {
     	return;
     }
 
 	public TreeInfo[] shakeNearbyTrees() throws Exception{
-		TreeInfo[] nearbyNeutralTrees = rc.senseNearbyTrees((float)99, Team.NEUTRAL);
 		TreeInfo shakeMe = Util.highestShakeableBulletTree(nearbyNeutralTrees);
 		if (shakeMe != null){
 			rc.shake(shakeMe.getID());
@@ -71,14 +75,6 @@ public class Bot {
     /******* ALL NAVIGATION METHODS BELOW *******/
     // TODO: navigate
 	private static MapLocation dest = null;
-	
-//	private enum BugState {
-//		DIRECT, BUG
-//	}
-//
-//	public enum WallSide {
-//		LEFT, RIGHT
-//	}
 	
 	private static boolean isBugging = false;
 	private static int dangerRating(MapLocation loc){

@@ -9,7 +9,7 @@ public class Soldier extends Bot {
         //anything else soldier specific
     }
     
-	public void takeTurn(TreeInfo[] nearbyNeutralTrees) throws Exception{
+	public void takeTurn() throws Exception{
 //		if(target != null){
 //			rc.setIndicatorDot(target, 255, 0, 0);
 //		}
