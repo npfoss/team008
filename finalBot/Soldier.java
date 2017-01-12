@@ -34,7 +34,7 @@ public class Soldier extends Bot {
 			goTo(target);
 		}
 		else{
-			tryMoveDirection(here.directionTo(Util.rc.getInitialArchonLocations(enemy)[0]));
+			goTo(here.directionTo(Util.rc.getInitialArchonLocations(enemy)[0]));
 		}
 	}
 	

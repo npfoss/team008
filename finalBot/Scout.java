@@ -9,6 +9,7 @@ public class Scout extends Bot {
 	}
 	
 	public void takeTurn() throws Exception{
+		nearbyAlliedRobots = rc.senseNearbyRobots(-1, us);
 	   if(dealWithNearbyTrees()){
 		   return;
 	   }  
@@ -22,10 +23,9 @@ public class Scout extends Bot {
 	}
 	
 	public static boolean dealWithNearbyTrees() throws GameActionException{
-		TreeInfo[] trees = rc.senseNearbyTrees(-1, Team.NEUTRAL);
-		TreeInfo[] bulletTrees = new TreeInfo[trees.length];
+		TreeInfo[] bulletTrees = new TreeInfo[nearbyNeutralTrees.length];
 		int i = 0;
-		for(TreeInfo tree: trees){
+		for(TreeInfo tree: nearbyNeutralTrees){
 			if(tree.containedBullets > 0){
 				bulletTrees[i] = tree;
 				i++;

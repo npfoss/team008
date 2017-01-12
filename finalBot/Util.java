@@ -10,7 +10,7 @@ public class Util extends Bot {
 	 */
 	
 	public static Direction randomDirection() {
-		return new Direction((float) Math.random() * 2 * (float) Math.PI);
+		return new Direction( myRand.nextFloat() * 2 * (float) Math.PI);
 	}
 
 	public static void notifyFriendsOfEnemies(RobotInfo[] enemies) throws GameActionException{
