@@ -33,7 +33,7 @@ public class RangedCombat extends Bot {
             if(firstAction == MOVE_FIRST){
                 //move to destination
                 destinationDir = chooseMove(robotsInSight,bulletsInSight,treesInSight,alliesICanSee);
-                tryMoveDirection(destinationDir);
+                goTo(destinationDir);
 
                 //shoot target
                 target = chooseTargetAndShotType(robotsInSight,treesInSight,alliesNextToMe,alliesICanSee);
@@ -45,7 +45,7 @@ public class RangedCombat extends Bot {
 
                 //move to destination
                 destinationDir = chooseMove(robotsInSight, bulletsInSight, treesInSight, alliesICanSee);
-                tryMoveDirection(destinationDir);
+                goTo(destinationDir);
 
             }
 
@@ -98,7 +98,7 @@ public class RangedCombat extends Bot {
         }
 
         //TODO: go to where the scout tells them to go
-        if(Math.random() < .1){
+        if(myRand.nextDouble() < .1){
         return here.directionTo(Util.rc.getInitialArchonLocations(enemy)[0]);
         }
         else{

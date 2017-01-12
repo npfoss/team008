@@ -47,7 +47,7 @@ public class Lumberjack extends Bot {
         			goTo(target);
         		}
         		else{
-        			tryMoveDirection(here.directionTo(Util.rc.getInitialArchonLocations(enemy)[0]));
+        			goTo(here.directionTo(Util.rc.getInitialArchonLocations(enemy)[0]));
         		}
             }
             // chop best trees

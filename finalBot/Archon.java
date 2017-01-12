@@ -50,7 +50,7 @@ public class Archon extends Bot {
 			rc.setIndicatorDot(here,0,255,0);
 			runAway(enemies ,allies);
 	    }
-	    tryMoveDirection(lastDirection);
+	    goTo(lastDirection);
 	}
 	
 
@@ -104,8 +104,8 @@ public class Archon extends Bot {
 
 
 		if (bestRetreatDir != null) {
-			tryMoveDirection(bestRetreatDir);
+			goTo(bestRetreatDir);
 		}
-		tryMoveDirection(Util.randomDirection());
+		goTo(Util.randomDirection());
 	}
 }
