@@ -113,7 +113,9 @@ public class Bot {
 		else{
 			for (RobotInfo l : nearbyRobots){
 			if(l.type == RobotType.LUMBERJACK && loc.distanceTo(l.location) < RobotType.LUMBERJACK.bodyRadius + RobotType.LUMBERJACK.strideRadius* (l.team == us ? 1:2) + type.bodyRadius){
-				danger+= (10-loc.distanceTo(l.location));
+				if(type!= RobotType.LUMBERJACK){
+					danger+= (10-loc.distanceTo(l.location));
+				}
 				if(l.team==us){
 					danger+=10;
 				}
