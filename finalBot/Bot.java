@@ -94,7 +94,7 @@ public class Bot {
 		if (type == RobotType.SCOUT){
 			for (RobotInfo l : nearbyRobots){
 				if(l.team == us && l.type != RobotType.LUMBERJACK || l.type == RobotType.ARCHON || l.type == RobotType.GARDENER){
-					continue;
+					
 				}
 				else if (l.type == RobotType.LUMBERJACK){
 					if (loc.distanceTo(l.location) < RobotType.LUMBERJACK.bodyRadius + RobotType.LUMBERJACK.strideRadius*2 + RobotType.SCOUT.bodyRadius){
@@ -218,16 +218,17 @@ public class Bot {
 		
 	}
 	public static void explore() throws GameActionException{
-		rc.setIndicatorDot(here, 255, 255, 255);
+		rc.setIndicatorDot(here.add(dirIAmMoving,type.strideRadius*2), rc.getRoundNum(), rc.getRoundNum(), rc.getRoundNum());
 		if (nearbyAlliedRobots != null){
 			for(RobotInfo r : nearbyAlliedRobots){
 				if(r.type == RobotType.SCOUT && dirIAmMoving.degreesBetween(here.directionTo(r.location))< 90 ){
 					dirIAmMoving = dirIAmMoving.opposite();
-					break;
+					goTo(dirIAmMoving);
+					return;
 				}
 			}
 		}
-		if(!rc.onTheMap(here.add(dirIAmMoving,type.sensorRadius))  || myRand.nextDouble() < 0.1){
+		if(!rc.onTheMap(here.add(dirIAmMoving,type.sensorRadius))  || myRand.nextFloat() < 0.05){
 			//System.out.println(dirIAmMoving);
 			dirIAmMoving = dirIAmMoving.rotateLeftDegrees(100);
 		}
