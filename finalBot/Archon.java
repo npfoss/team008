@@ -1,8 +1,6 @@
 package team008.finalBot;
 import battlecode.common.*;
 
-
-
 public class Archon extends Bot {
 	public static Direction lastDirection = new Direction(0);
 	public static int numGardenersCreated = 0;
@@ -29,7 +27,9 @@ public class Archon extends Bot {
 		return here.directionTo(new MapLocation(xavg/spaces, yavg/spaces));
 		
 	}
+
 	public void takeTurn() throws Exception{
+
 
 		if(rc.getRoundNum() % 10==0){
 	    lastDirection = findOpenSpaces();
@@ -44,8 +44,10 @@ public class Archon extends Bot {
 
 	    RobotInfo[] enemies = rc.senseNearbyRobots(-1,enemy);
 		RobotInfo[] allies = rc.senseNearbyRobots(-1,us);
+
 	    if(enemies.length > 0){
 	    	Messaging.setStrategy(1);
+			rc.setIndicatorDot(here,0,255,0);
 			runAway(enemies ,allies);
 	    }
 	    tryMoveDirection(lastDirection);
@@ -65,6 +67,7 @@ public class Archon extends Bot {
 		    }
 		}
 	}
+
 	private static double wallModCalc(MapLocation retreatLoc,Direction dir) throws GameActionException{
 		double mod = 0;
 		while(here.distanceTo(retreatLoc)<type.sensorRadius && rc.onTheMap(retreatLoc)){
