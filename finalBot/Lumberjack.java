@@ -72,29 +72,21 @@ public class Lumberjack extends Bot {
 
 	public void cutDownTrees(TreeInfo[] nearbyNeutralTrees, TreeInfo[] nearbyEnemyTrees, RobotInfo[] nearbyAllies) throws Exception{
         TreeInfo lowestStrengthNeutral = Util.leastHealthTouchingRadius(nearbyNeutralTrees, rc.getLocation(), RobotType.LUMBERJACK.bodyRadius + GameConstants.LUMBERJACK_STRIKE_RADIUS);
-        boolean prioritizeNeutral = false;
         if (lowestStrengthNeutral != null && lowestStrengthNeutral.getHealth() <= GameConstants.LUMBERJACK_CHOP_DAMAGE) {
             // definitely prioritize, might have goodies
-            if (lowestStrengthNeutral.getHealth() > RobotType.LUMBERJACK.attackPower) {
-                rc.chop(lowestStrengthNeutral.getID());
+            rc.chop(lowestStrengthNeutral.getID());
                 //rc.setIndicatorLine(rc.getLocation(), lowestStrengthNeutral.getLocation(),0, 255, 0);
-                return;
-            } else {
-                prioritizeNeutral = true;
-            }
+            return;
         }
         // otherwise, consider other options...
         TreeInfo lowestStrengthEnemy = Util.leastHealthTouchingRadius(nearbyEnemyTrees, rc.getLocation(), RobotType.LUMBERJACK.bodyRadius + GameConstants.LUMBERJACK_STRIKE_RADIUS);
-        if (!prioritizeNeutral && lowestStrengthEnemy != null && lowestStrengthEnemy.getHealth() <= GameConstants.LUMBERJACK_CHOP_DAMAGE && lowestStrengthEnemy.getHealth() > RobotType.LUMBERJACK.attackPower) {
+        if (lowestStrengthEnemy != null && lowestStrengthEnemy.getHealth() <= GameConstants.LUMBERJACK_CHOP_DAMAGE && lowestStrengthEnemy.getHealth() > RobotType.LUMBERJACK.attackPower) {
             // seems optimal to take out enemy trees when possible, but if low enough to strike then maybe do that
             rc.chop(lowestStrengthEnemy.getID());
             //rc.setIndicatorLine(rc.getLocation(), lowestStrengthEnemy.getLocation(),0, 255, 0);
         } else if (Util.containsBodiesTouchingRadius(nearbyAllies, rc.getLocation(), RobotType.LUMBERJACK.bodyRadius + GameConstants.LUMBERJACK_STRIKE_RADIUS)){
             // not safe to strike, would hit friends
-            if (prioritizeNeutral) {
-                rc.chop(lowestStrengthNeutral.getID());
-                //rc.setIndicatorLine(rc.getLocation(), lowestStrengthNeutral.getLocation(),0, 255, 0);
-            } else if (lowestStrengthEnemy != null) {
+            if (lowestStrengthEnemy != null) {
                 rc.chop(lowestStrengthEnemy.getID());
                 //rc.setIndicatorLine(rc.getLocation(), lowestStrengthEnemy.getLocation(),0, 255, 0);
             } else {
@@ -109,10 +101,7 @@ public class Lumberjack extends Bot {
                     * RobotType.LUMBERJACK.attackPower > GameConstants.LUMBERJACK_CHOP_DAMAGE) {
                 rc.strike();
             } else { // chopping does more total damage
-                if (prioritizeNeutral) {
-                    rc.chop(lowestStrengthNeutral.getID());
-                    //rc.setIndicatorLine(rc.getLocation(), lowestStrengthNeutral.getLocation(),0, 255, 0);
-                } else if (lowestStrengthEnemy != null) {
+                if (lowestStrengthEnemy != null) {
                     rc.chop(lowestStrengthEnemy.getID());
                     //rc.setIndicatorLine(rc.getLocation(), lowestStrengthEnemy.getLocation(),0, 255, 0);
                 } else {
