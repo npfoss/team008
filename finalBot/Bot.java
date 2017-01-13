@@ -1,6 +1,8 @@
 package team008.finalBot;
 import java.util.Map;
 import java.util.Random;
+
+import aaronBot01.MapAnalysis;
 import battlecode.common.*;
 
 public class Bot {
@@ -211,6 +213,9 @@ public class Bot {
 	}
 	public static void goTo(MapLocation theDest) throws GameActionException {
 		//for now
+		if(theDest == null){
+			tryMoveDirection(here.directionTo(MapAnalysis.center));
+		}
 		if (dest != null && dest.distanceTo(theDest) < .001){
 			//continue bugging
 		}

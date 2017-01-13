@@ -82,7 +82,7 @@ public class RangedCombat extends Bot {
     private static Direction pickOptimalDir(){
         Direction bestDir = null;
         int score;
-        int bestScore = hypotheticalDamageToSpot(here)+knownDamageToLoc(here);
+        int bestScore = hypotheticalDamageToSpot(here)+knownDamageToLoc(here) - numberOfUnitsWeBlock(here)/2;
         Direction dir = new Direction(0);
         MapLocation potentialLoc;
 
@@ -203,9 +203,9 @@ public class RangedCombat extends Bot {
      */
     private static int canWeHitHeuristic(RobotInfo robot){
         int score = 100;
-        float howFarAwayTheyCanGet =  here.distanceTo(robot.location) / type.bulletSpeed * robot.type.strideRadius;
-        score -= 8* howFarAwayTheyCanGet;
-        score += 2*nearbyEnemyRobots.length;
+        float howFarAwayTheyCanGet =  here.distanceTo(robot.location) - type.bulletSpeed + robot.type.strideRadius;
+        score -= 10* howFarAwayTheyCanGet;
+        score += 20*nearbyEnemyRobots.length;
         return score;
     }
 
