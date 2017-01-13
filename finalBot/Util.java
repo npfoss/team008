@@ -221,8 +221,8 @@ public class Util extends Bot {
 
     ///--------- UNUSED METHODS FROM LAST YEAR--------///
 
-    public static RobotInfo[] combineTwoRIArrays( RobotInfo[] array1, RobotInfo[] array2){
-        RobotInfo[] combo = new RobotInfo[array1.length + array2.length];
+    public static BodyInfo[] combineTwoRIArrays( BodyInfo[] array1, BodyInfo[] array2){
+    	BodyInfo[] combo = new BodyInfo[array1.length + array2.length];
         for (int i = 0; i < array1.length; i++){
             combo[i] = array1[i];
         }
@@ -283,8 +283,8 @@ public class Util extends Bot {
         return units;
     }
 
-    public static RobotInfo[] combineThreeRIArrays( RobotInfo[] array1, RobotInfo[] array2, RobotInfo[] array3){
-        RobotInfo[] combo = new RobotInfo[array1.length + array2.length + array3.length];
+    public static BodyInfo[] combineThreeRIArrays( BodyInfo[] array1, BodyInfo[] array2, BodyInfo[] array3){
+    	BodyInfo[] combo = new RobotInfo[array1.length + array2.length + array3.length];
         for (int i = 0; i < array1.length; i++){
             combo[i] = array1[i];
         }

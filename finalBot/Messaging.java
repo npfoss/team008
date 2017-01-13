@@ -4,32 +4,32 @@ import battlecode.common.*;
 
 public class Messaging extends Bot{
 	
-	public void updateMinX(int min) throws GameActionException{
-		rc.broadcast(0, min*10);
+	public static void updateMinX(float min) throws GameActionException{
+		rc.broadcast(0, (int) (min*10));
 		
 	}
-	public float getMinX() throws GameActionException{
+	public static float getMinX() throws GameActionException{
 		return (float) (rc.readBroadcast(0)/10.0);
 	}
-	public void updateMaxX(int max) throws GameActionException{
-		rc.broadcast(1, max*10);
+	public static void updateMaxX(float max) throws GameActionException{
+		rc.broadcast(1, (int) (max*10));
 		
 	}
-	public float getMaxX() throws GameActionException{
+	public static float getMaxX() throws GameActionException{
 		return (float) (rc.readBroadcast(1)/10.0);
 	}
-	public void updateMinY(int min) throws GameActionException{
-		rc.broadcast(2, min*10);
+	public static void updateMinY(float min) throws GameActionException{
+		rc.broadcast(2, (int) (min*10));
 		
 	}
-	public float getMinY() throws GameActionException{
+	public static float getMinY() throws GameActionException{
 		return (float) (rc.readBroadcast(2)/10.0);
 	}
-	public void updateMaxY(int max) throws GameActionException{
-		rc.broadcast(3, max*10);
+	public static void updateMaxY(float max) throws GameActionException{
+		rc.broadcast(3, (int) (max*10));
 		
 	}
-	public float getMaxY() throws GameActionException{
+	public static float getMaxY() throws GameActionException{
 		return (float) (rc.readBroadcast(3)/10.0);
 	}
 
@@ -47,12 +47,6 @@ public class Messaging extends Bot{
 		return false;
 	}
 
-	public static void setStrategy(int strat) throws GameActionException{
-		rc.broadcast(4, strat);
-	}
-	public static int getStrategy() throws GameActionException{
-		return rc.readBroadcast(4);
-	}
 	public void updateNeutralUnitTreeLocation(MapLocation loc) throws GameActionException{
 		int index = rc.readBroadcast(50);
 		if(duplicateInRange(loc,51,50+index))

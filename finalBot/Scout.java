@@ -4,7 +4,7 @@ import battlecode.common.*;
 
 public class Scout extends Bot {
 
-	public Scout(RobotController r){
+	public Scout(RobotController r) throws GameActionException{
 		super(r);
 	}
 	

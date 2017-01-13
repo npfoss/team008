@@ -3,7 +3,7 @@ import battlecode.common.*;
 
 public class Tank extends Bot {
 
-	public Tank(RobotController r){
+	public Tank(RobotController r) throws GameActionException{
 		super(r);
 	}
 
