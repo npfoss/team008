@@ -1,6 +1,5 @@
 package team008.finalBot;
 import battlecode.common.*;
-import com.sun.xml.internal.ws.client.sei.ResponseBuilder;
 
 /**
  * Created by jmac on 1/10/17.
@@ -190,7 +189,7 @@ public class RangedCombat extends Bot {
 //                    }
 //                }
 //            }
-        shotType = calculateShotType();
+        shotType = calculateShotType(bestRobot);
         return bestRobot;
     }
 
@@ -212,12 +211,13 @@ public class RangedCombat extends Bot {
      * @return the shot type
      * @throws GameActionException
      */
-    private static String calculateShotType() throws GameActionException{
+    private static String calculateShotType(BodyInfo target) throws GameActionException{
         //come up with some sort of formula for choosing the kind of shot
-        if(nearbyEnemyRobots.length>4){
+        float score  = nearbyEnemyRobots.length - here.distanceTo(target.getLocation());
+        if(score>4){
             return PENTAD_SHOT;
         }
-        if(nearbyEnemyRobots.length>2) {
+        if(score>2) {
             return TRIAD_SHOT;
         }
         return SINGLE_SHOT;
@@ -253,6 +253,12 @@ public class RangedCombat extends Bot {
             }
         }
         for(TreeInfo friend: nearbyAlliedTrees){
+            if(friend.location.distanceTo(here) < here.distanceTo(target.location)- type.bodyRadius - target.type.bodyRadius && intendedAttackDir.radiansBetween(here.directionTo(friend.location)) < Math.PI/6 ){
+                //rc.setIndicatorDot(here,1,1,1);
+                return false;
+            }
+        }
+        for(TreeInfo friend: nearbyNeutralTrees){
             if(friend.location.distanceTo(here) < here.distanceTo(target.location)- type.bodyRadius - target.type.bodyRadius && intendedAttackDir.radiansBetween(here.directionTo(friend.location)) < Math.PI/6 ){
                 //rc.setIndicatorDot(here,1,1,1);
                 return false;
