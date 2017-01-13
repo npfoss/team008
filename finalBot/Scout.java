@@ -3,28 +3,47 @@ package team008.finalBot;
 import battlecode.common.*;
 
 public class Scout extends Bot {
+	static boolean triedInitLocation;
+	static MapLocation closestInitLocation;
 
-	public Scout(RobotController r){
+	public Scout(RobotController r) throws GameActionException{
 		super(r);
 	}
 
 	public void takeTurn() throws Exception{
+		if(closestInitLocation == null){
+			MapLocation[] initLocations = rc.getInitialArchonLocations(enemy);
+			closestInitLocation = Util.closestLocation(initLocations, here);
+		}
 
-		nearbyAlliedRobots = rc.senseNearbyRobots(-1, us);
-	    TreeInfo[] nearbyTrees = rc.senseNearbyTrees(-1);
-        tryToHarass(nearbyTrees);
-        if(!rc.hasMoved()) {
-            dealWithNearbyTrees();
-            explore();
+	    //TreeInfo[] nearbyTrees = rc.senseNearbyTrees(-1);
+        if(!tryToHarass(Util.combineTwoTIArrays(nearbyEnemyTrees, nearbyNeutralTrees))){
+        	if(!dealWithNearbyTrees()){
+        		moveToHarass();
+        	}
         }
 
 	  // rc.setIndicatorDot(here,0,255,0);
-	   RobotInfo[] enemies = rc.senseNearbyRobots(-1,rc.getTeam().opponent());
-		if(enemies.length > 0 && rc.getRoundNum() % 10 == 0){
+		if(nearbyEnemyRobots.length > 0 && rc.getRoundNum() % 10 == 0){
 			//rc.setIndicatorDot(enemies[0].location, 255, 0, 0);
-			Util.notifyFriendsOfEnemies(enemies);
+			Util.notifyFriendsOfEnemies(nearbyEnemyRobots);
 		}
        return;
+	}
+	
+	public static void moveToHarass() throws GameActionException{
+		if(!triedInitLocation){
+			if(here.distanceTo(closestInitLocation) < 2){
+				triedInitLocation = true;
+				explore();
+			}
+			else{
+				goTo(closestInitLocation);
+			}
+		}
+		else{
+			explore();
+		}
 	}
 
 
@@ -52,30 +71,40 @@ public class Scout extends Bot {
      * @param nearbyTrees Array of all trees we can see
      * @throws GameActionException
      */
-    private void tryToHarass(TreeInfo[] nearbyTrees) throws GameActionException {
-        RobotInfo closesEnemyArchon = Util.closestSpecificTypeOnTeam(nearbyRobots,here, RobotType.ARCHON,enemy);
-        RobotInfo closesEnemyGardener = Util.closestSpecificTypeOnTeam(nearbyRobots,here,RobotType.GARDENER,enemy);
-        RobotInfo target = ( closesEnemyGardener!=null )? closesEnemyGardener:closesEnemyArchon;
+    private boolean tryToHarass(TreeInfo[] nearbyTrees) throws GameActionException {
+        //RobotInfo closestEnemyArchon = Util.closestSpecificTypeOnTeam(nearbyRobots,here, RobotType.ARCHON,enemy);
+        RobotInfo closestEnemyGardener = Util.closestSpecificTypeOnTeam(nearbyRobots,here,RobotType.GARDENER,enemy);
+        RobotInfo target = closestEnemyGardener;
         if(target!=null) {
             TreeInfo bestTree = Util.closestTree(nearbyTrees, target.location);
-            if(bestTree != null) {
-                if (inGoodSpot(bestTree)) {
-                    rc.setIndicatorDot(here, 0, 0, 255);
-                    harassFromTree(target);
-                } else {
-                    goTo(bestTree.location);
-                }
+            if(bestTree == null || bestTree.location.distanceTo(target.location) > 7){
+            	System.out.println("here");
+            	RangedCombat.shootSingleShot(target);
+            	return true;
             }
+            MapLocation outerEdge = bestTree.location.add(bestTree.location.directionTo(target.location),bestTree.radius);
+            MapLocation targetLoc = outerEdge.add(outerEdge.directionTo(bestTree.location), (float)(1.01));
+            if (inGoodSpot(targetLoc)) {
+                //rc.setIndicatorDot(here,0,0,255);
+                harassFromTree(target);
+            } else{
+            	rc.setIndicatorLine(here,targetLoc,0,0,255);
+            	//System.out.println(here.distanceTo(bestTree.location));
+                goTo(targetLoc);
+            }
+            return true;
         }
+        return false;
     }
 
     /**
      * Checks how close we are to our target tree
-     * @param closestTreeToEnemy the tree we want to be close to
+     * @param targetLoc the tree we want to be close to
      * @return
+     * @throws GameActionException 
      */
-    private static boolean inGoodSpot(TreeInfo closestTreeToEnemy){
-        return closestTreeToEnemy.location.distanceTo(here) < 5;
+    private static boolean inGoodSpot(MapLocation targetLoc) throws GameActionException{
+        return targetLoc.distanceTo(here) < 0.01;
     }
 
     /**
@@ -87,25 +116,34 @@ public class Scout extends Bot {
 	public static void harassFromTree(RobotInfo closestTarget) throws GameActionException {
         if (closestTarget != null) {
             rc.setIndicatorLine(here,closestTarget.getLocation(),255,0,0);
-                 RangedCombat.shootSingleShot(closestTarget);
+            RangedCombat.shootSingleShot(closestTarget);
+            //System.out.println("I shot");
         }
     }
 
     /**
      * NOT USED
      * Attempts to check if we have a clear shot to the target
-     * @param closestTarget teh target we want to shoot
+     * @param closestTarget the target we want to shoot
      * @return true if we have a clear shot
      */
-//    private static boolean haveAClearShot(RobotInfo closestTarget) throws GameActionException {
-//        Direction intendedAttackDir = here.directionTo(closestTarget.location);
-//        for(RobotInfo robot: nearbyRobots){
-//            if(intendedAttackDir.radiansBetween(here.directionTo(robot.location)) < Math.PI/10 && robot !=closestTarget){
-//                return false;
-//            }
-//        }
-//
-//        return true;
-//    }
+    private static boolean haveAClearShot(RobotInfo closestTarget) throws GameActionException {
+        Direction intendedAttackDir = here.directionTo(closestTarget.location);
+        for(RobotInfo robot: nearbyRobots){
+            if(intendedAttackDir.radiansBetween(here.directionTo(robot.location)) < Math.PI/10 && robot !=closestTarget){
+                return false;
+            }
+        }
+        
+        TreeInfo[] nearbyTrees = Util.combineTwoTIArrays(nearbyEnemyTrees, nearbyNeutralTrees);
+        
+        for(TreeInfo tree: nearbyTrees){
+            if(intendedAttackDir.radiansBetween(here.directionTo(tree.location)) < Math.PI/10){
+                return false;
+            }
+        }
+
+        return true;
+    }
 
 }
