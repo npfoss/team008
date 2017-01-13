@@ -1,60 +1,54 @@
 package team008.finalBot;
 import battlecode.common.*;
+import com.sun.xml.internal.ws.client.sei.ResponseBuilder;
 
 /**
  * Created by jmac on 1/10/17.
  */
 public class RangedCombat extends Bot {
-    private static final String MOVE_FIRST = "move first";
-    private static final String SHOOT_FIRST = "shoot first";
+
     private static final String SINGLE_SHOT = "single shot";
     private static final String TRIAD_SHOT = "triad shot";
     private static final String PENTAD_SHOT = "pentad shot";
 
     //forgive me for I have sinned
     private static String shotType = "";
+    private static int shotValue = 0;
+    private static boolean movingSafely = true;
+
 
     /**
      * Effectively "domicro"
      * @throws GameActionException
      */
     public static void execute() throws GameActionException{
-
-        String firstAction = determineFirstAction();
         Direction destinationDir;
-        BodyInfo target;
+        BodyInfo finalTarget = chooseTargetAndShotType();
+        System.out.println("Picking First move" + shotValue);
 
-            if(firstAction == MOVE_FIRST){
-                //move to destination
-                destinationDir = chooseMove();
+        if(shotValue>70){
+            System.out.println("shooting first");
+            shootIfWorth(finalTarget,shotType);
+        }
+
+        destinationDir = chooseMove();
+        System.out.println("picked place to move"  + Clock.getBytecodeNum());
+        if(destinationDir!=null) {
+            if(movingSafely){
                 goTo(destinationDir);
-                rc.setIndicatorDot(here,0,0,255);
-                //shoot target
-                target = chooseTargetAndShotType();
-                shootIfWorth(target,shotType);
-            } else {
-                //shoot target
-                target  = chooseTargetAndShotType();
-                shootIfWorth(target,shotType);
-
-                //move to destination
-                destinationDir = chooseMove();
-                goTo(destinationDir);
-
+            }else{
+                //make not safe moving thing
             }
+        }
+
+        if(!rc.hasAttacked()) {
+            finalTarget = chooseTargetAndShotType();
+            shootIfWorth(finalTarget, shotType);
+        }
+
 
     }
 
-    /**
-     * Determines the first move.
-     * @return What the first move should be
-     * @throws GameActionException
-     */
-    private static String determineFirstAction() throws GameActionException{
-        //TODO
-        //if someone can hit us now move first
-        return MOVE_FIRST;
-    }
 
     ///////////////////// Movement Micro/////////////////////
 
@@ -66,40 +60,43 @@ public class RangedCombat extends Bot {
     private static Direction chooseMove() throws GameActionException{
         //decide whether to engage
         if(nearbyEnemyRobots.length>0) {
+            System.out.println("trying to pick best spot" + Clock.getBytecodeNum());
+            movingSafely = false;
             return pickOptimalDir();
         }
 
+        movingSafely = true;
         if(myRand.nextDouble() < .1){
-        return here.directionTo(Util.rc.getInitialArchonLocations(enemy)[0]);
-        }
-        else{
+            return here.directionTo(Util.rc.getInitialArchonLocations(enemy)[0]);
+        }else{
         	return Util.randomDirection();
         }
     }
 
     /**
-     * Finds the spot that we will gain the lease damage by going to.
+     * Finds the spot that we will gain the least damage by going to.
      * @return
      */
     private static Direction pickOptimalDir(){
         Direction bestDir = null;
-
-        int count = 0;
         int score;
         int bestScore = hypotheticalDamageToSpot(here)+knownDamageToLoc(here);
         Direction dir = new Direction(0);
         MapLocation potentialLoc;
 
-        while( count < 36 ) {
-             potentialLoc = here.add(dir,rc.getType().strideRadius);
+        for(int i = 0; i<8; i++){
+            System.out.println("picking best spot" + Clock.getBytecodeNum());
+
+            potentialLoc = here.add(dir,rc.getType().strideRadius);
             score = hypotheticalDamageToSpot(potentialLoc) + knownDamageToLoc(potentialLoc);
-            score -= numberOfUnitsWeBlock(potentialLoc);
-            if(score < bestScore){
+            score -= numberOfUnitsWeBlock(potentialLoc)/2;
+            if(score < bestScore && rc.canMove(dir)){
                 bestScore = score;
                 bestDir = dir;
             }
-            dir = dir.rotateRightDegrees(10);
+            dir = dir.rotateRightDegrees(45);
         }
+        System.out.println("picked best spot" + Clock.getBytecodeNum());
 
         return bestDir;
     }
@@ -163,18 +160,22 @@ public class RangedCombat extends Bot {
         int score;
         int bestScore = -999999;
         RobotInfo bestRobot = null;
-        TreeInfo bestTree = null;
+        int canWeHitThemValue;
         for(RobotInfo robot: nearbyEnemyRobots){
-            //add other factors for choosing best bot
-            //value based on num nearby bots including trees
+
+            canWeHitThemValue = canWeHitHeuristic(robot);
+            if(canWeHitThemValue<60){
+                continue;
+            }
             score = (int) ( -robot.getHealth()
                     + robot.getType().attackPower
                     + numOtherAlliesInSightRange(robot.location) / robot.getHealth())
-                    + canWeHitHeuristic(robot);
+                    + canWeHitThemValue;
 
             if(score > bestScore && isDirectionSafe(robot)){
                 bestScore = score;
                 bestRobot = robot;
+                shotValue = canWeHitThemValue;
             }
         }
 
@@ -189,10 +190,8 @@ public class RangedCombat extends Bot {
 //                    }
 //                }
 //            }
-
-
         shotType = calculateShotType();
-        return ( bestRobot!= null ) ? bestRobot:bestTree;
+        return bestRobot;
     }
 
     /**
@@ -203,7 +202,7 @@ public class RangedCombat extends Bot {
     private static int canWeHitHeuristic(RobotInfo robot){
         int score = 100;
         float howFarAwayTheyCanGet =  here.distanceTo(robot.location) / type.bulletSpeed * robot.type.strideRadius;
-        score -= 10* howFarAwayTheyCanGet;
+        score -= 8* howFarAwayTheyCanGet;
         return score;
     }
 
@@ -249,13 +248,13 @@ public class RangedCombat extends Bot {
     	Direction intendedAttackDir = here.directionTo(target.location);
         for(RobotInfo friend: nearbyAlliedRobots){
             if(friend.location.distanceTo(here) < here.distanceTo(target.location)- type.bodyRadius - target.type.bodyRadius && intendedAttackDir.radiansBetween(here.directionTo(friend.location)) < Math.PI/6 ){
-                rc.setIndicatorDot(here,1,1,1);
+                //rc.setIndicatorDot(here,1,1,1);
                 return false;
             }
         }
         for(TreeInfo friend: nearbyAlliedTrees){
             if(friend.location.distanceTo(here) < here.distanceTo(target.location)- type.bodyRadius - target.type.bodyRadius && intendedAttackDir.radiansBetween(here.directionTo(friend.location)) < Math.PI/6 ){
-                rc.setIndicatorDot(here,1,1,1);
+                //rc.setIndicatorDot(here,1,1,1);
                 return false;
             }
         }
