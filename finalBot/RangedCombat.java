@@ -184,7 +184,10 @@ public class RangedCombat extends Bot {
      */
     private static String calculateShotType(RobotInfo bestRobot) throws GameActionException{
         //come up with some sort of formula for choosing the kind of shot
-        if(nearbyEnemyRobots.length>4 || here.distanceTo(bestRobot.location) < 3){
+        if(bestRobot == null){
+        	return SINGLE_SHOT;
+        }
+    	if(nearbyEnemyRobots.length>4 || here.distanceTo(bestRobot.location) < 3){
             return PENTAD_SHOT;
         }
         if(nearbyEnemyRobots.length>2 || here.distanceTo(bestRobot.location) < 5) {
