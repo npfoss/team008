@@ -116,7 +116,6 @@ public class RangedCombat extends Bot {
     /**
      * finds the number of allies that can also see this loc.
      * @param loc place to check if they can see
-     * @param allies all the allies we can see
      * @return number of allies who can see the loc
      */
     public static int numOtherAlliesInSightRange(MapLocation loc) {

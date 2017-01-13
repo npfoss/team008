@@ -32,7 +32,7 @@ public class Lumberjack extends Bot {
             if (nearbyNeutralTrees.length + nearbyEnemyTrees.length > 0) {
                 optimizeLocForWoodcutting(nearbyNeutralTrees, nearbyEnemyTrees);
             } else { // no trees in sight
-                // for now just move towards enemy
+
                 // TODO: move to where the scout tells us instead
         		if(target == null){
         			assignNewTarget();
@@ -153,5 +153,10 @@ public class Lumberjack extends Bot {
                 > Util.numBodiesTouchingRadius(nearbyFriends, rc.getLocation(), RobotType.LUMBERJACK.bodyRadius + GameConstants.LUMBERJACK_STRIKE_RADIUS)){
             rc.strike();
         }
+    }
+
+    public int evaluateLocation(MapLocation loc){
+	    // 'scores' the location in terms of possible damage accrued (bullets and otherwise), dealable damage to teammates and enemies
+
     }
 }
