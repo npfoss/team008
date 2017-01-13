@@ -54,8 +54,8 @@ public class Lumberjack extends Bot {
         TreeInfo lowestStrengthNeutral = Util.leastHealthTouchingRadius(nearbyNeutralTrees, rc.getLocation(), RobotType.LUMBERJACK.bodyRadius + GameConstants.LUMBERJACK_STRIKE_RADIUS);
         if (lowestStrengthNeutral != null && lowestStrengthNeutral.getHealth() <= GameConstants.LUMBERJACK_CHOP_DAMAGE) {
             // definitely prioritize, might have goodies
-            rc.chop(lowestStrengthNeutral.getID());
             rc.setIndicatorLine(rc.getLocation(), lowestStrengthNeutral.getLocation(),0, 255, 0);
+            rc.chop(lowestStrengthNeutral.getID());
             return;
         }
         // otherwise, consider other options...
@@ -68,16 +68,16 @@ public class Lumberjack extends Bot {
 
         if (lowestStrengthEnemy != null && lowestStrengthEnemy.getHealth() <= GameConstants.LUMBERJACK_CHOP_DAMAGE && lowestStrengthEnemy.getHealth() > RobotType.LUMBERJACK.attackPower) {
             // seems optimal to take out enemy trees when possible, but if low enough to strike then maybe do that
-            rc.chop(lowestStrengthEnemy.getID());
             rc.setIndicatorLine(rc.getLocation(), lowestStrengthEnemy.getLocation(),0, 255, 0);
+            rc.chop(lowestStrengthEnemy.getID());
         } else if (Util.containsBodiesTouchingRadius(nearbyAlliedRobots, rc.getLocation(), RobotType.LUMBERJACK.bodyRadius + GameConstants.LUMBERJACK_STRIKE_RADIUS)){
             // not safe to strike, would hit friends
             if (lowestStrengthEnemy != null) {
-                rc.chop(lowestStrengthEnemy.getID());
                 rc.setIndicatorLine(rc.getLocation(), lowestStrengthEnemy.getLocation(),0, 255, 0);
+                rc.chop(lowestStrengthEnemy.getID());
             } else {
-                rc.chop(lowestStrengthNeutral.getID());
                 rc.setIndicatorLine(rc.getLocation(), lowestStrengthNeutral.getLocation(),0, 255, 0);
+                rc.chop(lowestStrengthNeutral.getID());
             }
         } else {
             // could strike, is it a good idea?
@@ -89,11 +89,11 @@ public class Lumberjack extends Bot {
                 rc.setIndicatorDot(rc.getLocation(), 0, 255, 0);
             } else { // chopping does more total damage
                 if (lowestStrengthEnemy != null) {
-                    rc.chop(lowestStrengthEnemy.getID());
                     rc.setIndicatorLine(rc.getLocation(), lowestStrengthEnemy.getLocation(),0, 255, 0);
+                    rc.chop(lowestStrengthEnemy.getID());
                 } else {
-                    rc.chop(lowestStrengthNeutral.getID());
                     rc.setIndicatorLine(rc.getLocation(), lowestStrengthNeutral.getLocation(),0, 255, 0);
+                    rc.chop(lowestStrengthNeutral.getID());
                 }
             }
         }
