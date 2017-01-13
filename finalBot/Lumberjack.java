@@ -52,21 +52,6 @@ public class Lumberjack extends Bot {
             }
             // chop best trees
             cutDownTrees(nearbyNeutralTrees, nearbyEnemyTrees, nearbyAlliedRobots);
-
-//            // No close robots, so search for robots within sight radius
-//            robots = rc.senseNearbyRobots(-1,enemy);
-//
-//            // If there is a robot, move towards it
-//            if(robots.length > 0) {
-//                MapLocation myLocation = rc.getLocation();
-//                MapLocation enemyLocation = robots[0].getLocation();
-//                Direction toEnemy = myLocation.directionTo(enemyLocation);
-//
-//                tryMove(toEnemy);
-//            } else {
-//                // Move Randomly
-//                tryMove(Util.randomDirection());
-//            }
         }
 	}
 
@@ -80,6 +65,12 @@ public class Lumberjack extends Bot {
         }
         // otherwise, consider other options...
         TreeInfo lowestStrengthEnemy = Util.leastHealthTouchingRadius(nearbyEnemyTrees, rc.getLocation(), RobotType.LUMBERJACK.bodyRadius + GameConstants.LUMBERJACK_STRIKE_RADIUS);
+        //just in case...
+        if (lowestStrengthNeutral == null && lowestStrengthEnemy == null){
+            System.out.println("phew, just saved us from an error");
+            return;
+        }
+
         if (lowestStrengthEnemy != null && lowestStrengthEnemy.getHealth() <= GameConstants.LUMBERJACK_CHOP_DAMAGE && lowestStrengthEnemy.getHealth() > RobotType.LUMBERJACK.attackPower) {
             // seems optimal to take out enemy trees when possible, but if low enough to strike then maybe do that
             rc.chop(lowestStrengthEnemy.getID());
