@@ -59,10 +59,6 @@ public class RangedCombat extends Bot {
 
     /**
      * Decides what direction to move in.
-     * @param robotsInSight
-     * @param bulletsInSight
-     * @param treesInSight
-     * @param alliesICanSee
      * @return The direction to try and move in.
      * @throws GameActionException
      */
@@ -116,7 +112,6 @@ public class RangedCombat extends Bot {
     /**
      * finds the number of allies that can also see this loc.
      * @param loc place to check if they can see
-     * @param allies all the allies we can see
      * @return number of allies who can see the loc
      */
     public static int numOtherAlliesInSightRange(MapLocation loc) {
@@ -134,10 +129,6 @@ public class RangedCombat extends Bot {
 
     /**
      * Picks the target
-     * @param robotsInSight
-     * @param treesInSight
-     * @param alliesNextToMe
-     * @param alliesICanSee
      * @return
      * @throws GameActionException
      */
@@ -151,7 +142,7 @@ public class RangedCombat extends Bot {
             //value based on num nearby bots including trees
             score = (int) ( -robot.getHealth()
                     + robot.getType().attackPower
-                    + numOtherAlliesInSightRange(robot.location) / robot.getHealth());
+                     - 10*here.distanceTo(robot.location));
 
             if(score > bestScore && isDirectionSafe(robot)){
                 bestScore = score;
@@ -170,24 +161,24 @@ public class RangedCombat extends Bot {
 //                    }
 //                }
 //            }
-
-
-        shotType = calculateShotType();
+        shotType = calculateShotType(bestRobot);
         return ( bestRobot!= null ) ? bestRobot:bestTree;
     }
 
     /**
      * Picks whether to shot 1,3 or 5 bullets.
-     * @param robotsInSight
      * @return the shot type
      * @throws GameActionException
      */
-    private static String calculateShotType() throws GameActionException{
+    private static String calculateShotType(RobotInfo bestRobot) throws GameActionException{
         //come up with some sort of formula for choosing the kind of shot
-        if(nearbyEnemyRobots.length>4){
+        if(bestRobot == null){
+        	return SINGLE_SHOT;
+        }
+    	if(nearbyEnemyRobots.length>4 || here.distanceTo(bestRobot.location) < 3){
             return PENTAD_SHOT;
         }
-        if(nearbyEnemyRobots.length>2) {
+        if(nearbyEnemyRobots.length>2 || here.distanceTo(bestRobot.location) < 5) {
             return TRIAD_SHOT;
         }
         return SINGLE_SHOT;
@@ -211,7 +202,6 @@ public class RangedCombat extends Bot {
     /**
      * Determines if shooting at a target will cause friendly fire.
      * @param target
-     * @param alliesICouldHit
      * @return true if it could also hit a friend
      * @throws GameActionException
      */
@@ -235,21 +225,21 @@ public class RangedCombat extends Bot {
 
 
     ///////////////////// These Might Belong in Util/////////////////////
-    private static void shootSingleShot(BodyInfo target) throws GameActionException{
+    public static void shootSingleShot(BodyInfo target) throws GameActionException{
         if (rc.canFireSingleShot() && target!=null) {
                 rc.fireSingleShot(rc.getLocation().directionTo(target.getLocation()));
         }
 
     }
 
-    private static void shootTriadShot(BodyInfo target) throws GameActionException{
+    public static void shootTriadShot(BodyInfo target) throws GameActionException{
         if (rc.canFireTriadShot() && target!= null) {
                 rc.fireTriadShot(rc.getLocation().directionTo(target.getLocation()));
         }
 
     }
 
-    private static void shootPentadShot(BodyInfo target) throws GameActionException{
+    public static void shootPentadShot(BodyInfo target) throws GameActionException{
         if (rc.canFirePentadShot() && target!= null) {
                 rc.firePentadShot(rc.getLocation().directionTo(target.getLocation()));
         }
