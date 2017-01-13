@@ -13,6 +13,8 @@ public class RangedCombat extends Bot {
 
     //forgive me for I have sinned
     private static String shotType = "";
+    private static int shotValue = 0;
+    private static BodyInfo finalTarget = null;
 
     /**
      * Effectively "domicro"
@@ -23,23 +25,33 @@ public class RangedCombat extends Bot {
         String firstAction = determineFirstAction();
         Direction destinationDir;
         BodyInfo target;
+        rc.setIndicatorDot(here,0,0,255);
 
-            if(firstAction == MOVE_FIRST){
+
+        if(firstAction == MOVE_FIRST){
+            System.out.println("move first" + Clock.getBytecodeNum());
                 //move to destination
                 destinationDir = chooseMove();
-                goTo(destinationDir);
+            System.out.println("picked place to move"  + Clock.getBytecodeNum());
+                if(destinationDir!=null) {
+                    goTo(destinationDir);
+                }
 
                 //shoot target
+            System.out.println("looking for target");
                 target = chooseTargetAndShotType();
+                System.out.println("chose target");
                 shootIfWorth(target,shotType);
             } else {
                 //shoot target
-                target  = chooseTargetAndShotType();
+                target  = finalTarget;
                 shootIfWorth(target,shotType);
 
                 //move to destination
                 destinationDir = chooseMove();
-                goTo(destinationDir);
+                if(destinationDir!=null) {
+                    goTo(destinationDir);
+                }
 
             }
 
@@ -51,9 +63,15 @@ public class RangedCombat extends Bot {
      * @throws GameActionException
      */
     private static String determineFirstAction() throws GameActionException{
-        //TODO
-        //if someone can hit us now move first
+        finalTarget = chooseTargetAndShotType();
+        System.out.println("Picking First move" + shotValue);
+
+        if(shotValue>70){
+            System.out.println("shooting first");
+            return SHOOT_FIRST;
+        }
         return MOVE_FIRST;
+
     }
 
     ///////////////////// Movement Micro/////////////////////
@@ -66,6 +84,8 @@ public class RangedCombat extends Bot {
     private static Direction chooseMove() throws GameActionException{
         //decide whether to engage
         if(nearbyEnemyRobots.length>0) {
+            System.out.println("trying to pick best spot" + Clock.getBytecodeNum());
+
             return pickOptimalDir();
         }
 
@@ -83,24 +103,27 @@ public class RangedCombat extends Bot {
      */
     private static Direction pickOptimalDir(){
         Direction bestDir = null;
-
         int count = 0;
         int score;
         int bestScore = hypotheticalDamageToSpot(here)+knownDamageToLoc(here);
         Direction dir = new Direction(0);
         MapLocation potentialLoc;
+        System.out.println("picking best spot" + Clock.getBytecodeNum());
 
-        while( count < 36 ) {
-             potentialLoc = here.add(dir,rc.getType().strideRadius);
+        while( count < 6 ) {
+            System.out.println("picking best spot" + Clock.getBytecodeNum());
+
+            potentialLoc = here.add(dir,rc.getType().strideRadius);
             score = hypotheticalDamageToSpot(potentialLoc) + knownDamageToLoc(potentialLoc);
             score -= numberOfUnitsWeBlock(potentialLoc);
-            if(score < bestScore){
+            if(score < bestScore && rc.canMove(dir)){
                 bestScore = score;
                 bestDir = dir;
             }
-            dir = dir.rotateRightDegrees(10);
+            dir = dir.rotateRightDegrees(60);
+            count++;
         }
-
+        System.out.println("picked best spot" + Clock.getBytecodeNum());
         return bestDir;
     }
 
@@ -164,17 +187,23 @@ public class RangedCombat extends Bot {
         int bestScore = -999999;
         RobotInfo bestRobot = null;
         TreeInfo bestTree = null;
+        int canWeHitThemValue;
         for(RobotInfo robot: nearbyEnemyRobots){
             //add other factors for choosing best bot
             //value based on num nearby bots including trees
+            canWeHitThemValue = canWeHitHeuristic(robot);
+            if(canWeHitThemValue<60){
+                continue;
+            }
             score = (int) ( -robot.getHealth()
                     + robot.getType().attackPower
                     + numOtherAlliesInSightRange(robot.location) / robot.getHealth())
-                    + canWeHitHeuristic(robot);
+                    + canWeHitThemValue;
 
             if(score > bestScore && isDirectionSafe(robot)){
                 bestScore = score;
                 bestRobot = robot;
+                shotValue = canWeHitThemValue;
             }
         }
 
@@ -189,10 +218,8 @@ public class RangedCombat extends Bot {
 //                    }
 //                }
 //            }
-
-
         shotType = calculateShotType();
-        return ( bestRobot!= null ) ? bestRobot:bestTree;
+        return bestRobot;
     }
 
     /**
@@ -203,7 +230,7 @@ public class RangedCombat extends Bot {
     private static int canWeHitHeuristic(RobotInfo robot){
         int score = 100;
         float howFarAwayTheyCanGet =  here.distanceTo(robot.location) / type.bulletSpeed * robot.type.strideRadius;
-        score -= 10* howFarAwayTheyCanGet;
+        score -= 8* howFarAwayTheyCanGet;
         return score;
     }
 
@@ -249,13 +276,13 @@ public class RangedCombat extends Bot {
     	Direction intendedAttackDir = here.directionTo(target.location);
         for(RobotInfo friend: nearbyAlliedRobots){
             if(friend.location.distanceTo(here) < here.distanceTo(target.location)- type.bodyRadius - target.type.bodyRadius && intendedAttackDir.radiansBetween(here.directionTo(friend.location)) < Math.PI/6 ){
-                rc.setIndicatorDot(here,1,1,1);
+                //rc.setIndicatorDot(here,1,1,1);
                 return false;
             }
         }
         for(TreeInfo friend: nearbyAlliedTrees){
             if(friend.location.distanceTo(here) < here.distanceTo(target.location)- type.bodyRadius - target.type.bodyRadius && intendedAttackDir.radiansBetween(here.directionTo(friend.location)) < Math.PI/6 ){
-                rc.setIndicatorDot(here,1,1,1);
+                //rc.setIndicatorDot(here,1,1,1);
                 return false;
             }
         }
