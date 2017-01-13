@@ -25,6 +25,7 @@ public class Gardener extends Bot {
 		int typeToBuild = rc.readBroadcast(14);
 		int numToBuild = rc.readBroadcast(15);
 		if (typeToBuild == 3 && numToBuild > 0) {
+			System.out.println("I must build Unit Type:" + typeToBuild + ":" + numToBuild);
 			if (buildRobot(RobotType.SCOUT)) {
 				rc.broadcast(15, numToBuild - 1);
 			}
@@ -32,6 +33,7 @@ public class Gardener extends Bot {
 		}
 		if (nearbyEnemyRobots.length > 0) {
 			if (numToBuild > 0) {
+				System.out.println("I must build Unit Type:" + typeToBuild + ":" + numToBuild);
 				switch (typeToBuild) {
 				case 0:
 					break;
@@ -40,21 +42,25 @@ public class Gardener extends Bot {
 						rc.broadcast(15, numToBuild - 1);
 						return;
 					}
+					break;
 				case 2:
 					if (buildRobot(RobotType.TANK)) {
 						rc.broadcast(15, numToBuild - 1);
 						return;
 					}
+					break;
 				case 3:
 					if (buildRobot(RobotType.SCOUT)) {
 						rc.broadcast(15, numToBuild - 1);
 						return;
 					}
+					break;
 				case 4:
 					if (buildRobot(RobotType.LUMBERJACK)) {
 						rc.broadcast(15, numToBuild - 1);
 						return;
 					}
+					break;
 				case 5:
 					break;
 				}
@@ -64,6 +70,7 @@ public class Gardener extends Bot {
 			return;
 		} else {
 			if (numToBuild > 0) {
+				System.out.println("I must build Unit Type:" + typeToBuild + ":" + numToBuild);
 				switch (typeToBuild) {
 				case 0:
 					break;
@@ -72,21 +79,25 @@ public class Gardener extends Bot {
 						rc.broadcast(15, numToBuild - 1);
 						return;
 					}
+					break;
 				case 2:
 					if (buildRobot(RobotType.TANK)) {
 						rc.broadcast(15, numToBuild - 1);
 						return;
 					}
+					break;
 				case 3:
 					if (buildRobot(RobotType.SCOUT)) {
 						rc.broadcast(15, numToBuild - 1);
 						return;
 					}
+					break;
 				case 4:
 					if (buildRobot(RobotType.LUMBERJACK)) {
 						rc.broadcast(15, numToBuild - 1);
 						return;
 					}
+					break;
 				case 5:
 					break;
 				}
@@ -95,8 +106,9 @@ public class Gardener extends Bot {
 	}
 
 	public boolean buildRobot(RobotType type) throws GameActionException {
-
-		Direction dir = new Direction(0);
+		if(rc.getTeamBullets() < type.bulletCost)
+			return false;
+		Direction dir = here.directionTo(MapAnalysis.center);
 		for (int i = 36; i-- > 0;) {
 			if (rc.canBuildRobot(type, dir)) {
 				rc.buildRobot(type, dir);
@@ -110,7 +122,7 @@ public class Gardener extends Bot {
 
 	public boolean plantATree() throws GameActionException {
 
-		Direction dir = new Direction(0);
+		Direction dir = here.directionTo(MapAnalysis.center);
 		Boolean skipped = false;
 		for (int i = 35; i-- > 0;) {
 			if (rc.canPlantTree(dir)) {

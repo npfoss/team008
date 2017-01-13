@@ -46,16 +46,22 @@ public class MapAnalysis extends Bot {
 		switch (type) {
 		case ARCHON:
 			rc.broadcast(4, rc.readBroadcast(4) + 1);
+			break;
 		case GARDENER:
-			rc.broadcast(4, rc.readBroadcast(5) + 1);
+			rc.broadcast(5, rc.readBroadcast(5) + 1);
+			break;
 		case SOLDIER:
-			rc.broadcast(4, rc.readBroadcast(6) + 1);
+			rc.broadcast(6, rc.readBroadcast(6) + 1);
+			break;
 		case TANK:
-			rc.broadcast(4, rc.readBroadcast(7) + 1);
+			rc.broadcast(7, rc.readBroadcast(7) + 1);
+			break;
 		case SCOUT:
-			rc.broadcast(4, rc.readBroadcast(8) + 1);
+			rc.broadcast(8, rc.readBroadcast(8) + 1);
+			break;
 		case LUMBERJACK:
-			rc.broadcast(4, rc.readBroadcast(9) + 1);
+			rc.broadcast(9, rc.readBroadcast(9) + 1);
+			break;
 		default:
 			break;
 
@@ -79,6 +85,12 @@ public class MapAnalysis extends Bot {
 		numScout = rc.readBroadcast(8);
 		numLumberjack = rc.readBroadcast(9);
 		numTree = rc.getTreeCount();
+		System.out.println("numArchon = " + numArchon);
+		System.out.println("numGardener = " + numGardener);
+		System.out.println("numSoldier = " + numSoldier);
+		System.out.println("numTank = " + numTank);
+		System.out.println("numScout = " + numScout);
+		System.out.println("numLumberjack = " + numLumberjack);
 	}
 
 	public static void updateMapSize() throws GameActionException {
@@ -128,11 +140,11 @@ public class MapAnalysis extends Bot {
 	}
 
 	public static void possiblyMakeDecisions() throws GameActionException {
-		if (rc.getRoundNum() % 10 == 0 || rc.getRoundNum() < 5) {
+		if (rc.getRoundNum() % 25 == 0 || rc.getRoundNum() < 2 && isDecisionMaker == false) {
 			isDecisionMaker = false;
 			// +1 to account for the first round
-			if (rc.readBroadcast(10) + 1 != rc.getRoundNum()) {
-				rc.broadcast(10, rc.getRoundNum() + 1);
+			if (rc.readBroadcast(10) < rc.getRoundNum() + 1) {
+				rc.broadcast(10, rc.getRoundNum() + 5);
 				isDecisionMaker = true;
 				resetUnitCount();
 			}
@@ -165,35 +177,33 @@ public class MapAnalysis extends Bot {
 				} else {
 					rc.broadcast(11, 4);
 				}
-				//rc.broadcast(12, 1);
+				// rc.broadcast(12, 1);
 				rc.broadcast(13, 1);
-			}
-			else if (rc.getRoundNum() % 10 == 1) {
+				rc.broadcast(15, 1);
+				rc.broadcast(14, 3);
+			} else if (rc.getRoundNum() % 25 == 2 && rc.getRoundNum() > 5) {
 				updateUnitCount();
 				updateMapSize();
-				if(numGardener == 0){
+				if (numGardener == 0) {
 					rc.broadcast(13, 1);
 				}
-				if(numScout == 0){
+				if (numScout == 0) {
 					rc.broadcast(15, 1);
 					rc.broadcast(14, 3);
-				}
-				else if(numLumberjack < ((numGardener > 4) ? 5:20)){
+				} else if (numLumberjack < ((numGardener < 6) ? 2 : 20)) {
 					rc.broadcast(14, 4);
-					rc.broadcast(15, ((rc.getRoundNum() > 300) ? 5:20) - numLumberjack );
-				}
-				else if (numSoldier < ((numGardener > 4) ? 2:50)){
+					rc.broadcast(15, ((numGardener < 6) ? 2 : 20) - numLumberjack);
+				} else if (numSoldier < ((numGardener < 6) ? 2 : 50)) {
 					rc.broadcast(14, 1);
-					rc.broadcast(15, 50-numSoldier);
-				}
-				else{
+					rc.broadcast(15, (numGardener < 6) ? 2 : 50);
+				} else {
 					rc.broadcast(13, 2);
 					rc.broadcast(14, 5);
-					
+
 				}
-				
+
 			}
-			
+
 		}
 	}
 }

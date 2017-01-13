@@ -55,7 +55,7 @@ public class Bot {
         		nearbyEnemyRobots = rc.senseNearbyRobots(-1,enemy);
         		MapAnalysis.possiblyMakeDecisions();
         		strategy = rc.readBroadcast(11);
-        		if(rc.getRoundNum()%10 == 0){
+        		if(rc.getRoundNum()%25 == 1){
         			MapAnalysis.rollCall();
         		}
         		
@@ -115,7 +115,7 @@ public class Bot {
 					
 				}
 				else if (l.type == RobotType.LUMBERJACK){
-					if (loc.distanceTo(l.location) < RobotType.LUMBERJACK.bodyRadius + RobotType.LUMBERJACK.strideRadius + 1 + RobotType.SCOUT.bodyRadius){
+					if (loc.distanceTo(l.location) < RobotType.LUMBERJACK.bodyRadius + RobotType.LUMBERJACK.strideRadius + 1.1 + RobotType.SCOUT.bodyRadius){
 						danger+= (10-loc.distanceTo(l.location));
 					}
 				}
@@ -129,7 +129,7 @@ public class Bot {
 		}
 		else{
 			for (RobotInfo l : nearbyRobots){
-			if(l.type == RobotType.LUMBERJACK && loc.distanceTo(l.location) < RobotType.LUMBERJACK.bodyRadius + RobotType.LUMBERJACK.strideRadius* (l.team == us ? 0:1)+1 + type.bodyRadius){
+			if(l.type == RobotType.LUMBERJACK && loc.distanceTo(l.location) < RobotType.LUMBERJACK.bodyRadius + RobotType.LUMBERJACK.strideRadius+1.1 + type.bodyRadius){
 				if(type!= RobotType.LUMBERJACK){
 					danger+= (10-loc.distanceTo(l.location));
 				}
@@ -153,7 +153,7 @@ public class Bot {
 			
 		}
 		dir = new Direction(0);
-		for (int i = 17; i < 73; i++){
+		for (int i = 37; i < 73; i++){
 			if(rc.canMove(dir,type.strideRadius/2)){
 				dangers[i] = dangerRating(here.add(dir,type.strideRadius/2))+1;
 			}
@@ -171,12 +171,12 @@ public class Bot {
 		if (minIndex == 0){
 			return;
 		}
-		else if (minIndex < 17){
+		else if (minIndex < 37){
 			dir= dir.rotateLeftDegrees(10 * (minIndex-1));
 			rc.move(dir, type.strideRadius);
 		}
 		else{
-			dir= dir.rotateLeftDegrees(10 * (minIndex-17));
+			dir= dir.rotateLeftDegrees(10 * (minIndex-37));
 			rc.move(dir, type.strideRadius/2);
 		}
 	}
