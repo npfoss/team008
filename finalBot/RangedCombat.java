@@ -205,7 +205,7 @@ public class RangedCombat extends Bot {
         int score = 100;
         float howFarAwayTheyCanGet =  here.distanceTo(robot.location) / type.bulletSpeed * robot.type.strideRadius;
         score -= 8* howFarAwayTheyCanGet;
-        score += 2*nearbyEnemyRobots.length;
+        score += 20*nearbyEnemyRobots.length;
         return score;
     }
 
