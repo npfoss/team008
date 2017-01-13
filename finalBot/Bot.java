@@ -23,9 +23,10 @@ public class Bot {
     public static BulletInfo[] nearbyBullets;
     public static RobotInfo[] nearbyRobots;
     public static Random myRand;
+    public static int strategy = 0;
     public Bot(){}
 
-    public Bot(RobotController r){
+    public Bot(RobotController r) throws GameActionException{
         rc = r;
         type = rc.getType();
         enemy = rc.getTeam().opponent();
@@ -33,6 +34,8 @@ public class Bot {
         here = rc.getLocation();
         myRand = new Random(rc.getID());
         dirIAmMoving = Util.randomDirection();
+        MapAnalysis.center = MapAnalysis.findCenter();
+        
     }
 
     public void loop(){
@@ -50,6 +53,12 @@ public class Bot {
             	nearbyRobots = rc.senseNearbyRobots();
         		nearbyAlliedRobots = rc.senseNearbyRobots(-1, us);
         		nearbyEnemyRobots = rc.senseNearbyRobots(-1,enemy);
+        		MapAnalysis.possiblyMakeDecisions();
+        		strategy = rc.readBroadcast(11);
+        		if(rc.getRoundNum()%10 == 0){
+        			MapAnalysis.rollCall();
+        		}
+        		
             	shakeNearbyTrees();
                 takeTurn();
               
@@ -106,7 +115,7 @@ public class Bot {
 					
 				}
 				else if (l.type == RobotType.LUMBERJACK){
-					if (loc.distanceTo(l.location) < RobotType.LUMBERJACK.bodyRadius + RobotType.LUMBERJACK.strideRadius*2 + RobotType.SCOUT.bodyRadius){
+					if (loc.distanceTo(l.location) < RobotType.LUMBERJACK.bodyRadius + RobotType.LUMBERJACK.strideRadius + 1 + RobotType.SCOUT.bodyRadius){
 						danger+= (10-loc.distanceTo(l.location));
 					}
 				}
@@ -120,7 +129,7 @@ public class Bot {
 		}
 		else{
 			for (RobotInfo l : nearbyRobots){
-			if(l.type == RobotType.LUMBERJACK && loc.distanceTo(l.location) < RobotType.LUMBERJACK.bodyRadius + RobotType.LUMBERJACK.strideRadius* (l.team == us ? 1:2) + type.bodyRadius){
+			if(l.type == RobotType.LUMBERJACK && loc.distanceTo(l.location) < RobotType.LUMBERJACK.bodyRadius + RobotType.LUMBERJACK.strideRadius* (l.team == us ? 0:1)+1 + type.bodyRadius){
 				if(type!= RobotType.LUMBERJACK){
 					danger+= (10-loc.distanceTo(l.location));
 				}

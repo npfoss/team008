@@ -2,10 +2,8 @@ package team008.finalBot;
 import battlecode.common.*;
 
 public class Archon extends Bot {
-	public static Direction lastDirection = new Direction(0);
-	public static int numGardenersCreated = 0;
 
-	public Archon(RobotController r){
+	public Archon(RobotController r) throws GameActionException{
 		super(r);
 		//anything else archon specific
 	}
@@ -24,20 +22,21 @@ public class Archon extends Bot {
 			}
 			dir = dir.rotateLeftDegrees(10);
 		}
+		MapLocation temp = new MapLocation(xavg/spaces, yavg/spaces);
+		if (temp.distanceTo(here) < .001){
+			return here.directionTo(MapAnalysis.center);
+		}
 		return here.directionTo(new MapLocation(xavg/spaces, yavg/spaces));
 		
 	}
 
 	public void takeTurn() throws Exception{
-
-
-		if(rc.getRoundNum() % 10==0){
-	    lastDirection = findOpenSpaces();
-		}
+		dirIAmMoving = findOpenSpaces();
 	    if(rc.getRoundNum() + 5 > GameConstants.GAME_DEFAULT_ROUNDS || rc.getTeamVictoryPoints() + rc.getTeamBullets()/10 > 1000){
 			rc.donate(((int)(rc.getTeamBullets()/10))*10);
 		}
-	    else if(rc.getTreeCount() < 20 && rc.getTeamBullets() > 100  && rc.getRoundNum() > 500|| rc.getTeamBullets() > 120 || rc.getRoundNum() < 400 && rc.getTeamBullets() > 100  && Messaging.getStrategy() == 0 || rc.getRoundNum() < 100&& rc.getTeamBullets() > 100){
+	    else if(rc.getTeamBullets() > 100 & rc.readBroadcast(13) > 0){
+	    	System.out.print(rc.readBroadcast(13) + "");
 	    	hireGardener();
 		}
 
@@ -46,20 +45,21 @@ public class Archon extends Bot {
 		RobotInfo[] allies = rc.senseNearbyRobots(-1,us);
 
 	    if(enemies.length > 0){
-	    	Messaging.setStrategy(1);
 			rc.setIndicatorDot(here,0,255,0);
 			runAway(enemies ,allies);
 	    }
-	    goTo(lastDirection);
+	    if(rc.getMoveCount() == 0){
+	    	goTo(dirIAmMoving);
+	    }
 	}
 	
 
 	public void hireGardener() throws GameActionException{
-		Direction dir = lastDirection.opposite();
+		Direction dir = dirIAmMoving.opposite();
 		for(int i = 15; i --> 0;){
 		    if (rc.canHireGardener(dir)) {
 		        rc.hireGardener(dir);
-		        numGardenersCreated++;
+		        rc.broadcast(13, rc.readBroadcast(13)-1);
 		        break;
 		    }
 		    else{

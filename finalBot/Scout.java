@@ -4,13 +4,15 @@ import battlecode.common.*;
 
 public class Scout extends Bot {
 
-	public Scout(RobotController r){
+	public Scout(RobotController r) throws GameActionException{
 		super(r);
 	}
 	
 	public void takeTurn() throws Exception{
 	   dealWithNearbyTrees();
+	   if(rc.getMoveCount() == 0){
 	   explore();
+	   }
 	  // rc.setIndicatorDot(here,0,255,0);
 	   RobotInfo[] enemies = rc.senseNearbyRobots(-1,rc.getTeam().opponent());
 		if(enemies.length > 0 && rc.getRoundNum() % 10 == 0){

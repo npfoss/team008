@@ -3,7 +3,7 @@ package team008.finalBot;
 import battlecode.common.*;
 
 public class Lumberjack extends Bot {
-	public Lumberjack(RobotController r){
+	public Lumberjack(RobotController r) throws GameActionException{
 		super(r);
 		//anything else lumberjack specific
 	}
