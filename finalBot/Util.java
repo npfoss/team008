@@ -1,5 +1,6 @@
 package team008.finalBot;
 import battlecode.common.*;
+import com.sun.xml.internal.ws.client.sei.ResponseBuilder;
 
 public class Util extends Bot {
 	/**
@@ -49,6 +50,18 @@ public class Util extends Bot {
             }
         }
         return closest;
+    }
+
+    public static float distToClosestBody(BodyInfo[] robots, MapLocation toHere) {
+        float bestDist = 999999;
+        float dist;
+        for (int i = robots.length; i-- > 0;) {
+            dist = toHere.distanceTo(robots[i].getLocation());
+            if (dist < bestDist) {
+                bestDist = dist;
+            }
+        }
+        return bestDist;
     }
 
     public static RobotInfo closestRobot(RobotInfo[] robots, MapLocation toHere) {
@@ -156,6 +169,17 @@ public class Util extends Bot {
             }
         }
         return count;
+    }
+
+    public static float avgDistTo(BodyInfo[] robots, MapLocation loc){
+        if (robots.length == 0){
+            return -1;
+        }
+        float sum = 0;
+        for (BodyInfo bot : robots){
+            sum += loc.distanceTo(bot.getLocation());
+        }
+        return sum / robots.length;
     }
 
     public static RobotInfo leastHealth(RobotInfo[] robots, boolean excludeArchons) {

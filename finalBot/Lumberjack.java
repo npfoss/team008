@@ -2,6 +2,8 @@ package team008.finalBot;
 
 import battlecode.common.*;
 
+import java.awt.*;
+
 public class Lumberjack extends Bot {
     public int WHEN_TO_STOP_MICRO;
     public float MOVE_ATTACK_MOD;
@@ -9,6 +11,7 @@ public class Lumberjack extends Bot {
     public float KNOWN_DAMAGE_MOD;
     public float HYPOTHETICAL_DAMAGE_MOD;
     public float PROGRESS_MOD;
+    public float PROXIMITY_MOD;
 
 	public Lumberjack(RobotController r) throws GameActionException{
 		super(r);
@@ -19,6 +22,7 @@ public class Lumberjack extends Bot {
         KNOWN_DAMAGE_MOD = -1;
         HYPOTHETICAL_DAMAGE_MOD = -.8f; // TODO: actually optimize
         PROGRESS_MOD = 1; // no idea what to make this TODO: don't just guess
+        PROXIMITY_MOD = -2; // no idea... TODO: optimize
 	}
 	
 	public void takeTurn() throws Exception{
@@ -27,8 +31,9 @@ public class Lumberjack extends Bot {
         	if(rc.getRoundNum() % 25 == 0){
 				Util.notifyFriendsOfEnemies(nearbyEnemyRobots);
 			}
-            // Use strike() to hit all nearby robots!
+			int start = Clock.getBytecodeNum();
             doLumberjackMicro();
+            System.out.println("micro took " + (Clock.getBytecodeNum() - start) + " bytecodes");
             if ( rc.canStrike() ){
                 cutDownTrees();
             }
@@ -126,6 +131,7 @@ public class Lumberjack extends Bot {
 	public void doLumberjackMicro() throws Exception{
 	    // gets called when there are enemies that can be seen
         // don't worry about chopping trees here, that's checked for after. only enemies
+        System.out.println("whee micro");
 
         // TODO: add kamikaze funciton: if about to die anyways, just go for best place to attack for final stand
 
@@ -136,12 +142,12 @@ public class Lumberjack extends Bot {
         float score, attackScore;
 //        int startTheta = 0; // if we want to start at something nonzero then change the hardcoded zeroes below
         int currentTheta = 0;
-        int dtheta = 30; // must evenly divide 360
+        int dtheta = 45; // must evenly divide 360
         int numLocsEvaled = 0;
         float stridedist = RobotType.LUMBERJACK.strideRadius;
 
         int startBytecode = Clock.getBytecodeNum();
-        while (Clock.getBytecodeNum() + (Clock.getBytecodeNum() - startBytecode)/(numLocsEvaled + .00001) < WHEN_TO_STOP_MICRO){
+        while (Clock.getBytecodeNum() + (Clock.getBytecodeNum() - startBytecode)/((numLocsEvaled < 2 ? 1 : numLocsEvaled)) < WHEN_TO_STOP_MICRO){
             // stop when the average time it takes to eval puts us over the WHEN_TO_STOP_MICRO threshold
             currLoc = here.add(Util.radians(currentTheta), stridedist);
             if ( rc.canMove(currLoc)) {
@@ -160,14 +166,14 @@ public class Lumberjack extends Bot {
                 // tried every point around a circle, now try closer
                 // TODO: make the test points more evenly distributed inside (see circle-packing on wikipedia)
                 stridedist /= 2;
-                dtheta = 45; // it'll get more dense as it gets closer so adjust a little for that
-                if (stridedist < .25 ) { // probably silly to keep checking
+                dtheta = 60; // it'll get more dense as it gets closer so adjust a little for that
+                if (stridedist < .25) { // probably silly to keep checking
                     System.out.print("I've tried everything dammit");
                     break;
                 }
             }
-
         }
+        System.out.println("tried " + numLocsEvaled + " locs and finished at theta " + currentTheta + " and radius " + stridedist);
 
         float attackScoreHere = evalForAttacking(here);
         if ( attackScoreHere > bestLocAttackScore && attackScoreHere > 0){
@@ -210,8 +216,14 @@ public class Lumberjack extends Bot {
         //     but NOT attacking damage
         // TODO: take into account other strategery like defending our trees/units, swarming or not, etc
 
+        float distToNearestEnemy = Util.distToClosestBody(nearbyEnemyRobots, loc);
+        if (distToNearestEnemy < GameConstants.LUMBERJACK_STRIKE_RADIUS + RobotType.LUMBERJACK.strideRadius + 1){
+            distToNearestEnemy = 0; // close enough to hit already
+        }
+
         return KNOWN_DAMAGE_MOD * knownDamageToLoc(loc)
                 + HYPOTHETICAL_DAMAGE_MOD * hypotheticalDamageToSpot(loc)
+                + PROXIMITY_MOD * distToNearestEnemy
                 + (target != null ? PROGRESS_MOD * here.distanceTo(target) - loc.distanceTo(target) : 0);
     }
 
