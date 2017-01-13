@@ -28,7 +28,7 @@ public class RangedCombat extends Bot {
                 //move to destination
                 destinationDir = chooseMove();
                 goTo(destinationDir);
-
+                rc.setIndicatorDot(here,0,0,255);
                 //shoot target
                 target = chooseTargetAndShotType();
                 shootIfWorth(target,shotType);
