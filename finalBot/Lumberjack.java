@@ -3,9 +3,11 @@ package team008.finalBot;
 import battlecode.common.*;
 
 public class Lumberjack extends Bot {
+    public int WHEN_TO_STOP_MICRO;
 	public Lumberjack(RobotController r){
 		super(r);
 		//anything else lumberjack specific
+        WHEN_TO_STOP_MICRO = RobotType.LUMBERJACK.bytecodeLimit - 2000; //TODO: don't just guess
 	}
 	
 	public void takeTurn() throws Exception{
@@ -115,12 +117,28 @@ public class Lumberjack extends Bot {
 	public void doLumberjackMicro(RobotInfo[] nearbyFriends, RobotInfo[] nearbyEnemies) throws Exception{
 	    // gets called when there are enemies that can be seen
         // don't worry about chopping trees here, that's checked for after. only enemies
+
         //rc.setIndicatorDot(rc.getLocation(), 255,0,0); //red dot == doing micro
-
-        //BulletInfo[] nearbyBullets = rc.senseNearbyBullets();
-
         // TODO: make this a lot more intelligent
 
+        /*float bestMoveScore = evaluateLocation(rc.getLocation());
+        float score;
+        MapLocation bestLoc = rc.getLocation();
+        float attackScoreHere = evalForAttacking(bestLoc);
+        int numLocsEvaled = 0;
+        MapLocation currLoc;
+        int startTheta = 0;
+        int currentTheta = 0;
+        float stridedist = RobotType.LUMBERJACK.strideRadius;
+        int startBytecode = Clock.getBytecodeNum();
+        while (Clock.getBytecodeNum() + (1.0*Clock.getBytecodeNum() - startBytecode)/numLocsEvaled < WHEN_TO_STOP_MICRO){
+            currLoc = rc.getLocation().add(Util.radians(currentTheta), stridedist);
+            score = evaluateLocation(currLoc) +
+        }*/
+
+
+
+        /// ----- OLD MICRO -----
         // strike only if it does more damage to the enemy team than us
         if (Util.numBodiesTouchingRadius(nearbyEnemies, rc.getLocation(), RobotType.LUMBERJACK.bodyRadius + GameConstants.LUMBERJACK_STRIKE_RADIUS)
                 > Util.numBodiesTouchingRadius(nearbyFriends, rc.getLocation(), RobotType.LUMBERJACK.bodyRadius + GameConstants.LUMBERJACK_STRIKE_RADIUS)){
@@ -134,11 +152,12 @@ public class Lumberjack extends Bot {
         if (rc.canStrike() && Util.numBodiesTouchingRadius(nearbyEnemies, rc.getLocation(), RobotType.LUMBERJACK.bodyRadius + GameConstants.LUMBERJACK_STRIKE_RADIUS)
                 > Util.numBodiesTouchingRadius(nearbyFriends, rc.getLocation(), RobotType.LUMBERJACK.bodyRadius + GameConstants.LUMBERJACK_STRIKE_RADIUS)){
             rc.strike();
-        }
+        }//*/
     }
 
     public int evaluateLocation(MapLocation loc){
-	    // 'scores' the location in terms of possible damage accrued (bullets and otherwise), dealable damage to teammates and enemies
+	    // 'scores' the location in terms of possible damage accrued (bullets and otherwise)
+        //     and strategery, but NOT attacking damage
 
         return 0;
     }

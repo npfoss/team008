@@ -218,19 +218,6 @@ public class Util extends Bot {
         return bestTree;
     }
 
-    ///--------- UNUSED METHODS FROM LAST YEAR--------///
-
-    public static RobotInfo[] combineTwoRIArrays( RobotInfo[] array1, RobotInfo[] array2){
-        RobotInfo[] combo = new RobotInfo[array1.length + array2.length];
-        for (int i = 0; i < array1.length; i++){
-            combo[i] = array1[i];
-        }
-        for (int i = 0; i < array2.length; i++){
-            combo[i + array1.length] = array2[i];
-        }
-        return combo;
-    }
-
     public static MapLocation centroidOfUnits(RobotInfo[] robots){
         float xavg = 0, yavg = 0;
         MapLocation loc;
@@ -240,6 +227,23 @@ public class Util extends Bot {
             yavg += loc.y;
         }
         return new MapLocation(xavg/robots.length,yavg/robots.length);
+    }
+
+    public static float radians(int degrees){
+        return degrees / (float)Math.PI / 180;
+    }
+
+    ///--------- UNUSED METHODS FROM LAST YEAR--------///
+
+    public static RobotInfo[] combineTwoRIArrays( RobotInfo[] array1, RobotInfo[] array2) {
+        RobotInfo[] combo = new RobotInfo[array1.length + array2.length];
+        for (int i = 0; i < array1.length; i++) {
+            combo[i] = array1[i];
+        }
+        for (int i = 0; i < array2.length; i++) {
+            combo[i + array1.length] = array2[i];
+        }
+        return combo;
     }
 
     public static boolean containsMapLocation(MapLocation[] locs, MapLocation location, int size) {
