@@ -142,7 +142,7 @@ public class RangedCombat extends Bot {
             //value based on num nearby bots including trees
             score = (int) ( -robot.getHealth()
                     + robot.getType().attackPower
-                    + numOtherAlliesInSightRange(robot.location) / robot.getHealth());
+                     - 10*here.distanceTo(robot.location));
 
             if(score > bestScore && isDirectionSafe(robot)){
                 bestScore = score;
@@ -161,7 +161,7 @@ public class RangedCombat extends Bot {
 //                    }
 //                }
 //            }
-        shotType = calculateShotType();
+        shotType = calculateShotType(bestRobot);
         return ( bestRobot!= null ) ? bestRobot:bestTree;
     }
 
@@ -170,12 +170,15 @@ public class RangedCombat extends Bot {
      * @return the shot type
      * @throws GameActionException
      */
-    private static String calculateShotType() throws GameActionException{
+    private static String calculateShotType(RobotInfo bestRobot) throws GameActionException{
         //come up with some sort of formula for choosing the kind of shot
-        if(nearbyEnemyRobots.length>4){
+        if(bestRobot == null){
+        	return SINGLE_SHOT;
+        }
+    	if(nearbyEnemyRobots.length>4 || here.distanceTo(bestRobot.location) < 3){
             return PENTAD_SHOT;
         }
-        if(nearbyEnemyRobots.length>2) {
+        if(nearbyEnemyRobots.length>2 || here.distanceTo(bestRobot.location) < 5) {
             return TRIAD_SHOT;
         }
         return SINGLE_SHOT;
