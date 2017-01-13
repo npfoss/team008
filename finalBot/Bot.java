@@ -229,6 +229,10 @@ public class Bot {
 		}
 		
 		if(!isBugging || 1==1){
+			if(here.distanceTo(dest) < type.strideRadius && rc.canMove(here.directionTo(dest),here.distanceTo(dest))){
+				rc.move(here.directionTo(dest), here.distanceTo(dest));
+				return;
+			}
 			if(tryMoveDirection(here.directionTo(dest))){
 				return;
 			}
