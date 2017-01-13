@@ -142,26 +142,26 @@ public class Bot {
 		return danger;
 	}
 	private static void minimizeDanger() throws GameActionException{
-		int[] dangers = new int[73];
+		int[] dangers = new int[37];
 		dangers[0] = dangerRating(here)+2;//as to check that it was changed
 		Direction dir = new Direction(0);
-		for (int i = 1; i < 37; i++){
+		for (int i = 1; i < 19; i++){
 			if(rc.canMove(dir,type.strideRadius)){
 				dangers[i] = dangerRating(here.add(dir,type.strideRadius))+1;
 			}
-			dir = dir.rotateLeftDegrees(10);
+			dir = dir.rotateLeftDegrees(20);
 			
 		}
 		dir = new Direction(0);
-		for (int i = 37; i < 73; i++){
+		for (int i = 19; i < 37; i++){
 			if(rc.canMove(dir,type.strideRadius/2)){
 				dangers[i] = dangerRating(here.add(dir,type.strideRadius/2))+1;
 			}
-			dir = dir.rotateLeftDegrees(10);
+			dir = dir.rotateLeftDegrees(20);
 		}
 		int minIndex = 0;
 		int minDanger = 1000;
-		for(int i = 0; i < 73; i++){
+		for(int i = 0; i < 37; i++){
 			if(dangers[i] < minDanger && dangers[i] > 0){
 				minDanger = dangers[i];
 				minIndex = i;
@@ -171,12 +171,12 @@ public class Bot {
 		if (minIndex == 0){
 			return;
 		}
-		else if (minIndex < 37){
-			dir= dir.rotateLeftDegrees(10 * (minIndex-1));
+		else if (minIndex < 19){
+			dir= dir.rotateLeftDegrees(20 * (minIndex-1));
 			rc.move(dir, type.strideRadius);
 		}
 		else{
-			dir= dir.rotateLeftDegrees(10 * (minIndex-37));
+			dir= dir.rotateLeftDegrees(20 * (minIndex-37));
 			rc.move(dir, type.strideRadius/2);
 		}
 	}
