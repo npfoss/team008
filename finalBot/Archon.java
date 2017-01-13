@@ -43,14 +43,15 @@ public class Archon extends Bot {
 
 
 	    RobotInfo[] enemies = rc.senseNearbyRobots(-1,enemy);
-		RobotInfo[] allies = rc.senseNearbyRobots(-1,us);
 
-	    if(enemies.length > 0){
+	    if(enemies.length > 0 && !rc.hasMoved()){
 	    	Messaging.setStrategy(1);
 			rc.setIndicatorDot(here,0,255,0);
-			runAway(enemies ,allies);
+			runAway(enemies);
 	    }
-	    goTo(lastDirection);
+	    if(!rc.hasMoved()) {
+			goTo(lastDirection);
+		}
 	}
 	
 
@@ -78,7 +79,7 @@ public class Archon extends Bot {
 		return mod;
 
 	}
-	public void runAway(RobotInfo[] enemies, RobotInfo[] allies) throws GameActionException{
+	public void runAway(RobotInfo[] enemies) throws GameActionException{
 		Direction bestRetreatDir = null;
 		double bestValue = -10000;
 		int count = 0;
@@ -103,9 +104,11 @@ public class Archon extends Bot {
 		}
 
 
-		if (bestRetreatDir != null) {
-			goTo(bestRetreatDir);
-		}
-		goTo(Util.randomDirection());
+		if(!rc.hasMoved()) {
+            if (bestRetreatDir != null) {
+                goTo(bestRetreatDir);
+            }
+            goTo(Util.randomDirection());
+        }
 	}
 }

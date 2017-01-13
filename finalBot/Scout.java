@@ -13,8 +13,10 @@ public class Scout extends Bot {
 		nearbyAlliedRobots = rc.senseNearbyRobots(-1, us);
 	    TreeInfo[] nearbyTrees = rc.senseNearbyTrees(-1);
         tryToHarass(nearbyTrees);
-        dealWithNearbyTrees();
-        explore();
+        if(!rc.hasMoved()) {
+            dealWithNearbyTrees();
+            explore();
+        }
 
 	  // rc.setIndicatorDot(here,0,255,0);
 	   RobotInfo[] enemies = rc.senseNearbyRobots(-1,rc.getTeam().opponent());
@@ -56,11 +58,13 @@ public class Scout extends Bot {
         RobotInfo target = ( closesEnemyGardener!=null )? closesEnemyGardener:closesEnemyArchon;
         if(target!=null) {
             TreeInfo bestTree = Util.closestTree(nearbyTrees, target.location);
-            if (inGoodSpot(bestTree)) {
-                rc.setIndicatorDot(here,0,0,255);
-                harassFromTree(target);
-            } else{
-                goTo(bestTree.location);
+            if(bestTree != null) {
+                if (inGoodSpot(bestTree)) {
+                    rc.setIndicatorDot(here, 0, 0, 255);
+                    harassFromTree(target);
+                } else {
+                    goTo(bestTree.location);
+                }
             }
         }
     }
