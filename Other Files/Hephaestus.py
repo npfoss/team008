@@ -2,7 +2,7 @@ import commands
 import sys
 if __name__ == '__main__':
 
-	mapNames = ['shrine','Barrier','DenseForest','Enclosure','Hurdle','SparseForest', 'MagicWood']
+	mapNames = ['shrine','Barrier','DenseForest','Enclosure','Hurdle','SparseForest', 'MagicWood','LineOfFire']
 	teamA = sys.argv[1]
 	teamB = sys.argv[2]
 	gameStats = {'A': 0, 'B': 0} #index zero for team A index one for Team B
