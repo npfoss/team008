@@ -9,21 +9,21 @@ public class Lumberjack extends Bot {
 	}
 	
 	public void takeTurn() throws Exception{
-        RobotInfo[] nearbyEnemies = rc.senseNearbyRobots(99, enemy);
-        RobotInfo[] nearbyFriends = rc.senseNearbyRobots(99, us);
+        nearbyEnemyRobots = rc.senseNearbyRobots(-1, enemy);
+        nearbyAlliedRobots = rc.senseNearbyRobots(-1, us);
         // TreeInfo[] nearbyEnemyTrees = rc.senseNearbyTrees(99, enemy);
         // ^ this was put elsewhere because it might not need to happen if we doMicro
 
-        if(nearbyEnemies.length > 0) {
+        if(nearbyEnemyRobots.length > 0) {
         	//Let other robots know where you are!
         	if(rc.getRoundNum() % 25 == 0){
-				Util.notifyFriendsOfEnemies(nearbyEnemies);
+				Util.notifyFriendsOfEnemies(nearbyEnemyRobots);
 			}
             // Use strike() to hit all nearby robots!
-            doLumberjackMicro(nearbyFriends, nearbyEnemies);
+            doLumberjackMicro(nearbyAlliedRobots, nearbyEnemyRobots);
             if ( rc.canStrike() ){
                 TreeInfo[] nearbyEnemyTrees = rc.senseNearbyTrees(99, enemy);
-                cutDownTrees(nearbyNeutralTrees, nearbyEnemyTrees, nearbyFriends);
+                cutDownTrees(nearbyNeutralTrees, nearbyEnemyTrees, nearbyAlliedRobots);
             }
         } else {// don't need to worry about bullets, should always move safely
             TreeInfo[] nearbyEnemyTrees = rc.senseNearbyTrees(99, enemy);
@@ -51,7 +51,7 @@ public class Lumberjack extends Bot {
         		}
             }
             // chop best trees
-            cutDownTrees(nearbyNeutralTrees, nearbyEnemyTrees, nearbyFriends);
+            cutDownTrees(nearbyNeutralTrees, nearbyEnemyTrees, nearbyAlliedRobots);
 
 //            // No close robots, so search for robots within sight radius
 //            robots = rc.senseNearbyRobots(-1,enemy);
