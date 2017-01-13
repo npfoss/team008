@@ -108,6 +108,36 @@ public class Util extends Bot {
         }
         return closest;
     }
+    public static RobotInfo closestSpecificTypeOnTeam(RobotInfo[] robots, MapLocation toHere, RobotType type, Team team) {
+        RobotInfo closest = null;
+        float bestDist = 99999;
+        float dist;
+        for (int i = robots.length; i-- > 0;) {
+            if (robots[i].type == type && robots[i].getTeam() == team) {
+                dist = toHere.distanceTo(robots[i].location);
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    closest = robots[i];
+                }
+            }
+        }
+        return closest;
+    }
+    public static RobotInfo closestRobotOnTeam(RobotInfo[] robots, MapLocation toHere,Team team) {
+        RobotInfo closest = null;
+        float bestDist = 99999;
+        float dist;
+        for (int i = robots.length; i-- > 0;) {
+            if (robots[i].type == type) {
+                dist = toHere.distanceTo(robots[i].location);
+                if (dist < bestDist && robots[i].getTeam() == team) {
+                    bestDist = dist;
+                    closest = robots[i];
+                }
+            }
+        }
+        return closest;
+    }
 
     public static boolean containsBodiesTouchingRadius(BodyInfo[] robots, MapLocation toHere, float radius){
         for (BodyInfo bot : robots){
