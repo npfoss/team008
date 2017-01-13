@@ -1,6 +1,5 @@
 package team008.finalBot;
 import battlecode.common.*;
-import com.sun.xml.internal.ws.client.sei.ResponseBuilder;
 
 /**
  * Created by jmac on 1/10/17.
@@ -26,21 +25,24 @@ public class RangedCombat extends Bot {
         BodyInfo finalTarget = chooseTargetAndShotType();
         System.out.println("Picking First move" + shotValue);
 
+        //check if we have a worthwhile attack
         if(shotValue>70){
             System.out.println("shooting first");
             shootIfWorth(finalTarget,shotType);
         }
 
+        //move
         destinationDir = chooseMove();
         System.out.println("picked place to move"  + Clock.getBytecodeNum());
         if(destinationDir!=null) {
             if(movingSafely){
                 goTo(destinationDir);
             }else{
-                //make not safe moving thing
+                tryMoveDirectionDangerous(destinationDir);
             }
         }
 
+        //if we havent shot try again
         if(!rc.hasAttacked()) {
             finalTarget = chooseTargetAndShotType();
             shootIfWorth(finalTarget, shotType);
@@ -203,6 +205,7 @@ public class RangedCombat extends Bot {
         int score = 100;
         float howFarAwayTheyCanGet =  here.distanceTo(robot.location) / type.bulletSpeed * robot.type.strideRadius;
         score -= 8* howFarAwayTheyCanGet;
+        score += 2*nearbyEnemyRobots.length;
         return score;
     }
 
@@ -214,10 +217,10 @@ public class RangedCombat extends Bot {
      */
     private static String calculateShotType() throws GameActionException{
         //come up with some sort of formula for choosing the kind of shot
-        if(nearbyEnemyRobots.length>4){
+        if(nearbyEnemyRobots.length>5){
             return PENTAD_SHOT;
         }
-        if(nearbyEnemyRobots.length>2) {
+        if(nearbyEnemyRobots.length>3) {
             return TRIAD_SHOT;
         }
         return SINGLE_SHOT;
