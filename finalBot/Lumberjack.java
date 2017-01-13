@@ -9,11 +9,6 @@ public class Lumberjack extends Bot {
 	}
 	
 	public void takeTurn() throws Exception{
-        nearbyEnemyRobots = rc.senseNearbyRobots(-1, enemy);
-        nearbyAlliedRobots = rc.senseNearbyRobots(-1, us);
-        // TreeInfo[] nearbyEnemyTrees = rc.senseNearbyTrees(99, enemy);
-        // ^ this was put elsewhere because it might not need to happen if we doMicro
-
         if(nearbyEnemyRobots.length > 0) {
         	//Let other robots know where you are!
         	if(rc.getRoundNum() % 25 == 0){
@@ -22,12 +17,9 @@ public class Lumberjack extends Bot {
             // Use strike() to hit all nearby robots!
             doLumberjackMicro(nearbyAlliedRobots, nearbyEnemyRobots);
             if ( rc.canStrike() ){
-                TreeInfo[] nearbyEnemyTrees = rc.senseNearbyTrees(99, enemy);
-                cutDownTrees(nearbyNeutralTrees, nearbyEnemyTrees, nearbyAlliedRobots);
+                cutDownTrees();
             }
         } else {// don't need to worry about bullets, should always move safely
-            TreeInfo[] nearbyEnemyTrees = rc.senseNearbyTrees(99, enemy);
-
             // move to best tree-cutting location
             if (nearbyNeutralTrees.length + nearbyEnemyTrees.length > 0) {
                 optimizeLocForWoodcutting(nearbyNeutralTrees, nearbyEnemyTrees);
@@ -51,16 +43,16 @@ public class Lumberjack extends Bot {
         		}
             }
             // chop best trees
-            cutDownTrees(nearbyNeutralTrees, nearbyEnemyTrees, nearbyAlliedRobots);
+            cutDownTrees();
         }
 	}
 
-	public void cutDownTrees(TreeInfo[] nearbyNeutralTrees, TreeInfo[] nearbyEnemyTrees, RobotInfo[] nearbyAllies) throws Exception{
+	public void cutDownTrees() throws Exception{
         TreeInfo lowestStrengthNeutral = Util.leastHealthTouchingRadius(nearbyNeutralTrees, rc.getLocation(), RobotType.LUMBERJACK.bodyRadius + GameConstants.LUMBERJACK_STRIKE_RADIUS);
         if (lowestStrengthNeutral != null && lowestStrengthNeutral.getHealth() <= GameConstants.LUMBERJACK_CHOP_DAMAGE) {
             // definitely prioritize, might have goodies
             rc.chop(lowestStrengthNeutral.getID());
-                //rc.setIndicatorLine(rc.getLocation(), lowestStrengthNeutral.getLocation(),0, 255, 0);
+            //rc.setIndicatorLine(rc.getLocation(), lowestStrengthNeutral.getLocation(),0, 255, 0);
             return;
         }
         // otherwise, consider other options...
@@ -75,7 +67,7 @@ public class Lumberjack extends Bot {
             // seems optimal to take out enemy trees when possible, but if low enough to strike then maybe do that
             rc.chop(lowestStrengthEnemy.getID());
             //rc.setIndicatorLine(rc.getLocation(), lowestStrengthEnemy.getLocation(),0, 255, 0);
-        } else if (Util.containsBodiesTouchingRadius(nearbyAllies, rc.getLocation(), RobotType.LUMBERJACK.bodyRadius + GameConstants.LUMBERJACK_STRIKE_RADIUS)){
+        } else if (Util.containsBodiesTouchingRadius(nearbyAlliedRobots, rc.getLocation(), RobotType.LUMBERJACK.bodyRadius + GameConstants.LUMBERJACK_STRIKE_RADIUS)){
             // not safe to strike, would hit friends
             if (lowestStrengthEnemy != null) {
                 rc.chop(lowestStrengthEnemy.getID());
@@ -107,8 +99,9 @@ public class Lumberjack extends Bot {
     }
 
     public void optimizeLocForWoodcutting(TreeInfo[] nearbyNeutralTrees, TreeInfo[] nearbyEnemyTrees) throws Exception{
-	    // ONLY CALLED WHEN there are actually tress nearby
+	    // ONLY CALL WHEN there are actually tress nearby
 
+        // TODO: actually optimize
         // for now just move towards the closest tree
         TreeInfo[] targets;
         if (nearbyEnemyTrees.length > 0) {
@@ -117,8 +110,6 @@ public class Lumberjack extends Bot {
             targets = nearbyNeutralTrees;
         }
         goTo(Util.closestBody(targets, rc.getLocation()).getLocation());
-
-        // TODO: actually optimize
     }
 
 	public void doLumberjackMicro(RobotInfo[] nearbyFriends, RobotInfo[] nearbyEnemies) throws Exception{
@@ -149,5 +140,6 @@ public class Lumberjack extends Bot {
     public int evaluateLocation(MapLocation loc){
 	    // 'scores' the location in terms of possible damage accrued (bullets and otherwise), dealable damage to teammates and enemies
 
+        return 0;
     }
 }
