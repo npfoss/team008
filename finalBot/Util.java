@@ -1,5 +1,4 @@
 package team008.finalBot;
-
 import battlecode.common.*;
 
 public class Util extends Bot {
@@ -197,9 +196,9 @@ public class Util extends Bot {
 
     public static TreeInfo leastHealthTouchingRadius(TreeInfo[] trees, MapLocation toHere, float radius) {
         TreeInfo ret = null;
-        double minHealth = 1e99;
+        double minHealth = 999999;
         for (TreeInfo tree : trees){
-            if (tree.health < minHealth && toHere.distanceTo(tree.getLocation()) <= radius + tree.getRadius()) {
+            if (tree.health < minHealth && toHere.distanceTo(tree.getLocation()) < radius + tree.getRadius()) {
                 minHealth = tree.health;
                 ret = tree;
             }
@@ -217,19 +216,6 @@ public class Util extends Bot {
             }
         }
         return bestTree;
-    }
-
-    ///--------- UNUSED METHODS FROM LAST YEAR--------///
-
-    public static BodyInfo[] combineTwoRIArrays( BodyInfo[] array1, BodyInfo[] array2){
-    	BodyInfo[] combo = new BodyInfo[array1.length + array2.length];
-        for (int i = 0; i < array1.length; i++){
-            combo[i] = array1[i];
-        }
-        for (int i = 0; i < array2.length; i++){
-            combo[i + array1.length] = array2[i];
-        }
-        return combo;
     }
     
     public static TreeInfo[] combineTwoTIArrays( TreeInfo[] array1, TreeInfo[] array2){
@@ -252,6 +238,34 @@ public class Util extends Bot {
             yavg += loc.y;
         }
         return new MapLocation(xavg/robots.length,yavg/robots.length);
+    }
+
+    public static float radians(int degrees){
+        return degrees / (float)Math.PI / 180;
+    }
+
+    ///--------- UNUSED METHODS FROM LAST YEAR--------///
+
+    public static BodyInfo[] combineTwoRIArrays( BodyInfo[] array1, BodyInfo[] array2){
+        BodyInfo[] combo = new BodyInfo[array1.length + array2.length];
+        for (int i = 0; i < array1.length; i++){
+            combo[i] = array1[i];
+        }
+        for (int i = 0; i < array2.length; i++){
+            combo[i + array1.length] = array2[i];
+        }
+        return combo;
+    }
+
+    public static RobotInfo[] combineTwoRIArrays( RobotInfo[] array1, RobotInfo[] array2) {
+        RobotInfo[] combo = new RobotInfo[array1.length + array2.length];
+        for (int i = 0; i < array1.length; i++) {
+            combo[i] = array1[i];
+        }
+        for (int i = 0; i < array2.length; i++) {
+            combo[i + array1.length] = array2[i];
+        }
+        return combo;
     }
 
     public static boolean containsMapLocation(MapLocation[] locs, MapLocation location, int size) {

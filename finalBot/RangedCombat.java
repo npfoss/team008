@@ -59,10 +59,6 @@ public class RangedCombat extends Bot {
 
     /**
      * Decides what direction to move in.
-     * @param robotsInSight
-     * @param bulletsInSight
-     * @param treesInSight
-     * @param alliesICanSee
      * @return The direction to try and move in.
      * @throws GameActionException
      */
@@ -116,7 +112,6 @@ public class RangedCombat extends Bot {
     /**
      * finds the number of allies that can also see this loc.
      * @param loc place to check if they can see
-     * @param allies all the allies we can see
      * @return number of allies who can see the loc
      */
     public static int numOtherAlliesInSightRange(MapLocation loc) {
@@ -134,10 +129,6 @@ public class RangedCombat extends Bot {
 
     /**
      * Picks the target
-     * @param robotsInSight
-     * @param treesInSight
-     * @param alliesNextToMe
-     * @param alliesICanSee
      * @return
      * @throws GameActionException
      */
@@ -170,15 +161,12 @@ public class RangedCombat extends Bot {
 //                    }
 //                }
 //            }
-
-
         shotType = calculateShotType(bestRobot);
         return ( bestRobot!= null ) ? bestRobot:bestTree;
     }
 
     /**
      * Picks whether to shot 1,3 or 5 bullets.
-     * @param robotsInSight
      * @return the shot type
      * @throws GameActionException
      */
@@ -214,7 +202,6 @@ public class RangedCombat extends Bot {
     /**
      * Determines if shooting at a target will cause friendly fire.
      * @param target
-     * @param alliesICouldHit
      * @return true if it could also hit a friend
      * @throws GameActionException
      */

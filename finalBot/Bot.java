@@ -1,4 +1,5 @@
 package team008.finalBot;
+import java.util.Map;
 import java.util.Random;
 import battlecode.common.*;
 
@@ -261,6 +262,57 @@ public class Bot {
 		}
 		goTo(dirIAmMoving);
 	}
+
+    /**
+     * This takes into account only hypothetical damage to this spot.
+     * @param loc
+     */
+	public  static int hypotheticalDamageToSpot(MapLocation loc){
+        int damageToSpot = 0;
+        for(RobotInfo robot: nearbyEnemyRobots){
+            if(robot.type != RobotType.LUMBERJACK) {
+                if (couldHitLocNextTurn(loc, robot)) {
+                    damageToSpot += robot.getType().attackPower;
+                }
+            } else if(couldLumberJackHitLoc(loc, robot)) {
+                damageToSpot+= robot.getType().attackPower;
+            }
+        }
+
+        return damageToSpot;
+
+    }
+
+    /**
+     * Checks if hypothetically a lumberjack could hit this spot next turn.
+     * @param loc
+     * @param robot
+     * @return true if a lumberjack could hit this spot next turn
+     */
+    private static boolean couldLumberJackHitLoc(MapLocation loc, RobotInfo robot){
+        return (loc.distanceTo(robot.location) < RobotType.LUMBERJACK.bodyRadius
+                        + RobotType.LUMBERJACK.strideRadius
+                        + 1  //lumber jack swing radius
+                        + rc.getType().bodyRadius);
+    }
+
+    /**
+     * Checks if after a move and shot the bullet could hit the loc.
+     * @param loc
+     * @param robot
+     * @return True if it could hit us
+     */
+    private static boolean couldHitLocNextTurn(MapLocation loc, RobotInfo robot){
+        if(robot.type == RobotType.ARCHON || robot.type == RobotType.GARDENER){
+            return false;
+        }
+        return (loc.distanceTo(robot.location)
+                - robot.type.strideRadius
+                - robot.type.bulletSpeed
+                - robot.type.bodyRadius
+                <= rc.getType().bodyRadius);
+    }
+
 	private static boolean willCollide(BulletInfo bullet, MapLocation loc) {
         // TODO: check if bullet will hit something else first
         // Get relevant bullet information
