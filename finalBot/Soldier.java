@@ -4,7 +4,7 @@ import battlecode.common.*;
 
 public class Soldier extends Bot {
 
-    public Soldier(RobotController r){
+    public Soldier(RobotController r) throws GameActionException{
         super(r);
         //anything else soldier specific
     }
@@ -15,7 +15,7 @@ public class Soldier extends Bot {
 //		}
 		RobotInfo[] enemies = rc.senseNearbyRobots(-1,enemy);
 		if(enemies.length > 0){
-			if(rc.getRoundNum() % 25 == 0){
+			if(rc.getRoundNum() % 35 == 0){
 				Util.notifyFriendsOfEnemies(enemies);
 			}
 			RangedCombat.execute();

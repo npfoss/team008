@@ -3,14 +3,14 @@ import battlecode.common.*;
 
 public class Tank extends Bot {
 
-	public Tank(RobotController r){
+	public Tank(RobotController r) throws GameActionException{
 		super(r);
 	}
 
 	public void takeTurn() throws Exception{
 		RobotInfo[] enemies = rc.senseNearbyRobots(-1,enemy);
 		if(enemies.length > 0){
-			if(rc.getRoundNum() % 25 == 0){
+			if(rc.getRoundNum() % 35 == 0){
 				Util.notifyFriendsOfEnemies(enemies);
 			}
 			RangedCombat.execute();
