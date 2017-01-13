@@ -177,7 +177,7 @@ public class Bot {
 			rc.move(dir, type.strideRadius);
 		}
 		else{
-			dir= dir.rotateLeftDegrees(20 * (minIndex-37));
+			dir= dir.rotateLeftDegrees(20 * (minIndex-19));
 			rc.move(dir, type.strideRadius/2);
 		}
 	}
@@ -232,6 +232,7 @@ public class Bot {
 		if(!isBugging || 1==1){
 			if(here.distanceTo(dest) < type.strideRadius && rc.canMove(here.directionTo(dest),here.distanceTo(dest))){
 				rc.move(here.directionTo(dest), here.distanceTo(dest));
+				here = rc.getLocation();
 				return;
 			}
 			if(tryMoveDirection(here.directionTo(dest))){
