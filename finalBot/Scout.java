@@ -9,7 +9,7 @@ public class Scout extends Bot {
 	public Scout(RobotController r) throws GameActionException{
 		super(r);
 	}
-	
+
 	public void takeTurn() throws Exception{
 		if(closestInitLocation == null){
 			MapLocation[] initLocations = rc.getInitialArchonLocations(enemy);
@@ -84,7 +84,7 @@ public class Scout extends Bot {
             }
             MapLocation outerEdge = bestTree.location.add(bestTree.location.directionTo(target.location),bestTree.radius);
             MapLocation targetLoc = outerEdge.add(outerEdge.directionTo(bestTree.location), (float)(1.01));
-            if (inGoodSpot(targetLoc, target)) {
+            if (inGoodSpot(targetLoc)) {
                 //rc.setIndicatorDot(here,0,0,255);
                 harassFromTree(target);
             } else{
@@ -99,11 +99,11 @@ public class Scout extends Bot {
 
     /**
      * Checks how close we are to our target tree
-     * @param closestTreeToEnemy the tree we want to be close to
+     * @param targetLoc the tree we want to be close to
      * @return
      * @throws GameActionException 
      */
-    private static boolean inGoodSpot(MapLocation targetLoc, RobotInfo target) throws GameActionException{
+    private static boolean inGoodSpot(MapLocation targetLoc) throws GameActionException{
         return targetLoc.distanceTo(here) < 0.01;
     }
 

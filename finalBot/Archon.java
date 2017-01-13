@@ -107,7 +107,7 @@ public class Archon extends Bot {
 
 	}
 
-	public void runAway(RobotInfo[] enemies, RobotInfo[] allies) throws GameActionException {
+	public void runAway(RobotInfo[] enemies) throws GameActionException{
 		Direction bestRetreatDir = null;
 		double bestValue = -10000;
 		int count = 0;
@@ -131,9 +131,12 @@ public class Archon extends Bot {
 
 		}
 
-		if (bestRetreatDir != null) {
-			goTo(bestRetreatDir);
-		}
-		goTo(Util.randomDirection());
+		if(!rc.hasMoved()) {
+            if (bestRetreatDir != null) {
+                goTo(bestRetreatDir);
+            }
+            goTo(Util.randomDirection());
+        }
+
 	}
 }

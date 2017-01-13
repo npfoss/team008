@@ -1,6 +1,6 @@
 package team008.finalBot;
-import java.util.Map;
 import java.util.Random;
+
 import battlecode.common.*;
 
 public class Bot {
@@ -220,6 +220,9 @@ public class Bot {
 	}
 	public static void goTo(MapLocation theDest) throws GameActionException {
 		//for now
+		if(theDest == null){
+			tryMoveDirection(here.directionTo(MapAnalysis.center));
+		}
 		if (dest != null && dest.distanceTo(theDest) < .001){
 			//continue bugging
 		}
@@ -244,8 +247,6 @@ public class Bot {
 				return;
 			}
 		}
-		
-		
 	}
 	public static void explore() throws GameActionException{
 
@@ -264,11 +265,49 @@ public class Bot {
 		goTo(dirIAmMoving);
 	}
 
-    /**
+    ///////////////////////////////Dangerous Nav///////////////////////////////
+    public static boolean tryMoveDirectionDangerous(Direction dir) throws GameActionException{
+
+        if(tryMove(dir,type.strideRadius)){
+            return true;
+        }
+        Direction left = dir.rotateLeftDegrees(10);
+        Direction right = dir.rotateRightDegrees(10);
+        for (int i =0; i < 17; i++){
+            if(tryMoveDangerous(left,type.strideRadius)){
+                return true;
+            }
+            if(tryMoveDangerous(right,type.strideRadius)){
+                return true;
+            }
+            left = left.rotateLeftDegrees(10);
+            right = right.rotateRightDegrees(10);
+        }
+        if(dangerRating(here) > 0){
+            //oh shiz we under attack
+            return true;
+        }
+        return false;
+    }
+    private static boolean tryMoveDangerous(Direction dir, float dist) throws GameActionException{
+        if (rc.canMove(dir, dist)){
+            rc.move(dir,dist);
+            here = rc.getLocation();
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+
+    /////////////////// Danger Calculation Tools/////////////
+     /**
      * This takes into account only hypothetical damage to this spot.
      * @param loc
      */
-	public  static int hypotheticalDamageToSpot(MapLocation loc){
+    public  static int hypotheticalDamageToSpot(MapLocation loc){
+
         int damageToSpot = 0;
         for(RobotInfo robot: nearbyEnemyRobots){
             if(robot.type != RobotType.LUMBERJACK) {
@@ -292,9 +331,10 @@ public class Bot {
      */
     private static boolean couldLumberJackHitLoc(MapLocation loc, RobotInfo robot){
         return (loc.distanceTo(robot.location) < RobotType.LUMBERJACK.bodyRadius
-                        + RobotType.LUMBERJACK.strideRadius
-                        + 1  //lumber jack swing radius
-                        + rc.getType().bodyRadius);
+                + RobotType.LUMBERJACK.strideRadius
+                + 1  //lumber jack swing radius
+                + rc.getType().bodyRadius);
+
     }
 
     /**
@@ -314,7 +354,34 @@ public class Bot {
                 <= rc.getType().bodyRadius);
     }
 
-	private static boolean willCollide(BulletInfo bullet, MapLocation loc) {
+
+
+    public static int knownDamageToLoc(MapLocation loc){
+        int damage = 0;
+        for(BulletInfo bullet: nearbyBullets){
+            if(bulletWillHitLoc(loc, bullet)){
+                damage+=bullet.damage;
+            }
+        }
+
+        for(RobotInfo robot: nearbyEnemyRobots){
+            if(isLumberJackAndCanHitMe(loc, robot)){
+                damage+=robot.type.attackPower;
+            }
+        }
+        return damage;
+    }
+
+    private static boolean isLumberJackAndCanHitMe(MapLocation loc, RobotInfo robot) {
+        return robot.type == RobotType.LUMBERJACK && loc.distanceTo(robot.location)<1;
+    }
+
+    private static boolean bulletWillHitLoc(MapLocation loc, BulletInfo bullet) {
+        return bullet.location.add(bullet.dir,bullet.speed).distanceTo(loc)<type.bodyRadius;
+    }
+
+    private static boolean willCollide(BulletInfo bullet, MapLocation loc) {
+
         // TODO: check if bullet will hit something else first
         // Get relevant bullet information
         Direction propagationDirection = bullet.dir;

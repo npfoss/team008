@@ -10,6 +10,7 @@ public class Soldier extends Bot {
     }
     
 	public void takeTurn() throws Exception{
+
 //		if(target != null){
 //			rc.setIndicatorDot(target, 255, 0, 0);
 //		}
@@ -24,7 +25,7 @@ public class Soldier extends Bot {
 		if(target == null){
 			assignNewTarget();
 		}
-		else if (target != null && rc.getLocation().distanceTo(target) < 2 && enemies.length == 0){
+		else if (target != null && rc.getLocation().distanceTo(target) < 2 && nearbyEnemyRobots.length == 0){
 			Messaging.removeEnemyArmyLocation(target);
 			Messaging.removeEnemyUnitLocation(target);
 			target = null;
