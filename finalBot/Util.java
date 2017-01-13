@@ -198,7 +198,7 @@ public class Util extends Bot {
         TreeInfo ret = null;
         double minHealth = 999999;
         for (TreeInfo tree : trees){
-            if (tree.health < minHealth && toHere.distanceTo(tree.getLocation()) <= radius + tree.getRadius()) {
+            if (tree.health < minHealth && toHere.distanceTo(tree.getLocation()) < radius + tree.getRadius()) {
                 minHealth = tree.health;
                 ret = tree;
             }
