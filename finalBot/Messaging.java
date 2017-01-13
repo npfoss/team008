@@ -40,7 +40,7 @@ public class Messaging extends Bot{
 			if(code == 0)
 				continue;
 			MapLocation decoded = new MapLocation((float)((code/6000)/10.0),(float)((code % 6000)/10.0));
-			if(decoded != null && loc.distanceTo(decoded) < 7){
+			if(decoded != null && loc.distanceTo(decoded) < 10){
 				return true;
 			}
 		}

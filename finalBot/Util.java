@@ -231,6 +231,17 @@ public class Util extends Bot {
         }
         return combo;
     }
+    
+    public static TreeInfo[] combineTwoTIArrays( TreeInfo[] array1, TreeInfo[] array2){
+        TreeInfo[] combo = new TreeInfo[array1.length + array2.length];
+        for (int i = 0; i < array1.length; i++){
+            combo[i] = array1[i];
+        }
+        for (int i = 0; i < array2.length; i++){
+            combo[i + array1.length] = array2[i];
+        }
+        return combo;
+    }
 
     public static MapLocation centroidOfUnits(RobotInfo[] robots){
         float xavg = 0, yavg = 0;
