@@ -51,7 +51,7 @@ public class Lumberjack extends Bot {
 	}
 
 	public void cutDownTrees() throws Exception{
-        TreeInfo lowestStrengthNeutral = Util.leastHealthTouchingRadius(nearbyNeutralTrees, rc.getLocation(), RobotType.LUMBERJACK.bodyRadius + GameConstants.LUMBERJACK_STRIKE_RADIUS);
+        TreeInfo lowestStrengthNeutral = Util.leastHealthTouchingRadius(nearbyNeutralTrees, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS);
         if (lowestStrengthNeutral != null && lowestStrengthNeutral.getHealth() <= GameConstants.LUMBERJACK_CHOP_DAMAGE) {
             // definitely prioritize, might have goodies
             rc.setIndicatorLine(rc.getLocation(), lowestStrengthNeutral.getLocation(),0, 255, 0);
@@ -59,7 +59,7 @@ public class Lumberjack extends Bot {
             return;
         }
         // otherwise, consider other options...
-        TreeInfo lowestStrengthEnemy = Util.leastHealthTouchingRadius(nearbyEnemyTrees, rc.getLocation(), RobotType.LUMBERJACK.bodyRadius + GameConstants.LUMBERJACK_STRIKE_RADIUS);
+        TreeInfo lowestStrengthEnemy = Util.leastHealthTouchingRadius(nearbyEnemyTrees, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS);
         //just in case...
         if (lowestStrengthNeutral == null && lowestStrengthEnemy == null){
             System.out.println("phew, just saved us from an error");
@@ -70,7 +70,7 @@ public class Lumberjack extends Bot {
             // seems optimal to take out enemy trees when possible, but if low enough to strike then maybe do that
             rc.setIndicatorLine(rc.getLocation(), lowestStrengthEnemy.getLocation(),0, 255, 0);
             rc.chop(lowestStrengthEnemy.getID());
-        } else if (Util.containsBodiesTouchingRadius(nearbyAlliedRobots, rc.getLocation(), RobotType.LUMBERJACK.bodyRadius + GameConstants.LUMBERJACK_STRIKE_RADIUS)){
+        } else if (Util.containsBodiesTouchingRadius(nearbyAlliedRobots, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS)){
             // not safe to strike, would hit friends
             if (lowestStrengthEnemy != null) {
                 rc.setIndicatorLine(rc.getLocation(), lowestStrengthEnemy.getLocation(),0, 255, 0);
@@ -82,8 +82,8 @@ public class Lumberjack extends Bot {
         } else {
             // could strike, is it a good idea?
             // if striking does more total damage
-            if ((Util.numBodiesTouchingRadius(nearbyNeutralTrees, rc.getLocation(), RobotType.LUMBERJACK.bodyRadius + GameConstants.LUMBERJACK_STRIKE_RADIUS) +
-                    Util.numBodiesTouchingRadius(nearbyEnemyTrees, rc.getLocation(), RobotType.LUMBERJACK.bodyRadius + GameConstants.LUMBERJACK_STRIKE_RADIUS))
+            if ((Util.numBodiesTouchingRadius(nearbyNeutralTrees, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS) +
+                    Util.numBodiesTouchingRadius(nearbyEnemyTrees, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS))
                     * RobotType.LUMBERJACK.attackPower > GameConstants.LUMBERJACK_CHOP_DAMAGE) {
                 rc.strike();
                 rc.setIndicatorDot(rc.getLocation(), 0, 255, 0);
@@ -142,8 +142,8 @@ public class Lumberjack extends Bot {
 
         /// ----- OLD MICRO -----
         // strike only if it does more damage to the enemy team than us
-        if (Util.numBodiesTouchingRadius(nearbyEnemies, rc.getLocation(), RobotType.LUMBERJACK.bodyRadius + GameConstants.LUMBERJACK_STRIKE_RADIUS)
-                > Util.numBodiesTouchingRadius(nearbyFriends, rc.getLocation(), RobotType.LUMBERJACK.bodyRadius + GameConstants.LUMBERJACK_STRIKE_RADIUS)){
+        if (Util.numBodiesTouchingRadius(nearbyEnemies, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS)
+                > Util.numBodiesTouchingRadius(nearbyFriends, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS)){
             rc.strike();
         }
 
@@ -151,8 +151,8 @@ public class Lumberjack extends Bot {
         goTo(Util.closestBody(nearbyEnemies, rc.getLocation()).getLocation());
 
         // check again if we can strike
-        if (rc.canStrike() && Util.numBodiesTouchingRadius(nearbyEnemies, rc.getLocation(), RobotType.LUMBERJACK.bodyRadius + GameConstants.LUMBERJACK_STRIKE_RADIUS)
-                > Util.numBodiesTouchingRadius(nearbyFriends, rc.getLocation(), RobotType.LUMBERJACK.bodyRadius + GameConstants.LUMBERJACK_STRIKE_RADIUS)){
+        if (rc.canStrike() && Util.numBodiesTouchingRadius(nearbyEnemies, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS)
+                > Util.numBodiesTouchingRadius(nearbyFriends, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS)){
             rc.strike();
         }//*/
     }
