@@ -50,7 +50,7 @@ public class Bot {
             	nearbyEnemyTrees = rc.senseNearbyTrees(-1,enemy);
             	nearbyAlliedTrees = rc.senseNearbyTrees(-1, us);
             	nearbyBullets = rc.senseNearbyBullets();
-            	nearbyRobots = rc.senseNearbyRobots();
+            	nearbyRobots = rc.senseNearbyRobots(-1);
         		nearbyAlliedRobots = rc.senseNearbyRobots(-1, us);
         		nearbyEnemyRobots = rc.senseNearbyRobots(-1,enemy);
         		MapAnalysis.possiblyMakeDecisions();

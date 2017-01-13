@@ -159,7 +159,7 @@ public class MapAnalysis extends Bot {
 				guessMapSize();
 				float TreesNearMe = 0;
 				for (TreeInfo tree : nearbyNeutralTrees) {
-					TreesNearMe += 10 - tree.location.distanceTo(here);
+					TreesNearMe ++;
 				}
 				float conflictDist = 999;
 				for (MapLocation ourLoc : initialAlliedArchonLocations) {
@@ -170,9 +170,9 @@ public class MapAnalysis extends Bot {
 						}
 					}
 				}
-				if (conflictDist < 20) {
+				if (conflictDist < 4) {
 					rc.broadcast(11, 2);
-				} else if (TreesNearMe > 50) {
+				} else if (TreesNearMe > 20) {
 					rc.broadcast(11, 3);
 				} else {
 					rc.broadcast(11, 4);
@@ -190,12 +190,12 @@ public class MapAnalysis extends Bot {
 				if (numScout == 0) {
 					rc.broadcast(15, 1);
 					rc.broadcast(14, 3);
-				} else if (numLumberjack < ((numGardener < 6) ? 2 : 20)) {
+				} else if (numLumberjack < ((rc.getTeamBullets() < 200 && numGardener < 6) ? ((rc.readBroadcast(11) == 3) ? 5:1) : 10)) {
 					rc.broadcast(14, 4);
-					rc.broadcast(15, ((numGardener < 6) ? 2 : 20) - numLumberjack);
-				} else if (numSoldier < ((numGardener < 6) ? 2 : 50)) {
+					rc.broadcast(15, ((rc.getTeamBullets() < 200 && numGardener < 6) ? ((rc.readBroadcast(11) == 3) ? 5:1) : 20) - numLumberjack);
+				} else if (numSoldier < ((rc.getTeamBullets() < 200 && numGardener < 6) ? ((rc.readBroadcast(11) == 2) ? 5:1): 50)) {
 					rc.broadcast(14, 1);
-					rc.broadcast(15, (numGardener < 6) ? 2 : 50);
+					rc.broadcast(15, (rc.getTeamBullets() < 200 && numGardener < 6) ? ((rc.readBroadcast(11) == 2) ? 5:1) : 50);
 				} else {
 					rc.broadcast(13, 2);
 					rc.broadcast(14, 5);

@@ -66,47 +66,49 @@ public class Gardener extends Bot {
 				}
 			}
 		}
-		if (plantATree()) {
-			return;
-		} else {
-			if (numToBuild > 0) {
-				System.out.println("I must build Unit Type:" + typeToBuild + ":" + numToBuild);
-				switch (typeToBuild) {
-				case 0:
-					break;
-				case 1:
-					if (buildRobot(RobotType.SOLDIER)) {
-						rc.broadcast(15, numToBuild - 1);
-						return;
-					}
-					break;
-				case 2:
-					if (buildRobot(RobotType.TANK)) {
-						rc.broadcast(15, numToBuild - 1);
-						return;
-					}
-					break;
-				case 3:
-					if (buildRobot(RobotType.SCOUT)) {
-						rc.broadcast(15, numToBuild - 1);
-						return;
-					}
-					break;
-				case 4:
-					if (buildRobot(RobotType.LUMBERJACK)) {
-						rc.broadcast(15, numToBuild - 1);
-						return;
-					}
-					break;
-				case 5:
-					break;
+		if (strategy != 3) {
+			if (plantATree())
+				return;
+		}
+		if (numToBuild > 0) {
+			System.out.println("I must build Unit Type:" + typeToBuild + ":" + numToBuild);
+			switch (typeToBuild) {
+			case 0:
+				break;
+			case 1:
+				if (buildRobot(RobotType.SOLDIER)) {
+					rc.broadcast(15, numToBuild - 1);
+					return;
 				}
+				break;
+			case 2:
+				if (buildRobot(RobotType.TANK)) {
+					rc.broadcast(15, numToBuild - 1);
+					return;
+				}
+				break;
+			case 3:
+				if (buildRobot(RobotType.SCOUT)) {
+					rc.broadcast(15, numToBuild - 1);
+					return;
+				}
+				break;
+			case 4:
+				if (buildRobot(RobotType.LUMBERJACK)) {
+					rc.broadcast(15, numToBuild - 1);
+					return;
+				}
+				break;
+			case 5:
+				break;
 			}
+		} else {
+			plantATree();
 		}
 	}
 
 	public boolean buildRobot(RobotType type) throws GameActionException {
-		if(rc.getTeamBullets() < type.bulletCost)
+		if (rc.getTeamBullets() < type.bulletCost)
 			return false;
 		Direction dir = here.directionTo(MapAnalysis.center);
 		for (int i = 36; i-- > 0;) {
