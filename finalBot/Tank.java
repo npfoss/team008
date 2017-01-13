@@ -7,7 +7,7 @@ public class Tank extends Bot {
 		super(r);
 	}
 
-	public void takeTurn(TreeInfo[] nearbyNeutralTrees) throws Exception{
+	public void takeTurn() throws Exception{
 		RobotInfo[] enemies = rc.senseNearbyRobots(-1,enemy);
 		if(enemies.length > 0){
 			if(rc.getRoundNum() % 25 == 0){
@@ -29,7 +29,7 @@ public class Tank extends Bot {
 			goTo(target);
 		}
 		else{
-			tryMoveDirection(here.directionTo(Util.rc.getInitialArchonLocations(enemy)[0]));
+			goTo(here.directionTo(Util.rc.getInitialArchonLocations(enemy)[0]));
 		}
 	}
 }

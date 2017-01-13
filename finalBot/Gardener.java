@@ -13,7 +13,7 @@ public class Gardener extends Bot {
 		//anything else gardener specific
 	}
 	
-	public void takeTurn(TreeInfo[] nearbyNeutralTrees) throws GameActionException{
+	public void takeTurn() throws GameActionException{
 		//
 		RobotInfo[] enemyRobots = rc.senseNearbyRobots(-1, enemy);
 	    if(enemyRobots.length > 0){
@@ -68,7 +68,7 @@ public class Gardener extends Bot {
 //			}
 //		}
 	//	rc.setIndicatorDot(here, 0, 255, 0);
-		if(numScoutsBuilt < 1 && rc.getRoundNum() < 50){
+		if(numScoutsBuilt < 1 && rc.getRoundNum() < 50 ){
 			if(rc.getTeamBullets() > 80){
 				//rc.setIndicatorDot(here, 255, 0, 0);
 				numScoutsBuilt++;

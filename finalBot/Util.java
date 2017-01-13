@@ -10,7 +10,7 @@ public class Util extends Bot {
 	 */
 	
 	public static Direction randomDirection() {
-		return new Direction((float) Math.random() * 2 * (float) Math.PI);
+		return new Direction( myRand.nextFloat() * 2 * (float) Math.PI);
 	}
 
 	public static void notifyFriendsOfEnemies(RobotInfo[] enemies) throws GameActionException{
@@ -102,6 +102,36 @@ public class Util extends Bot {
             if (robots[i].type == type) {
                 dist = toHere.distanceTo(robots[i].location);
                 if (dist < bestDist) {
+                    bestDist = dist;
+                    closest = robots[i];
+                }
+            }
+        }
+        return closest;
+    }
+    public static RobotInfo closestSpecificTypeOnTeam(RobotInfo[] robots, MapLocation toHere, RobotType type, Team team) {
+        RobotInfo closest = null;
+        float bestDist = 99999;
+        float dist;
+        for (int i = robots.length; i-- > 0;) {
+            if (robots[i].type == type && robots[i].getTeam() == team) {
+                dist = toHere.distanceTo(robots[i].location);
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    closest = robots[i];
+                }
+            }
+        }
+        return closest;
+    }
+    public static RobotInfo closestRobotOnTeam(RobotInfo[] robots, MapLocation toHere,Team team) {
+        RobotInfo closest = null;
+        float bestDist = 99999;
+        float dist;
+        for (int i = robots.length; i-- > 0;) {
+            if (robots[i].type == type) {
+                dist = toHere.distanceTo(robots[i].location);
+                if (dist < bestDist && robots[i].getTeam() == team) {
                     bestDist = dist;
                     closest = robots[i];
                 }

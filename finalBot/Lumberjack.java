@@ -8,7 +8,7 @@ public class Lumberjack extends Bot {
 		//anything else lumberjack specific
 	}
 	
-	public void takeTurn(TreeInfo[] nearbyNeutralTrees) throws Exception{
+	public void takeTurn() throws Exception{
         RobotInfo[] nearbyEnemies = rc.senseNearbyRobots(99, enemy);
         RobotInfo[] nearbyFriends = rc.senseNearbyRobots(99, us);
         // TreeInfo[] nearbyEnemyTrees = rc.senseNearbyTrees(99, enemy);
@@ -47,7 +47,7 @@ public class Lumberjack extends Bot {
         			goTo(target);
         		}
         		else{
-        			tryMoveDirection(here.directionTo(Util.rc.getInitialArchonLocations(enemy)[0]));
+        			goTo(here.directionTo(Util.rc.getInitialArchonLocations(enemy)[0]));
         		}
             }
             // chop best trees
