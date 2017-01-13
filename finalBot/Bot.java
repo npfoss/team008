@@ -248,8 +248,43 @@ public class Bot {
 		goTo(dirIAmMoving);
 	}
 
+    ///////////////////////////////Dangerous Nav///////////////////////////////
+    public static boolean tryMoveDirectionDangerous(Direction dir) throws GameActionException{
 
-	/////////////////// Danger Calculation Tools/////////////
+        if(tryMove(dir,type.strideRadius)){
+            return true;
+        }
+        Direction left = dir.rotateLeftDegrees(10);
+        Direction right = dir.rotateRightDegrees(10);
+        for (int i =0; i < 17; i++){
+            if(tryMoveDangerous(left,type.strideRadius)){
+                return true;
+            }
+            if(tryMoveDangerous(right,type.strideRadius)){
+                return true;
+            }
+            left = left.rotateLeftDegrees(10);
+            right = right.rotateRightDegrees(10);
+        }
+        if(dangerRating(here) > 0){
+            //oh shiz we under attack
+            return true;
+        }
+        return false;
+    }
+    private static boolean tryMoveDangerous(Direction dir, float dist) throws GameActionException{
+        if (rc.canMove(dir, dist)){
+            rc.move(dir,dist);
+            here = rc.getLocation();
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+
+    /////////////////// Danger Calculation Tools/////////////
     /**
      * This takes into account only hypothetical damage to this spot.
      * @param loc

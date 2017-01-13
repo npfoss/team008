@@ -25,21 +25,24 @@ public class RangedCombat extends Bot {
         BodyInfo finalTarget = chooseTargetAndShotType();
         System.out.println("Picking First move" + shotValue);
 
+        //check if we have a worthwhile attack
         if(shotValue>70){
             System.out.println("shooting first");
             shootIfWorth(finalTarget,shotType);
         }
 
+        //move
         destinationDir = chooseMove();
         System.out.println("picked place to move"  + Clock.getBytecodeNum());
         if(destinationDir!=null) {
             if(movingSafely){
                 goTo(destinationDir);
             }else{
-                //make not safe moving thing
+                tryMoveDirectionDangerous(destinationDir);
             }
         }
 
+        //if we havent shot try again
         if(!rc.hasAttacked()) {
             finalTarget = chooseTargetAndShotType();
             shootIfWorth(finalTarget, shotType);
@@ -202,6 +205,7 @@ public class RangedCombat extends Bot {
         int score = 100;
         float howFarAwayTheyCanGet =  here.distanceTo(robot.location) / type.bulletSpeed * robot.type.strideRadius;
         score -= 8* howFarAwayTheyCanGet;
+        score += 2*nearbyEnemyRobots.length;
         return score;
     }
 
