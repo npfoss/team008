@@ -82,7 +82,7 @@ public class RangedCombat extends Bot {
     private static Direction pickOptimalDir(){
         Direction bestDir = null;
         int score;
-        int bestScore = hypotheticalDamageToSpot(here)+knownDamageToLoc(here);
+        int bestScore = hypotheticalDamageToSpot(here)+knownDamageToLoc(here)+numberOfUnitsWeBlock(here);
         Direction dir = new Direction(0);
         MapLocation potentialLoc;
 
@@ -91,7 +91,7 @@ public class RangedCombat extends Bot {
 
             potentialLoc = here.add(dir,rc.getType().strideRadius);
             score = hypotheticalDamageToSpot(potentialLoc) + knownDamageToLoc(potentialLoc);
-            score -= numberOfUnitsWeBlock(potentialLoc)/2;
+            score += numberOfUnitsWeBlock(potentialLoc);
             if(score < bestScore && rc.canMove(dir)){
                 bestScore = score;
                 bestDir = dir;
@@ -204,8 +204,8 @@ public class RangedCombat extends Bot {
     private static int canWeHitHeuristic(RobotInfo robot){
         int score = 100;
         float howFarAwayTheyCanGet =  here.distanceTo(robot.location) / type.bulletSpeed * robot.type.strideRadius;
-        score -= 8* howFarAwayTheyCanGet;
-        score += 2*nearbyEnemyRobots.length;
+        score -= 6* howFarAwayTheyCanGet;
+        score += 10*nearbyEnemyRobots.length;
         return score;
     }
 
@@ -217,7 +217,10 @@ public class RangedCombat extends Bot {
      */
     private static String calculateShotType(BodyInfo target) throws GameActionException{
         //come up with some sort of formula for choosing the kind of shot
-        float score  = nearbyEnemyRobots.length - here.distanceTo(target.getLocation());
+        float score =nearbyEnemyRobots.length;
+        if(target!=null) {
+            score -= here.distanceTo(target.getLocation());
+        }
         if(score>4){
             return PENTAD_SHOT;
         }
