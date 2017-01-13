@@ -211,8 +211,8 @@ public class Lumberjack extends Bot {
         // TODO: take into account other strategery like defending our trees/units, swarming or not, etc
 
         return KNOWN_DAMAGE_MOD * knownDamageToLoc(loc)
-                + HYPOTHETICAL_DAMAGE_MOD * hypotheticalDamageToSpot(loc);
-                //+ PROGRESS_MOD * ;
+                + HYPOTHETICAL_DAMAGE_MOD * hypotheticalDamageToSpot(loc)
+                + (target != null ? PROGRESS_MOD * here.distanceTo(target) - loc.distanceTo(target) : 0);
     }
 
     public float evalForAttacking(MapLocation loc){
