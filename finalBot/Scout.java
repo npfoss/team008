@@ -77,11 +77,13 @@ public class Scout extends Bot {
         RobotInfo target = closestEnemyGardener;
         if(target!=null) {
             TreeInfo bestTree = Util.closestTree(nearbyTrees, target.location);
+            if(bestTree == null || bestTree.location.distanceTo(target.location) > 7){
+            	System.out.println("here");
+            	RangedCombat.shootSingleShot(target);
+            	return true;
+            }
             MapLocation outerEdge = bestTree.location.add(bestTree.location.directionTo(target.location),bestTree.radius);
             MapLocation targetLoc = outerEdge.add(outerEdge.directionTo(bestTree.location), (float)(1.01));
-            if(bestTree.location.distanceTo(target.location) > 7){
-            	return false;
-            }
             if (inGoodSpot(targetLoc, target)) {
                 //rc.setIndicatorDot(here,0,0,255);
                 harassFromTree(target);
@@ -115,7 +117,7 @@ public class Scout extends Bot {
         if (closestTarget != null) {
             rc.setIndicatorLine(here,closestTarget.getLocation(),255,0,0);
             RangedCombat.shootSingleShot(closestTarget);
-            System.out.println("I shot");
+            //System.out.println("I shot");
         }
     }
 
