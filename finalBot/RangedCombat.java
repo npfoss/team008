@@ -92,6 +92,7 @@ public class RangedCombat extends Bot {
         while( count < 36 ) {
              potentialLoc = here.add(dir,rc.getType().strideRadius);
             score = hypotheticalDamageToSpot(potentialLoc) + knownDamageToLoc(potentialLoc);
+            score -= numberOfUnitsWeBlock(potentialLoc);
             if(score < bestScore){
                 bestScore = score;
                 bestDir = dir;
@@ -100,6 +101,24 @@ public class RangedCombat extends Bot {
         }
 
         return bestDir;
+    }
+
+    /**
+     * We want to avoid getting in the way of our other offensive units.
+     * @param loc the location to test
+     * @return the number of units we could be blocking
+     */
+    private static int numberOfUnitsWeBlock(MapLocation loc){
+        int num = 0;
+        for(RobotInfo robot: nearbyAlliedRobots){
+            if(robot.type == RobotType.TANK || robot.type == RobotType.SOLDIER){
+                num+=1;
+            }
+            if(robot.type == RobotType.LUMBERJACK && loc.distanceTo(robot.location) <= 1){
+                num+=1;
+            }
+        }
+        return num;
     }
 
     /**
