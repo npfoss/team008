@@ -320,7 +320,6 @@ public class Bot {
         }
 
         return damageToSpot;
-
     }
 
     /**
@@ -330,11 +329,9 @@ public class Bot {
      * @return true if a lumberjack could hit this spot next turn
      */
     private static boolean couldLumberJackHitLoc(MapLocation loc, RobotInfo robot){
-        return (loc.distanceTo(robot.location) < RobotType.LUMBERJACK.bodyRadius
+        return loc.distanceTo(robot.location) < RobotType.LUMBERJACK.bodyRadius
                 + RobotType.LUMBERJACK.strideRadius
-                + 1  //lumber jack swing radius
-                + rc.getType().bodyRadius);
-
+                + GameConstants.LUMBERJACK_STRIKE_RADIUS;
     }
 
     /**
@@ -353,8 +350,6 @@ public class Bot {
                 - robot.type.bodyRadius
                 <= rc.getType().bodyRadius);
     }
-
-
 
     public static int knownDamageToLoc(MapLocation loc){
         int damage = 0;

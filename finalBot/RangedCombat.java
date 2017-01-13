@@ -1,9 +1,6 @@
 package team008.finalBot;
 import battlecode.common.*;
 
-/**
- * Created by jmac on 1/10/17.
- */
 public class RangedCombat extends Bot {
 
     private static final String SINGLE_SHOT = "single shot";

@@ -4,11 +4,21 @@ import battlecode.common.*;
 
 public class Lumberjack extends Bot {
     public int WHEN_TO_STOP_MICRO;
+    public float MOVE_ATTACK_MOD;
+    public float TREE_DAMAGE_MOD;
+    public float KNOWN_DAMAGE_MOD;
+    public float HYPOTHETICAL_DAMAGE_MOD;
+    public float PROGRESS_MOD;
 
 	public Lumberjack(RobotController r) throws GameActionException{
 		super(r);
 		//anything else lumberjack specific
         WHEN_TO_STOP_MICRO = RobotType.LUMBERJACK.bytecodeLimit - 2000; //TODO: don't just guess
+        MOVE_ATTACK_MOD = .5f; // TODO: actually optimize
+        TREE_DAMAGE_MOD = .2f; // TODO: actually optimize
+        KNOWN_DAMAGE_MOD = -1;
+        HYPOTHETICAL_DAMAGE_MOD = -.8f; // TODO: actually optimize
+        PROGRESS_MOD = 1; // no idea what to make this TODO: don't just guess
 	}
 	
 	public void takeTurn() throws Exception{
@@ -18,7 +28,7 @@ public class Lumberjack extends Bot {
 				Util.notifyFriendsOfEnemies(nearbyEnemyRobots);
 			}
             // Use strike() to hit all nearby robots!
-            doLumberjackMicro(nearbyAlliedRobots, nearbyEnemyRobots);
+            doLumberjackMicro();
             if ( rc.canStrike() ){
                 cutDownTrees();
             }
@@ -26,27 +36,27 @@ public class Lumberjack extends Bot {
             // move to best tree-cutting location
             if (nearbyNeutralTrees.length + nearbyEnemyTrees.length > 0) {
                 optimizeLocForWoodcutting(nearbyNeutralTrees, nearbyEnemyTrees);
+                // chop best trees
+                cutDownTrees();
             } else { // no trees in sight
 
                 // TODO: move to where the scout tells us instead
-        		if(target == null){
-        			assignNewTarget();
-        		}
+                if(target == null){
+                    assignNewTarget();
+                }
         		else if (target != null && rc.getLocation().distanceTo(target) < 2){
-        			Messaging.removeEnemyArmyLocation(target);
-        			Messaging.removeEnemyUnitLocation(target);
-        			target = null;
-        			assignNewTarget();
-        		}
-        		if(target != null){
-        			goTo(target);
-        		}
+                    Messaging.removeEnemyArmyLocation(target);
+                    Messaging.removeEnemyUnitLocation(target);
+                    target = null;
+                    assignNewTarget();
+                }
+                if(target != null){
+                    goTo(target);
+                }
         		else{
-        			goTo(here.directionTo(Util.rc.getInitialArchonLocations(enemy)[0]));
-        		}
+                    goTo(here.directionTo(Util.rc.getInitialArchonLocations(enemy)[0]));
+                }
             }
-            // chop best trees
-            cutDownTrees();
         }
 	}
 
@@ -75,8 +85,8 @@ public class Lumberjack extends Bot {
             if (lowestStrengthEnemy != null) {
                 rc.setIndicatorLine(rc.getLocation(), lowestStrengthEnemy.getLocation(),0, 255, 0);
                 rc.chop(lowestStrengthEnemy.getID());
-                //rc.setIndicatorLine(rc.getLocation(), lowestStrengthEnemy.getLocation(),0, 255, 0);
             } else if(lowestStrengthNeutral!=null){
+                rc.setIndicatorLine(rc.getLocation(), lowestStrengthNeutral.getLocation(),0, 255, 0);
                 rc.chop(lowestStrengthNeutral.getID());
             }
         } else {
@@ -91,14 +101,11 @@ public class Lumberjack extends Bot {
                 if (lowestStrengthEnemy != null) {
                     rc.setIndicatorLine(rc.getLocation(), lowestStrengthEnemy.getLocation(),0, 255, 0);
                     rc.chop(lowestStrengthEnemy.getID());
-                    //rc.setIndicatorLine(rc.getLocation(), lowestStrengthEnemy.getLocation(),0, 255, 0);
                 } else if(lowestStrengthNeutral != null){
+                    rc.setIndicatorLine(rc.getLocation(), lowestStrengthNeutral.getLocation(),0, 255, 0);
                     rc.chop(lowestStrengthNeutral.getID());
                 }
             }
-        }
-        if(rc.canStrike()){
-            //System.out.println("uh oh, didn't chop");
         }
     }
 
@@ -116,31 +123,72 @@ public class Lumberjack extends Bot {
         goTo(Util.closestBody(targets, rc.getLocation()).getLocation());
     }
 
-	public void doLumberjackMicro(RobotInfo[] nearbyFriends, RobotInfo[] nearbyEnemies) throws Exception{
+	public void doLumberjackMicro() throws Exception{
 	    // gets called when there are enemies that can be seen
         // don't worry about chopping trees here, that's checked for after. only enemies
 
-        //rc.setIndicatorDot(rc.getLocation(), 255,0,0); //red dot == doing micro
-        // TODO: make this a lot more intelligent
+        // TODO: add kamikaze funciton: if about to die anyways, just go for best place to attack for final stand
 
-        /*float bestMoveScore = evaluateLocation(rc.getLocation());
-        float score;
-        MapLocation bestLoc = rc.getLocation();
-        float attackScoreHere = evalForAttacking(bestLoc);
-        int numLocsEvaled = 0;
+        float bestMoveScore = evaluateLocation(here);
+        MapLocation bestLoc = here;
+        float bestLocAttackScore = -999;
         MapLocation currLoc;
-        int startTheta = 0;
+        float score, attackScore;
+//        int startTheta = 0; // if we want to start at something nonzero then change the hardcoded zeroes below
         int currentTheta = 0;
+        int dtheta = 30; // must evenly divide 360
+        int numLocsEvaled = 0;
         float stridedist = RobotType.LUMBERJACK.strideRadius;
+
         int startBytecode = Clock.getBytecodeNum();
-        while (Clock.getBytecodeNum() + (1.0*Clock.getBytecodeNum() - startBytecode)/numLocsEvaled < WHEN_TO_STOP_MICRO){
-            currLoc = rc.getLocation().add(Util.radians(currentTheta), stridedist);
-            score = evaluateLocation(currLoc) +
-        }*/
+        while (Clock.getBytecodeNum() + (Clock.getBytecodeNum() - startBytecode)/(numLocsEvaled + .00001) < WHEN_TO_STOP_MICRO){
+            // stop when the average time it takes to eval puts us over the WHEN_TO_STOP_MICRO threshold
+            currLoc = here.add(Util.radians(currentTheta), stridedist);
+            if ( rc.canMove(currLoc)) {
+                attackScore = evalForAttacking(currLoc);
+                score = evaluateLocation(currLoc) + MOVE_ATTACK_MOD * attackScore;
+                if (score > bestMoveScore) {
+                    bestLoc = currLoc;
+                    bestLocAttackScore = attackScore;
+                    bestMoveScore = score;
+                }
+                numLocsEvaled += 1;
+            }
+
+            currentTheta += dtheta;
+            if (currentTheta == 0){
+                // tried every point around a circle, now try closer
+                // TODO: make the test points more evenly distributed inside (see circle-packing on wikipedia)
+                stridedist /= 2;
+                dtheta = 45; // it'll get more dense as it gets closer so adjust a little for that
+                if (stridedist < .25 ) { // probably silly to keep checking
+                    System.out.print("I've tried everything dammit");
+                    break;
+                }
+            }
+
+        }
+
+        float attackScoreHere = evalForAttacking(here);
+        if ( attackScoreHere > bestLocAttackScore && attackScoreHere > 0){
+            // attack first, then move
+            rc.setIndicatorDot(here, 255,0,0); //red dot == SMASH
+            rc.strike();
+            rc.move(bestLoc);
+
+        } else if (bestLocAttackScore > 0){
+            // move first, then attack
+            rc.move(bestLoc);
+            rc.setIndicatorDot(bestLoc, 255,0,0); //red dot == SMASH
+            rc.strike();
+        } else {
+            // just move
+            rc.move(bestLoc);
+        }
 
 
 
-        /// ----- OLD MICRO -----
+        /*// ----- OLD (bad) MICRO -----
         // strike only if it does more damage to the enemy team than us
         if (Util.numBodiesTouchingRadius(nearbyEnemies, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS)
                 > Util.numBodiesTouchingRadius(nearbyFriends, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS)){
@@ -157,10 +205,23 @@ public class Lumberjack extends Bot {
         }//*/
     }
 
-    public int evaluateLocation(MapLocation loc){
-	    // 'scores' the location in terms of possible damage accrued (bullets and otherwise)
-        //     and strategery, but NOT attacking damage
+    public float evaluateLocation(MapLocation loc){
+	    // 'scores' the location in terms of possible damage accrued (bullets and otherwise) and forward progress,
+        //     but NOT attacking damage
+        // TODO: take into account other strategery like defending our trees/units, swarming or not, etc
 
-        return 0;
+        return KNOWN_DAMAGE_MOD * knownDamageToLoc(loc)
+                + HYPOTHETICAL_DAMAGE_MOD * hypotheticalDamageToSpot(loc);
+                //+ PROGRESS_MOD * ;
+    }
+
+    public float evalForAttacking(MapLocation loc){
+        // how good it is to attack from this spot
+        // score <= 0 means it's better not to attack
+        float damageToThem = RobotType.LUMBERJACK.attackPower * Util.numBodiesTouchingRadius(nearbyEnemyRobots, loc, GameConstants.LUMBERJACK_STRIKE_RADIUS);
+        float damageToUs = RobotType.LUMBERJACK.attackPower * Util.numBodiesTouchingRadius(nearbyAlliedRobots, loc, GameConstants.LUMBERJACK_STRIKE_RADIUS);
+        float damageToEnemyTrees = RobotType.LUMBERJACK.attackPower * Util.numBodiesTouchingRadius(nearbyEnemyTrees, loc, GameConstants.LUMBERJACK_STRIKE_RADIUS);
+        float damageToAlliedTrees = RobotType.LUMBERJACK.attackPower * Util.numBodiesTouchingRadius(nearbyAlliedTrees, loc, GameConstants.LUMBERJACK_STRIKE_RADIUS);
+        return damageToUs - damageToThem + TREE_DAMAGE_MOD * (damageToEnemyTrees - damageToAlliedTrees);
     }
 }
