@@ -82,7 +82,7 @@ public class RangedCombat extends Bot {
     private static Direction pickOptimalDir(){
         Direction bestDir = null;
         int score;
-        int bestScore = hypotheticalDamageToSpot(here)+knownDamageToLoc(here)+numberOfUnitsWeBlock(here);
+        int bestScore = hypotheticalDamageToSpot(here)+knownDamageToLoc(here) - numberOfUnitsWeBlock(here)/2;
         Direction dir = new Direction(0);
         MapLocation potentialLoc;
 
