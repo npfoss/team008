@@ -8,6 +8,16 @@ public class Util extends Bot {
 	 * @return a random Direction
 	 */
 	
+	public static int numHostileUnits(RobotInfo[] enemies){
+		int ret = 0;
+		for(RobotInfo e: enemies){
+			if(e.team == enemy && e.type != RobotType.ARCHON && e.type != RobotType.GARDENER){
+				ret++;
+			}
+		}
+		return ret;
+	}
+	
 	public static Direction randomDirection() {
 		return new Direction( myRand.nextFloat() * 2 * (float) Math.PI);
 	}
@@ -78,7 +88,21 @@ public class Util extends Bot {
         }
         return closest;
     }
-
+    
+    public static BulletInfo closestBullet(BulletInfo[] bullets, MapLocation toHere) {
+        BulletInfo closest = null;
+        float bestDist = 999999;
+        float dist;
+        for (int i = bullets.length; i-- > 0;) {
+            dist = toHere.distanceTo(bullets[i].location);
+            if (dist < bestDist) {
+                bestDist = dist;
+                closest = bullets[i];
+            }
+        }
+        return closest;
+    }
+    
     public static TreeInfo closestTree(TreeInfo[] robots, MapLocation toHere, int size) {
         TreeInfo closest = null;
         float bestDist = 999999;
