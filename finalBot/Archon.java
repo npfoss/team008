@@ -20,6 +20,9 @@ public class Archon extends Bot {
 			hireGardener();
 			unitsBuilt++;
 		}
+		if(nearbyEnemyRobots.length > 0){
+				Util.notifyFriendsOfEnemies(nearbyEnemyRobots);
+		}
 
 
 	}

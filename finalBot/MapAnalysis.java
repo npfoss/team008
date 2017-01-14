@@ -184,7 +184,7 @@ public class MapAnalysis extends Bot {
 			} else if (rc.getRoundNum() % 25 == 2 && rc.getRoundNum() > 5) {
 				updateUnitCount();
 				updateMapSize();
-				if (numGardener == 0) {
+				if (numGardener == 0 || rc.getTeamBullets() > 150 && numGardener < 10) {
 					rc.broadcast(13, 1);
 				}
 				if (numScout == 0) {
@@ -196,7 +196,7 @@ public class MapAnalysis extends Bot {
 				} else if (numSoldier < ((rc.getTeamBullets() < 200 && numGardener < 6) ? ((rc.readBroadcast(11) == 2) ? 5:1): 10)) {
 					rc.broadcast(14, 1);
 					rc.broadcast(15, ((rc.getTeamBullets() < 200 && numGardener < 6) ? ((rc.readBroadcast(11) == 2) ? 5:1) : 10) - numSoldier);
-				} else {
+				} else if (numGardener < 10){
 					rc.broadcast(13, 2);
 					rc.broadcast(14, 5);
 

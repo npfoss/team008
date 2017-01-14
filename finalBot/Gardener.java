@@ -19,7 +19,7 @@ public class Gardener extends Bot {
 		Direction bestDir = new Direction(0);
 		for (int i = 0; i < 16; i++) {
 			if (!rc.onTheMap(here.add(dir, (float) (type.sensorRadius - .001)))) {
-				thingsInTheWay+=100;
+				thingsInTheWay += 100;
 			}
 			for (TreeInfo t : nearbyAlliedTrees)
 				if (dir.radiansBetween(here.directionTo(t.getLocation())) < Math.PI / 2) {
@@ -28,7 +28,7 @@ public class Gardener extends Bot {
 			for (RobotInfo t : nearbyRobots)
 				if ((t.type == RobotType.ARCHON || t.type == RobotType.GARDENER)
 						&& dir.radiansBetween(here.directionTo(t.getLocation())) < Math.PI / 2) {
-					thingsInTheWay+= (t.type == RobotType.ARCHON ? 1:10);
+					thingsInTheWay += (t.type == RobotType.ARCHON ? 1 : 10);
 				}
 
 			if (thingsInTheWay < bestScore) {
@@ -45,12 +45,17 @@ public class Gardener extends Bot {
 
 	public void takeTurn() throws GameActionException {
 		waterLowestHealthTree();
+		if (nearbyEnemyRobots.length > 0) {
+			Util.notifyFriendsOfEnemies(nearbyEnemyRobots);
+		}
 		if (isExploring) {
-			goTo(findOpenSpaces());
+			if (myRand.nextDouble() < .2) {
+				dirIAmMoving = findOpenSpaces();
+			}
+			goTo(dirIAmMoving);
 			boolean farAway = true;
 			for (RobotInfo r : nearbyAlliedRobots) {
-				if (r.type == RobotType.GARDENER
-						|| r.type == RobotType.ARCHON) {
+				if (r.type == RobotType.GARDENER || r.type == RobotType.ARCHON) {
 					farAway = false;
 					break;
 				}
@@ -62,7 +67,7 @@ public class Gardener extends Bot {
 				}
 			}
 			isExploring = !farAway;
-			if(rc.getRoundNum() < 10){
+			if (rc.getRoundNum() < 10) {
 				isExploring = false;
 			}
 		}
@@ -125,7 +130,7 @@ public class Gardener extends Bot {
 			}
 		}
 		if (plantATree())
-				return;
+			return;
 		if (numToBuild > 0) {
 			System.out.println("I must build Unit Type:" + typeToBuild + ":" + numToBuild);
 			switch (typeToBuild) {
