@@ -33,7 +33,7 @@ public class Scout extends Bot {
 	
 	public static void moveToHarass() throws GameActionException{
 		if(!triedInitLocation){
-			if(here.distanceTo(closestInitLocation) < 2){
+			if(here.distanceTo(closestInitLocation) < 3){
 				triedInitLocation = true;
 				explore();
 			}
@@ -42,6 +42,11 @@ public class Scout extends Bot {
 			}
 		}
 		else{
+			RobotInfo closestArchon = Util.closestSpecificTypeOnTeam(nearbyRobots,here, RobotType.ARCHON,enemy);
+			if(closestArchon != null){
+				goTo(closestArchon.location);
+				return;
+			}
 			explore();
 		}
 	}
@@ -79,7 +84,12 @@ public class Scout extends Bot {
             TreeInfo bestTree = Util.closestTree(nearbyTrees, target.location);
             if(bestTree == null || bestTree.location.distanceTo(target.location) > 7){
             	System.out.println("here");
-            	RangedCombat.shootSingleShot(target);
+            	if(here.distanceTo(target.location) < 2.5){
+            		RangedCombat.shootSingleShot(target);
+            	}
+            	else{
+            		goTo(target.location);
+            	}
             	return true;
             }
             MapLocation outerEdge = bestTree.location.add(bestTree.location.directionTo(target.location),bestTree.radius);
