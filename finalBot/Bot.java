@@ -60,6 +60,10 @@ public class Bot {
 				nearbyRobots = rc.senseNearbyRobots(-1);
 				nearbyAlliedRobots = rc.senseNearbyRobots(-1, us);
 				nearbyEnemyRobots = rc.senseNearbyRobots(-1, enemy);
+				if (rc.getRoundNum() + 5 > GameConstants.GAME_DEFAULT_ROUNDS
+						|| rc.getTeamVictoryPoints() + rc.getTeamBullets() / 10 > 1000) {
+					rc.donate(((int) (rc.getTeamBullets() / 10)) * 10);
+				}
 				MapAnalysis.possiblyMakeDecisions();
 				strategy = rc.readBroadcast(11);
 				if (rc.getRoundNum() % 25 == 1) {
@@ -131,6 +135,7 @@ public class Bot {
 				} else {
 					if (loc.distanceTo(l.location) < l.type.bodyRadius + l.type.strideRadius + l.type.bulletSpeed
 							+ RobotType.SCOUT.bodyRadius) {
+
 						danger += (10 - loc.distanceTo(l.location));
 					}
 				}
@@ -152,6 +157,7 @@ public class Bot {
 					if (l.type == RobotType.LUMBERJACK
 							&& loc.distanceTo(l.location) < RobotType.LUMBERJACK.bodyRadius + +1.1 + type.bodyRadius) {
 						danger += (10 - loc.distanceTo(l.location));
+
 					}
 				}
 			}
@@ -162,9 +168,10 @@ public class Bot {
 	private static int tryMove(Direction dir, float dist) throws GameActionException {
 		int danger = dangerRating(here.add(dir, dist));
 		if (rc.canMove(dir, dist) && danger == 0) {
-			if(danger == 0){
-			rc.move(dir, dist);
-			here = rc.getLocation();
+			if (danger == 0) {
+				rc.move(dir, dist);
+				here = rc.getLocation();
+
 			}
 			return danger;
 		}
@@ -180,18 +187,19 @@ public class Bot {
 		if (tempDanger == 0) {
 			return true;
 		}
-		if(tempDanger < bestDanger){
+		if (tempDanger < bestDanger) {
 			bestDir = dir;
 			bestDanger = tempDanger;
 		}
 		Direction left = dir.rotateLeftDegrees(10);
 		Direction right = dir.rotateRightDegrees(10);
 		for (int i = 0; i < 17; i++) {
+
 			tempDanger = tryMove(left, type.strideRadius);
 			if (tempDanger == 0) {
 				return true;
 			}
-			if(tempDanger < bestDanger){
+			if (tempDanger < bestDanger) {
 				bestDir = left;
 				bestDanger = tempDanger;
 			}
@@ -199,7 +207,7 @@ public class Bot {
 			if (tempDanger == 0) {
 				return true;
 			}
-			if(tempDanger < bestDanger){
+			if (tempDanger < bestDanger) {
 				bestDir = right;
 				bestDanger = tempDanger;
 			}
@@ -207,11 +215,11 @@ public class Bot {
 			right = right.rotateRightDegrees(10);
 		}
 		tempDanger = dangerRating(here);
-		if(tempDanger < bestDanger){
+		if (tempDanger < bestDanger) {
 			bestDir = null;
 			bestDanger = tempDanger;
 		}
-		if(bestDir != null){
+		if (bestDir != null) {
 			rc.move(bestDir, type.strideRadius);
 			return true;
 		}
@@ -273,6 +281,7 @@ public class Bot {
 	public static boolean tryMoveDirectionDangerous(Direction dir) throws GameActionException {
 
 		if (tryMoveDangerous(dir, type.strideRadius)) {
+
 			return true;
 		}
 		Direction left = dir.rotateLeftDegrees(10);
@@ -313,6 +322,7 @@ public class Bot {
 			if (robot.type != RobotType.LUMBERJACK) {
 				if (couldHitLocNextTurn(loc, robot)) {
 					damageToSpot += robot.type.attackPower;
+
 				}
 			} else if (couldLumberJackHitLoc(loc, robot)) {
 				damageToSpot += robot.getType().attackPower;
@@ -341,6 +351,7 @@ public class Bot {
 																															// jack
 																															// swing
 																															// radius
+
 				+ type.bodyRadius);
 
 	}

@@ -5,9 +5,12 @@ import battlecode.common.*;
 public class Scout extends Bot {
 	private static boolean triedInitLocation;
 	private static MapLocation closestInitLocation;
+	private static MapLocation targetLoc;
+	private static int targetGardenerID;
 
 	public Scout(RobotController r) throws GameActionException{
 		super(r);
+		targetGardenerID = -1;
 	}
 
 	public void takeTurn() throws Exception{
@@ -17,7 +20,14 @@ public class Scout extends Bot {
 		}
 
 	    //TreeInfo[] nearbyTrees = rc.senseNearbyTrees(-1);
-        if(!tryToHarass(Util.combineTwoTIArrays(nearbyEnemyTrees, nearbyNeutralTrees))){
+		/*
+		int numHostiles = Util.numHostileUnits(nearbyEnemyRobots);
+		if(numHostiles > 0){
+			System.out.println("Ranged Combat");
+			RangedCombat.execute();
+		}
+		*/
+		if(!tryToHarass(Util.combineTwoTIArrays(nearbyEnemyTrees, nearbyNeutralTrees))){
         	if(!dealWithNearbyTrees()){
         		moveToHarass();
         	}
@@ -33,7 +43,7 @@ public class Scout extends Bot {
 	
 	public static void moveToHarass() throws GameActionException{
 		if(!triedInitLocation){
-			if(here.distanceTo(closestInitLocation) < 2){
+			if(here.distanceTo(closestInitLocation) < 3){
 				triedInitLocation = true;
 				explore();
 			}
@@ -42,6 +52,11 @@ public class Scout extends Bot {
 			}
 		}
 		else{
+			//RobotInfo closestArchon = Util.closestSpecificTypeOnTeam(nearbyRobots,here, RobotType.ARCHON,enemy);
+			//if(closestArchon != null){
+			//	goTo(closestArchon.location);
+			//	return;
+			//}
 			explore();
 		}
 	}
@@ -72,21 +87,40 @@ public class Scout extends Bot {
      * @throws GameActionException
      */
     private boolean tryToHarass(TreeInfo[] nearbyTrees) throws GameActionException {
-        RobotInfo closestEnemyGardener = Util.closestSpecificTypeOnTeam(nearbyEnemyRobots,here,RobotType.GARDENER,enemy);
-        if(closestEnemyGardener!=null) {
-            TreeInfo bestTree = Util.closestTree(nearbyTrees, closestEnemyGardener.location);
-            if(bestTree == null || bestTree.location.distanceTo(closestEnemyGardener.location) > 7){
-            	System.out.println("here");
-            	RangedCombat.shootSingleShot(closestEnemyGardener);
-            	return true;
+    	RobotInfo targetG = null;
+    	if(inDanger(nearbyEnemyRobots, nearbyBullets)){
+    		return false;
+    	}
+    	if(targetGardenerID == -1 || !rc.canSenseRobot(targetGardenerID) || rc.getRoundNum() % 10 == 1){
+    		targetGardenerID = -1;
+    		targetLoc = null;
+    		updateTargetGardener();
+    		if(targetGardenerID != -1){
+    			System.out.println("new target gardener: id = " + targetGardenerID);
+    			targetG = rc.senseRobot(targetGardenerID);
+    			updateTargetLoc(nearbyTrees, targetG);
+    		}
+    	}
+        if(targetGardenerID != -1) {
+        	targetG = rc.senseRobot(targetGardenerID);
+        	if(targetLoc == null && rc.getRoundNum() % 5 == 3){
+        		updateTargetLoc(nearbyTrees, targetG);
+        	}
+        	if(targetLoc == null){
+            	System.out.println("can't find a tree, but still trying to kill gardener");
+            	if(here.distanceTo(targetG.location) < 2.5){
+            		RangedCombat.shootSingleShot(targetG);
+            	}
+            	else{
+            		goTo(targetG.location);
+            	}
             }
-            MapLocation outerEdge = bestTree.location.add(bestTree.location.directionTo(closestEnemyGardener.location),bestTree.radius);
-            MapLocation targetLoc = outerEdge.add(outerEdge.directionTo(bestTree.location), (float)(1.01));
-            if (inGoodSpot(targetLoc)) {
-                //rc.setIndicatorDot(here,0,0,255);
-                harassFromTree(closestEnemyGardener);
+        	else if (inGoodSpot(targetLoc)) {
+                //rc.setIndicatorLine(here,targetG.location,0,0,255);
+                harassFromTree(targetG);
             } else{
-            	rc.setIndicatorLine(here,targetLoc,0,0,255);
+            	//rc.setIndicatorLine(here,targetLoc,0,0,255);
+            	System.out.println("heading toward tree");
             	//System.out.println(here.distanceTo(bestTree.location));
                 goTo(targetLoc);
             }
@@ -95,7 +129,85 @@ public class Scout extends Bot {
         return false;
     }
 
-    /**
+    private boolean inDanger(RobotInfo[] nearbyEnemyRobots, BulletInfo[] nearbyBullets) {
+		BulletInfo closestBullet = Util.closestBullet(nearbyBullets, here);
+		if(closestBullet != null && here.distanceTo(closestBullet.location) < 3){
+			System.out.println("in danger.");
+			return true;
+		}
+		for(RobotInfo e: nearbyEnemyRobots){
+			if(e.type == RobotType.ARCHON || e.type == RobotType.GARDENER)
+				continue;
+			else if(e.location.distanceTo(here) < 3){
+				System.out.println("in danger.");
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private static void updateTargetGardener(){
+        RobotInfo closestEnemyGardener = closestUndefendedGardener(nearbyEnemyRobots);
+        if(closestEnemyGardener != null){
+        	targetGardenerID = closestEnemyGardener.ID;
+        }
+    }
+    
+    private static void updateTargetLoc(TreeInfo[] nearbyTrees, RobotInfo targetG){
+        TreeInfo bestTree = closestSafeTree(nearbyTrees, targetG.location);
+        if(bestTree != null){
+        	MapLocation outerEdge = bestTree.location.add(bestTree.location.directionTo(targetG.location),bestTree.radius);
+            targetLoc = outerEdge.add(outerEdge.directionTo(bestTree.location), (float)(1.01));
+        }
+    }
+    
+    public static TreeInfo closestSafeTree(TreeInfo[] trees, MapLocation toHere) {
+        TreeInfo closest = null;
+        float bestDist = 5;
+        float dist;
+        for (int i = trees.length; i-- > 0;) {
+            dist = toHere.distanceTo(trees[i].location);
+            if(dist < bestDist){
+	            RobotInfo closestAlly = Util.closestRobot(nearbyAlliedRobots, trees[i].location);
+	            if(closestAlly == null || closestAlly.location.distanceTo(trees[i].location) > 2.5) {
+	            	RobotInfo[] enemiesWithinRangeOfTree = rc.senseNearbyRobots(trees[i].location, 3, enemy);
+	            	if(consistsOfOnlyHarmlessUnits(enemiesWithinRangeOfTree)){
+		                bestDist = dist;
+		                closest = trees[i];
+	            	}
+	            }
+            }
+        }
+        return closest;
+    }
+    
+    private static RobotInfo closestUndefendedGardener(RobotInfo[] robots){
+    	RobotInfo closest = null;
+        float bestDist = 99999;
+        float dist;
+        for (int i = robots.length; i-- > 0;) {
+            if (robots[i].type == RobotType.GARDENER) {
+                dist = here.distanceTo(robots[i].location);
+               //RobotInfo[] enemiesWithinRangeOfGardener = rc.senseNearbyRobots(robots[i].location, 3, enemy);
+                if (dist < bestDist/* && consistsOfOnlyHarmlessUnits(enemiesWithinRangeOfGardener)*/) {
+                    bestDist = dist;
+                    closest = robots[i];
+                }
+            }
+        }
+        return closest;
+    }
+    
+    private static boolean consistsOfOnlyHarmlessUnits(RobotInfo[] enemiesWithinRangeOfGardener) {
+		for(RobotInfo e: enemiesWithinRangeOfGardener){
+			if(e.type != RobotType.ARCHON && e.type != RobotType.GARDENER){
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
      * Checks how close we are to our target tree
      * @param targetLoc the tree we want to be close to
      * @return
@@ -113,7 +225,7 @@ public class Scout extends Bot {
      */
 	public static void harassFromTree(RobotInfo closestTarget) throws GameActionException {
         if (closestTarget != null) {
-            rc.setIndicatorLine(here,closestTarget.getLocation(),255,0,0);
+            //rc.setIndicatorLine(here,closestTarget.getLocation(),255,0,0);
             RangedCombat.shootSingleShot(closestTarget);
             //System.out.println("I shot");
         }
