@@ -15,6 +15,7 @@ public class Bot {
     public static MapLocation target;
     
     //finding these is expensive so lets only do it once
+    public static TreeInfo[] nearbyTrees;
     public static TreeInfo[] nearbyNeutralTrees;
     public static TreeInfo[] nearbyEnemyTrees;
     public static TreeInfo[] nearbyAlliedTrees;
@@ -46,7 +47,8 @@ public class Bot {
             try {
             	here = rc.getLocation();
             	//TODO: have our Util sort a single call rather than calling multiple times
-            	nearbyNeutralTrees = rc.senseNearbyTrees(-1,Team.NEUTRAL);
+                nearbyTrees = rc.senseNearbyTrees(-1);
+                nearbyNeutralTrees = rc.senseNearbyTrees(-1,Team.NEUTRAL);
             	nearbyEnemyTrees = rc.senseNearbyTrees(-1,enemy);
             	nearbyAlliedTrees = rc.senseNearbyTrees(-1, us);
             	nearbyBullets = rc.senseNearbyBullets();
