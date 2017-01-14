@@ -1,5 +1,4 @@
 package team008.finalBot;
-import java.util.Map;
 import java.util.Random;
 import battlecode.common.*;
 
