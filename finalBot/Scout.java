@@ -3,8 +3,8 @@ package team008.finalBot;
 import battlecode.common.*;
 
 public class Scout extends Bot {
-	static boolean triedInitLocation;
-	static MapLocation closestInitLocation;
+	private static boolean triedInitLocation;
+	private static MapLocation closestInitLocation;
 
 	public Scout(RobotController r) throws GameActionException{
 		super(r);
@@ -72,21 +72,19 @@ public class Scout extends Bot {
      * @throws GameActionException
      */
     private boolean tryToHarass(TreeInfo[] nearbyTrees) throws GameActionException {
-        //RobotInfo closestEnemyArchon = Util.closestSpecificTypeOnTeam(nearbyRobots,here, RobotType.ARCHON,enemy);
-        RobotInfo closestEnemyGardener = Util.closestSpecificTypeOnTeam(nearbyRobots,here,RobotType.GARDENER,enemy);
-        RobotInfo target = closestEnemyGardener;
-        if(target!=null) {
-            TreeInfo bestTree = Util.closestTree(nearbyTrees, target.location);
-            if(bestTree == null || bestTree.location.distanceTo(target.location) > 7){
+        RobotInfo closestEnemyGardener = Util.closestSpecificTypeOnTeam(nearbyEnemyRobots,here,RobotType.GARDENER,enemy);
+        if(closestEnemyGardener!=null) {
+            TreeInfo bestTree = Util.closestTree(nearbyTrees, closestEnemyGardener.location);
+            if(bestTree == null || bestTree.location.distanceTo(closestEnemyGardener.location) > 7){
             	System.out.println("here");
-            	RangedCombat.shootSingleShot(target);
+            	RangedCombat.shootSingleShot(closestEnemyGardener);
             	return true;
             }
-            MapLocation outerEdge = bestTree.location.add(bestTree.location.directionTo(target.location),bestTree.radius);
+            MapLocation outerEdge = bestTree.location.add(bestTree.location.directionTo(closestEnemyGardener.location),bestTree.radius);
             MapLocation targetLoc = outerEdge.add(outerEdge.directionTo(bestTree.location), (float)(1.01));
             if (inGoodSpot(targetLoc)) {
                 //rc.setIndicatorDot(here,0,0,255);
-                harassFromTree(target);
+                harassFromTree(closestEnemyGardener);
             } else{
             	rc.setIndicatorLine(here,targetLoc,0,0,255);
             	//System.out.println(here.distanceTo(bestTree.location));
