@@ -148,8 +148,8 @@ public class Bot {
 							+ RobotType.LUMBERJACK.strideRadius + 1.1 + type.bodyRadius) {
 						danger += (10 - loc.distanceTo(l.location));
 					} else if (l.type == RobotType.SCOUT || l.type == RobotType.SOLDIER || l.type == RobotType.TANK) {
-						if (loc.distanceTo(l.location) < l.type.bodyRadius + l.type.strideRadius + l.type.bulletSpeed
-								+ type.bodyRadius && type != RobotType.LUMBERJACK) {
+						if (type != RobotType.LUMBERJACK && loc.distanceTo(l.location) < l.type.bodyRadius + l.type.strideRadius + l.type.bulletSpeed
+								+ type.bodyRadius) {
 							danger += (10 - loc.distanceTo(l.location));
 						}
 					}
@@ -193,7 +193,7 @@ public class Bot {
 		}
 		Direction left = dir.rotateLeftDegrees(10);
 		Direction right = dir.rotateRightDegrees(10);
-		for (int i = 0; i < 17; i++) {
+		for (int i = 0; i < 9; i++) {
 
 			tempDanger = tryMove(left, type.strideRadius);
 			if (tempDanger == 0) {
@@ -211,8 +211,8 @@ public class Bot {
 				bestDir = right;
 				bestDanger = tempDanger;
 			}
-			left = left.rotateLeftDegrees(10);
-			right = right.rotateRightDegrees(10);
+			left = left.rotateLeftDegrees(20);
+			right = right.rotateRightDegrees(20);
 		}
 		tempDanger = dangerRating(here);
 		if (tempDanger < bestDanger) {
@@ -417,6 +417,6 @@ public class Bot {
 																					// toa
 																					// :)
 		// parallel distance not completely accurate but fast to calculate
-		return (perpendicularDist <= type.bodyRadius && distToRobot - type.bodyRadius < bulletSpeed);
+		return (perpendicularDist <= type.bodyRadius && (nearbyNeutralTrees.length > 3 ? true : (distToRobot - type.bodyRadius < bulletSpeed)));
 	}
 }
