@@ -21,8 +21,8 @@ public class Lumberjack extends Bot {
         TREE_DAMAGE_MOD = .2f; // TODO: actually optimize
         KNOWN_DAMAGE_MOD = -1;
         HYPOTHETICAL_DAMAGE_MOD = -.8f; // TODO: actually optimize
-        PROGRESS_MOD = 1; // no idea what to make this TODO: don't just guess
-        PROXIMITY_MOD = -2; // no idea... TODO: optimize
+        PROGRESS_MOD = -.8f; // no idea what to make this TODO: don't just guess
+        PROXIMITY_MOD = -3; // no idea... TODO: optimize
 	}
 	
 	public void takeTurn() throws Exception{
@@ -133,14 +133,19 @@ public class Lumberjack extends Bot {
         // don't worry about chopping trees here, that's checked for after. only enemies
         System.out.println("whee micro");
 
-        // TODO: add kamikaze funciton: if about to die anyways, just go for best place to attack for final stand
+        // TODO: add kamikaze function: if about to die anyways, just go for best place to attack for final stand
 
-        float bestMoveScore = evaluateLocation(here);
+        float attackScoreHere = evalForAttacking(here);
+        float bestMoveScore = evaluateLocation(here) + (attackScoreHere < 0 ? 0 : MOVE_ATTACK_MOD * attackScoreHere);
+                        // there should be a way to remove the attack bit here such that
+                        //     a better location won't be disregarded since we can attack
+                        //     here and then move there
+        System.out.println("here score " + bestMoveScore);
         MapLocation bestLoc = here;
         float bestLocAttackScore = -999;
         MapLocation currLoc;
         float score, attackScore;
-//        int startTheta = 0; // if we want to start at something nonzero then change the hardcoded zeroes below
+        int startTheta = 0; // if we want to start at something nonzero then change the hardcoded zeroes below
         int currentTheta = 0;
         int dtheta = 45; // must evenly divide 360
         int numLocsEvaled = 0;
@@ -150,9 +155,11 @@ public class Lumberjack extends Bot {
         while (Clock.getBytecodeNum() + (Clock.getBytecodeNum() - startBytecode)/((numLocsEvaled < 2 ? 1 : numLocsEvaled)) < WHEN_TO_STOP_MICRO){
             // stop when the average time it takes to eval puts us over the WHEN_TO_STOP_MICRO threshold
             currLoc = here.add(Util.radians(currentTheta), stridedist);
-            if ( rc.canMove(currLoc)) {
+            if (rc.canMove(currLoc)) {
+                rc.setIndicatorDot(currLoc, 0, 0, (int)(1.0*currentTheta / 360 * 255));
                 attackScore = evalForAttacking(currLoc);
-                score = evaluateLocation(currLoc) + MOVE_ATTACK_MOD * attackScore;
+                score = evaluateLocation(currLoc) + (attackScoreHere < 0 ? 0 : MOVE_ATTACK_MOD * attackScoreHere);
+                System.out.println(currentTheta + " " + currLoc.x + " " + currLoc.y + " score " + score);
                 if (score > bestMoveScore) {
                     bestLoc = currLoc;
                     bestLocAttackScore = attackScore;
@@ -162,10 +169,11 @@ public class Lumberjack extends Bot {
             }
 
             currentTheta += dtheta;
-            if (currentTheta == 0){
+            if (currentTheta == 360){
                 // tried every point around a circle, now try closer
                 // TODO: make the test points more evenly distributed inside (see circle-packing on wikipedia)
                 stridedist /= 2;
+                currentTheta = 0;
                 dtheta = 60; // it'll get more dense as it gets closer so adjust a little for that
                 if (stridedist < .25) { // probably silly to keep checking
                     System.out.print("I've tried everything dammit");
@@ -175,7 +183,6 @@ public class Lumberjack extends Bot {
         }
         System.out.println("tried " + numLocsEvaled + " locs and finished at theta " + currentTheta + " and radius " + stridedist);
 
-        float attackScoreHere = evalForAttacking(here);
         if ( attackScoreHere > bestLocAttackScore && attackScoreHere > 0){
             // attack first, then move
             rc.setIndicatorDot(here, 255,0,0); //red dot == SMASH
@@ -191,24 +198,6 @@ public class Lumberjack extends Bot {
             // just move
             rc.move(bestLoc);
         }
-
-
-
-        /*// ----- OLD (bad) MICRO -----
-        // strike only if it does more damage to the enemy team than us
-        if (Util.numBodiesTouchingRadius(nearbyEnemies, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS)
-                > Util.numBodiesTouchingRadius(nearbyFriends, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS)){
-            rc.strike();
-        }
-
-        // charge closest enemy, ~safely~ (lol)
-        goTo(Util.closestBody(nearbyEnemies, rc.getLocation()).getLocation());
-
-        // check again if we can strike
-        if (rc.canStrike() && Util.numBodiesTouchingRadius(nearbyEnemies, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS)
-                > Util.numBodiesTouchingRadius(nearbyFriends, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS)){
-            rc.strike();
-        }//*/
     }
 
     public float evaluateLocation(MapLocation loc){
@@ -217,9 +206,9 @@ public class Lumberjack extends Bot {
         // TODO: take into account other strategery like defending our trees/units, swarming or not, etc
 
         float distToNearestEnemy = Util.distToClosestBody(nearbyEnemyRobots, loc);
-        if (distToNearestEnemy < GameConstants.LUMBERJACK_STRIKE_RADIUS + RobotType.LUMBERJACK.strideRadius + 1){
+        /*if (distToNearestEnemy < GameConstants.LUMBERJACK_STRIKE_RADIUS + RobotType.LUMBERJACK.strideRadius + 1){
             distToNearestEnemy = 0; // close enough to hit already
-        }
+        }*/
 
         return KNOWN_DAMAGE_MOD * knownDamageToLoc(loc)
                 + HYPOTHETICAL_DAMAGE_MOD * hypotheticalDamageToSpot(loc)
@@ -234,6 +223,6 @@ public class Lumberjack extends Bot {
         float damageToUs = RobotType.LUMBERJACK.attackPower * Util.numBodiesTouchingRadius(nearbyAlliedRobots, loc, GameConstants.LUMBERJACK_STRIKE_RADIUS);
         float damageToEnemyTrees = RobotType.LUMBERJACK.attackPower * Util.numBodiesTouchingRadius(nearbyEnemyTrees, loc, GameConstants.LUMBERJACK_STRIKE_RADIUS);
         float damageToAlliedTrees = RobotType.LUMBERJACK.attackPower * Util.numBodiesTouchingRadius(nearbyAlliedTrees, loc, GameConstants.LUMBERJACK_STRIKE_RADIUS);
-        return damageToUs - damageToThem + TREE_DAMAGE_MOD * (damageToEnemyTrees - damageToAlliedTrees);
+        return damageToThem - damageToUs + TREE_DAMAGE_MOD * (damageToEnemyTrees - damageToAlliedTrees);
     }
 }

@@ -1,6 +1,6 @@
 package team008.finalBot;
+
 import battlecode.common.*;
-import com.sun.xml.internal.ws.client.sei.ResponseBuilder;
 
 public class Util extends Bot {
 	/**
@@ -265,7 +265,7 @@ public class Util extends Bot {
     }
 
     public static float radians(int degrees){
-        return degrees / (float)Math.PI / 180;
+        return degrees * (float)Math.PI / 180;
     }
 
     ///--------- UNUSED METHODS FROM LAST YEAR--------///
