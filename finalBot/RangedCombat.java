@@ -24,17 +24,19 @@ public class RangedCombat extends Bot {
     public static void execute() throws GameActionException {
         Direction destinationDir;
         BodyInfo finalTarget = chooseTargetAndShotType();
+
         System.out.println("Picking First move" + shotValue);
 
         //check if we have a worthwhile attack
-        if (shotValue > 80) {
+        if (worthShooting()) {
             System.out.println("shooting first");
-            shootIfWorth(finalTarget, shotType);
+            parseShotTypeAndShoot(finalTarget, shotType);
         }
 
         //move
         destinationDir = chooseMove();
         System.out.println("picked place to move" + Clock.getBytecodeNum());
+
         if (destinationDir != null) {
             if (movingSafely) {
                 goTo(destinationDir);
@@ -46,10 +48,18 @@ public class RangedCombat extends Bot {
         //if we havent shot try again
         if (!rc.hasAttacked()) {
             finalTarget = chooseTargetAndShotType();
-            shootIfWorth(finalTarget, shotType);
+            parseShotTypeAndShoot(finalTarget, shotType);
         }
 
 
+    }
+
+    /**
+     * Tries to asses if its work shooting.
+     * @return
+     */
+    private static boolean worthShooting() {
+        return shotValue > 80;
     }
 
 
@@ -245,7 +255,7 @@ public class RangedCombat extends Bot {
      * @param shotType
      * @throws GameActionException
      */
-    private static void shootIfWorth(BodyInfo target, String shotType) throws GameActionException {
+    private static void parseShotTypeAndShoot(BodyInfo target, String shotType) throws GameActionException {
         switch (shotType) {
             case SINGLE_SHOT:
                 shootSingleShot(target);
