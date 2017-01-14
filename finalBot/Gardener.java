@@ -15,11 +15,11 @@ public class Gardener extends Bot {
 
 		Direction dir = new Direction(0);
 		int thingsInTheWay = 0;
-		int bestScore = 100;
+		int bestScore = 10000;
 		Direction bestDir = new Direction(0);
 		for (int i = 0; i < 16; i++) {
 			if (!rc.onTheMap(here.add(dir, (float) (type.sensorRadius - .001)))) {
-				thingsInTheWay++;
+				thingsInTheWay+=100;
 			}
 			for (TreeInfo t : nearbyAlliedTrees)
 				if (dir.radiansBetween(here.directionTo(t.getLocation())) < Math.PI / 2) {
@@ -28,7 +28,7 @@ public class Gardener extends Bot {
 			for (RobotInfo t : nearbyRobots)
 				if ((t.type == RobotType.ARCHON || t.type == RobotType.GARDENER)
 						&& dir.radiansBetween(here.directionTo(t.getLocation())) < Math.PI / 2) {
-					thingsInTheWay++;
+					thingsInTheWay+= (t.type == RobotType.ARCHON ? 1:10);
 				}
 
 			if (thingsInTheWay < bestScore) {
