@@ -14,7 +14,7 @@ public class FastMethods extends Bot {
     }
 
 
-    public static void initializeNearbyEnemies(){
+    public static void initializeNearbyEnemeyRobots(){
         ArrayList<RobotInfo> holder = new ArrayList<>();
         for(RobotInfo robot: nearbyRobots){
             if(robot.team == enemy){
@@ -24,7 +24,7 @@ public class FastMethods extends Bot {
         nearbyEnemyRobots = holder.toArray( new RobotInfo[holder.size()]);
     }
 
-    public static void initializeNearbyFriends(){
+    public static void initializeNearbyAlliedRobots(){
         ArrayList<RobotInfo> holder = new ArrayList<>();
         for(RobotInfo robot: nearbyRobots){
             if(robot.team == us){
@@ -53,7 +53,7 @@ public class FastMethods extends Bot {
         }
         nearbyNeutralTrees = holder.toArray( new TreeInfo[holder.size()]);
     }
-    public static void initializeNearbyFriendlyTrees(){
+    public static void initializeNearbyAlliedTrees(){
         ArrayList<TreeInfo> holder = new ArrayList<>();
         for(TreeInfo tree: nearbyTrees){
             if(tree.team == us){
