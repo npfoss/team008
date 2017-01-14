@@ -187,7 +187,7 @@ public class MapAnalysis extends Bot {
 				if (numGardener == 0 || rc.getTeamBullets() > 150 && numGardener < 10) {
 					rc.broadcast(13, 1);
 				}
-				if (numScout == 0) {
+				if (numScout < 1) {
 					rc.broadcast(15, 1);
 					rc.broadcast(14, 3);
 				} else if (numLumberjack < ((rc.getTeamBullets() < 200 && numGardener < 6) ? ((rc.readBroadcast(11) == 3) ? 5:1) : 10)) {

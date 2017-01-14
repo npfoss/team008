@@ -16,7 +16,7 @@ public class Archon extends Bot {
 	public void takeTurn() throws Exception {
 		//dirIAmMoving = findOpenSpaces();
 		if (rc.getTeamBullets() > 100 + ((rc.readBroadcast(4) > 1) ? unitsBuilt * 10 : 0)
-				& rc.readBroadcast(13) > 0) {
+				&& rc.readBroadcast(13) > 0) {
 			hireGardener();
 			unitsBuilt++;
 		}
