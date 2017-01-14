@@ -9,81 +9,24 @@ public class Archon extends Bot {
 		// anything else archon specific
 	}
 
-	public static Direction findOpenSpaces() throws GameActionException {
-		int spaces = 0;
-		Direction dir = new Direction(0);
-		float xavg = 0;
-		float yavg = 0;
-		for (int i = 0; i < 11; i++) {
-			boolean isOkay = true;
-
-			for (TreeInfo t : nearbyNeutralTrees)
-				if (dir.radiansBetween(here.directionTo(t.getLocation())) < Math.PI / 4) {
-					isOkay = false;
-					break;
-				}
-			for (TreeInfo t : nearbyAlliedTrees)
-				if (dir.radiansBetween(here.directionTo(t.getLocation())) < Math.PI / 4) {
-					isOkay = false;
-					break;
-				}
-			for (TreeInfo t : nearbyEnemyTrees)
-				if (dir.radiansBetween(here.directionTo(t.getLocation())) < Math.PI / 4) {
-					isOkay = false;
-					break;
-				}
-			for (RobotInfo t : nearbyRobots)
-				if (dir.radiansBetween(here.directionTo(t.getLocation())) < Math.PI / 4) {
-					isOkay = false;
-					break;
-				}
-
-			if (rc.canMove(dir, type.sensorRadius) & isOkay && rc.onTheMap(here.add(dir, type.sensorRadius - 1))) {
-				MapLocation temp = here.add(dir, type.sensorRadius);
-				xavg += temp.x;
-				yavg += temp.y;
-				spaces++;
-			}
-			dir = dir.rotateLeftDegrees(360 / 11);
-		}
-		xavg += (xavg > here.x) ? 5 : -5;
-		yavg += (yavg > here.y) ? 5 : -5;
-
-		MapLocation temp = new MapLocation(xavg / spaces, yavg / spaces);
-
-		return here.directionTo(temp);
-
-	}
+	
 
 	public static int unitsBuilt = 0;
 
 	public void takeTurn() throws Exception {
-		dirIAmMoving = findOpenSpaces();
-		if (rc.getMoveCount() == 0) {
-			//System.out.println(dirIAmMoving.toString());
-			goTo(dirIAmMoving);
-		}
-		if (rc.getRoundNum() + 5 > GameConstants.GAME_DEFAULT_ROUNDS
-				|| rc.getTeamVictoryPoints() + rc.getTeamBullets() / 10 > 1000) {
-			rc.donate(((int) (rc.getTeamBullets() / 10)) * 10);
-		} else if (rc.getTeamBullets() > 100 + ((rc.readBroadcast(4) > 1) ? unitsBuilt * 10 : 0)
+		//dirIAmMoving = findOpenSpaces();
+		if (rc.getTeamBullets() > 100 + ((rc.readBroadcast(4) > 1) ? unitsBuilt * 10 : 0)
 				& rc.readBroadcast(13) > 0) {
-			// System.out.println("I must build Unit Type: Gardener:" +
-			// rc.readBroadcast(13));
 			hireGardener();
 			unitsBuilt++;
 		}
 
-		// if (enemies.length > 0) {
-		// rc.setIndicatorDot(here, 0, 255, 0);
-		// runAway(enemies, allies);
-		// }
 
 	}
 
 	public void hireGardener() throws GameActionException {
 		// System.out.println("Trying to hire a gardener");
-		Direction dir = dirIAmMoving.opposite();
+		Direction dir = here.directionTo(MapAnalysis.center);
 		for (int i = 36; i-- > 0;) {
 			if (rc.canHireGardener(dir)) {
 				rc.hireGardener(dir);
@@ -107,7 +50,7 @@ public class Archon extends Bot {
 
 	}
 
-	public void runAway(RobotInfo[] enemies) throws GameActionException{
+	public void runAway(RobotInfo[] enemies) throws GameActionException {
 		Direction bestRetreatDir = null;
 		double bestValue = -10000;
 		int count = 0;
@@ -131,12 +74,12 @@ public class Archon extends Bot {
 
 		}
 
-		if(!rc.hasMoved()) {
-            if (bestRetreatDir != null) {
-                goTo(bestRetreatDir);
-            }
-            goTo(Util.randomDirection());
-        }
+		if (!rc.hasMoved()) {
+			if (bestRetreatDir != null) {
+				goTo(bestRetreatDir);
+			}
+			goTo(Util.randomDirection());
+		}
 
 	}
 }

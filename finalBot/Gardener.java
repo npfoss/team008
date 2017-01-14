@@ -3,14 +3,72 @@ package team008.finalBot;
 import battlecode.common.*;
 
 public class Gardener extends Bot {
+	public boolean isExploring;
+
 	public Gardener(RobotController r) throws GameActionException {
 		super(r);
+		isExploring = true;
 		// anything else gardener specific
+	}
+
+	public static Direction findOpenSpaces() throws GameActionException {
+
+		Direction dir = new Direction(0);
+		int thingsInTheWay = 0;
+		int bestScore = 100;
+		Direction bestDir = new Direction(0);
+		for (int i = 0; i < 16; i++) {
+			if (!rc.onTheMap(here.add(dir, (float) (type.sensorRadius - .001)))) {
+				thingsInTheWay++;
+			}
+			for (TreeInfo t : nearbyAlliedTrees)
+				if (dir.radiansBetween(here.directionTo(t.getLocation())) < Math.PI / 2) {
+					thingsInTheWay++;
+				}
+			for (RobotInfo t : nearbyRobots)
+				if ((t.type == RobotType.ARCHON || t.type == RobotType.GARDENER)
+						&& dir.radiansBetween(here.directionTo(t.getLocation())) < Math.PI / 2) {
+					thingsInTheWay++;
+				}
+
+			if (thingsInTheWay < bestScore) {
+				bestDir = dir;
+				bestScore = thingsInTheWay;
+			}
+			dir = dir.rotateLeftDegrees(360 / 16);
+			thingsInTheWay = 0;
+		}
+
+		return bestDir;
+
 	}
 
 	public void takeTurn() throws GameActionException {
 		waterLowestHealthTree();
-		buildSomething();
+		if (isExploring) {
+			goTo(findOpenSpaces());
+			boolean farAway = true;
+			for (RobotInfo r : nearbyAlliedRobots) {
+				if (r.type == RobotType.GARDENER
+						|| r.type == RobotType.ARCHON) {
+					farAway = false;
+					break;
+				}
+			}
+			for (TreeInfo r : nearbyAlliedTrees) {
+				if (r.location.distanceTo(here) < 6.5) {
+					farAway = false;
+					break;
+				}
+			}
+			isExploring = !farAway;
+			if(rc.getRoundNum() < 10){
+				isExploring = false;
+			}
+		}
+		if (!isExploring) {
+			buildSomething();
+		}
 	}
 
 	public void waterLowestHealthTree() throws GameActionException {
@@ -66,10 +124,8 @@ public class Gardener extends Bot {
 				}
 			}
 		}
-		if (strategy != 3) {
-			if (plantATree())
+		if (plantATree())
 				return;
-		}
 		if (numToBuild > 0) {
 			System.out.println("I must build Unit Type:" + typeToBuild + ":" + numToBuild);
 			switch (typeToBuild) {
