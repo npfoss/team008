@@ -17,12 +17,12 @@ public class Lumberjack extends Bot {
 		super(r);
 		//anything else lumberjack specific
         WHEN_TO_STOP_MICRO = RobotType.LUMBERJACK.bytecodeLimit - 2000; //TODO: don't just guess
-        MOVE_ATTACK_MOD = .5f; // TODO: actually optimize
+        MOVE_ATTACK_MOD = 1; // TODO: actually optimize
         TREE_DAMAGE_MOD = .2f; // TODO: actually optimize
         KNOWN_DAMAGE_MOD = -1;
         HYPOTHETICAL_DAMAGE_MOD = -.8f; // TODO: actually optimize
-        PROGRESS_MOD = -.8f; // no idea what to make this TODO: don't just guess
-        PROXIMITY_MOD = -3; // no idea... TODO: optimize
+        PROGRESS_MOD = -.2f; // no idea what to make this TODO: don't just guess
+        PROXIMITY_MOD = -2; // no idea... TODO: optimize
 	}
 	
 	public void takeTurn() throws Exception{
@@ -147,7 +147,7 @@ public class Lumberjack extends Bot {
         float score, attackScore;
         int startTheta = 0; // if we want to start at something nonzero then change the hardcoded zeroes below
         int currentTheta = 0;
-        int dtheta = 45; // must evenly divide 360
+        int dtheta = 40; // must evenly divide 360
         int numLocsEvaled = 0;
         float stridedist = RobotType.LUMBERJACK.strideRadius;
 
@@ -159,6 +159,7 @@ public class Lumberjack extends Bot {
                 rc.setIndicatorDot(currLoc, 0, 0, (int)(1.0*currentTheta / 360 * 255));
                 attackScore = evalForAttacking(currLoc);
                 score = evaluateLocation(currLoc) + (attackScoreHere < 0 ? 0 : MOVE_ATTACK_MOD * attackScoreHere);
+                //                                  if you're not going to attack anyways, it doesn't matter how bad it is
                 System.out.println(currentTheta + " " + currLoc.x + " " + currLoc.y + " score " + score);
                 if (score > bestMoveScore) {
                     bestLoc = currLoc;
