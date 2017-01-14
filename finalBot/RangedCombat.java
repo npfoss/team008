@@ -21,6 +21,11 @@ public class RangedCombat extends Bot {
         Direction destinationDir = chooseMove();
         potentialAttackStats attack = chooseTargetAndShotType();
 
+
+        //TODO system uses shot heuristic and compares best shots before and after
+        //its move to determine if it should shoot
+
+        //build the weights in as globals
         //System.out.println("Picking First move" + shotValue);
         //check if we have a worthwhile attack
         if (worthShooting(attack.getShotValue())) {
