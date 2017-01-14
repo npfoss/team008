@@ -133,7 +133,9 @@ public class Bot {
 						danger += (10 - loc.distanceTo(l.location));
 					}
 				} else {
-					if (loc.distanceTo(l.location) < l.type.bodyRadius + l.type.strideRadius + l.type.bulletSpeed) {
+					if (loc.distanceTo(l.location) < l.type.bodyRadius + l.type.strideRadius + l.type.bulletSpeed
+							+ RobotType.SCOUT.bodyRadius) {
+
 						danger += (10 - loc.distanceTo(l.location));
 					}
 				}
@@ -141,13 +143,21 @@ public class Bot {
 			}
 		} else {
 			for (RobotInfo l : nearbyRobots) {
-				if (l.type == RobotType.LUMBERJACK && loc.distanceTo(l.location) < RobotType.LUMBERJACK.bodyRadius
-						+ RobotType.LUMBERJACK.strideRadius + 1.1 + type.bodyRadius) {
-					if (type != RobotType.LUMBERJACK) {
+				if (l.team == enemy) {
+					if (l.type == RobotType.LUMBERJACK && loc.distanceTo(l.location) < RobotType.LUMBERJACK.bodyRadius
+							+ RobotType.LUMBERJACK.strideRadius + 1.1 + type.bodyRadius) {
 						danger += (10 - loc.distanceTo(l.location));
+					} else if (l.type == RobotType.SCOUT || l.type == RobotType.SOLDIER || l.type == RobotType.TANK) {
+						if (type != RobotType.LUMBERJACK && loc.distanceTo(l.location) < l.type.bodyRadius + l.type.strideRadius + l.type.bulletSpeed
+								+ type.bodyRadius) {
+							danger += (10 - loc.distanceTo(l.location));
+						}
 					}
-					if (l.team == us) {
-						danger += 10;
+				} else {
+					if (l.type == RobotType.LUMBERJACK
+							&& loc.distanceTo(l.location) < RobotType.LUMBERJACK.bodyRadius + +1.1 + type.bodyRadius) {
+						danger += (10 - loc.distanceTo(l.location));
+
 					}
 				}
 			}
@@ -155,76 +165,62 @@ public class Bot {
 		return danger;
 	}
 
-	private static void minimizeDanger() throws GameActionException {
-		int[] dangers = new int[37];
-		dangers[0] = dangerRating(here) + 2;// as to check that it was changed
-		Direction dir = new Direction(0);
-		for (int i = 1; i < 19; i++) {
-			if (rc.canMove(dir, type.strideRadius)) {
-				dangers[i] = dangerRating(here.add(dir, type.strideRadius)) + 1;
-			}
-			dir = dir.rotateLeftDegrees(20);
+	private static int tryMove(Direction dir, float dist) throws GameActionException {
+		int danger = dangerRating(here.add(dir, dist));
+		if (rc.canMove(dir, dist) && danger == 0) {
+			if (danger == 0) {
+				rc.move(dir, dist);
+				here = rc.getLocation();
 
-		}
-		dir = new Direction(0);
-		for (int i = 19; i < 37; i++) {
-			if (rc.canMove(dir, type.strideRadius / 2)) {
-				dangers[i] = dangerRating(here.add(dir, type.strideRadius / 2)) + 1;
 			}
-			dir = dir.rotateLeftDegrees(20);
+			return danger;
 		}
-		int minIndex = 0;
-		int minDanger = 1000;
-		for (int i = 0; i < 37; i++) {
-			if (dangers[i] < minDanger && dangers[i] > 0) {
-				minDanger = dangers[i];
-				minIndex = i;
-			}
-		}
-		dir = new Direction(0);
-		if (minIndex == 0) {
-			return;
-		} else if (minIndex < 19) {
-			dir = dir.rotateLeftDegrees(20 * (minIndex - 1));
-			rc.move(dir, type.strideRadius);
-		} else {
-			dir = dir.rotateLeftDegrees(20 * (minIndex - 19));
-			rc.move(dir, type.strideRadius / 2);
-		}
-	}
+		return 9999;
 
-	private static boolean tryMove(Direction dir, float dist) throws GameActionException {
-		if (rc.canMove(dir, dist) && dangerRating(here.add(dir, dist)) == 0) {
-			rc.move(dir, dist);
-			here = rc.getLocation();
-			return true;
-		} else {
-			return false;
-		}
 	}
 
 	private static boolean tryMoveDirection(Direction dir) throws GameActionException {
-		if (dir == null) {
-			dir = here.directionTo(MapAnalysis.center);
-		}
-		if (tryMove(dir, type.strideRadius)) {
+		Direction bestDir = dir;
+		int bestDanger = 9999;
+		int tempDanger = 0;
+		tempDanger = tryMove(dir, type.strideRadius);
+		if (tempDanger == 0) {
 			return true;
+		}
+		if (tempDanger < bestDanger) {
+			bestDir = dir;
+			bestDanger = tempDanger;
 		}
 		Direction left = dir.rotateLeftDegrees(10);
 		Direction right = dir.rotateRightDegrees(10);
-		for (int i = 0; i < 17; i++) {
-			if (tryMove(left, type.strideRadius)) {
+		for (int i = 0; i < 9; i++) {
+
+			tempDanger = tryMove(left, type.strideRadius);
+			if (tempDanger == 0) {
 				return true;
 			}
-			if (tryMove(right, type.strideRadius)) {
+			if (tempDanger < bestDanger) {
+				bestDir = left;
+				bestDanger = tempDanger;
+			}
+			tempDanger = tryMove(right, type.strideRadius);
+			if (tempDanger == 0) {
 				return true;
 			}
-			left = left.rotateLeftDegrees(10);
-			right = right.rotateRightDegrees(10);
+			if (tempDanger < bestDanger) {
+				bestDir = right;
+				bestDanger = tempDanger;
+			}
+			left = left.rotateLeftDegrees(20);
+			right = right.rotateRightDegrees(20);
 		}
-		if (dangerRating(here) > 0) {
-			// oh shiz we under attack
-			minimizeDanger();
+		tempDanger = dangerRating(here);
+		if (tempDanger < bestDanger) {
+			bestDir = null;
+			bestDanger = tempDanger;
+		}
+		if (bestDir != null) {
+			rc.move(bestDir, type.strideRadius);
 			return true;
 		}
 		return false;
@@ -284,7 +280,8 @@ public class Bot {
 	/////////////////////////////// Dangerous Nav///////////////////////////////
 	public static boolean tryMoveDirectionDangerous(Direction dir) throws GameActionException {
 
-		if (tryMove(dir, type.strideRadius)) {
+		if (tryMoveDangerous(dir, type.strideRadius)) {
+
 			return true;
 		}
 		Direction left = dir.rotateLeftDegrees(10);
@@ -298,10 +295,6 @@ public class Bot {
 			}
 			left = left.rotateLeftDegrees(10);
 			right = right.rotateRightDegrees(10);
-		}
-		if (dangerRating(here) > 0) {
-			// oh shiz we under attack
-			return true;
 		}
 		return false;
 	}
@@ -328,7 +321,8 @@ public class Bot {
 		for (RobotInfo robot : nearbyEnemyRobots) {
 			if (robot.type != RobotType.LUMBERJACK) {
 				if (couldHitLocNextTurn(loc, robot)) {
-					damageToSpot += robot.getType().attackPower;
+					damageToSpot += robot.type.attackPower;
+
 				}
 			} else if (couldLumberJackHitLoc(loc, robot)) {
 				damageToSpot += robot.getType().attackPower;
@@ -357,7 +351,8 @@ public class Bot {
 																															// jack
 																															// swing
 																															// radius
-				+ rc.getType().bodyRadius);
+
+				+ type.bodyRadius);
 
 	}
 
@@ -422,6 +417,6 @@ public class Bot {
 																					// toa
 																					// :)
 		// parallel distance not completely accurate but fast to calculate
-		return (perpendicularDist <= type.bodyRadius && distToRobot - type.bodyRadius < bulletSpeed);
+		return (perpendicularDist <= type.bodyRadius && (nearbyNeutralTrees.length > 3 ? true : (distToRobot - type.bodyRadius < bulletSpeed)));
 	}
 }

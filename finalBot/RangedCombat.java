@@ -9,33 +9,29 @@ public class RangedCombat extends Bot {
     private static final String SINGLE_SHOT = "single shot";
     private static final String TRIAD_SHOT = "triad shot";
     private static final String PENTAD_SHOT = "pentad shot";
+    private static final int WORTHWHILE_SHOT_THRESHOLD = 80;
 
     //forgive me for I have sinned
-    private static String shotType = "";
-    private static int shotValue = 0;
     private static boolean movingSafely = true;
 
-
-    /**
-     * Effectively "domicro"
-     *
-     * @throws GameActionException
+    /*
+     * to call execute, number of enemies must be > 0
      */
     public static void execute() throws GameActionException {
-        Direction destinationDir;
-        BodyInfo finalTarget = chooseTargetAndShotType();
 
-        System.out.println("Picking First move" + shotValue);
 
+        Direction destinationDir = chooseMove();
+        potentialAttackStats attack = chooseTargetAndShotType();
+
+        //System.out.println("Picking First move" + shotValue);
         //check if we have a worthwhile attack
-        if (worthShooting()) {
+        if (worthShooting(attack.getShotValue())) {
             System.out.println("shooting first");
-            parseShotTypeAndShoot(finalTarget, shotType);
+            parseShotTypeAndShoot(attack.getTarget(), attack.getShotType());
         }
 
         //move
-        destinationDir = chooseMove();
-        System.out.println("picked place to move" + Clock.getBytecodeNum());
+        //System.out.println("picked place to move" + Clock.getBytecodeNum());
 
         if (destinationDir != null) {
             if (movingSafely) {
@@ -47,8 +43,8 @@ public class RangedCombat extends Bot {
 
         //if we havent shot try again
         if (!rc.hasAttacked()) {
-            finalTarget = chooseTargetAndShotType();
-            parseShotTypeAndShoot(finalTarget, shotType);
+            attack = chooseTargetAndShotType();
+            parseShotTypeAndShoot(attack.getTarget(), attack.getShotType());
         }
 
 
@@ -58,8 +54,8 @@ public class RangedCombat extends Bot {
      * Tries to asses if its work shooting.
      * @return
      */
-    private static boolean worthShooting() {
-        return shotValue > 80;
+    private static boolean worthShooting( int shotValue) {
+        return shotValue > WORTHWHILE_SHOT_THRESHOLD;
     }
 
 
@@ -73,18 +69,10 @@ public class RangedCombat extends Bot {
      */
     private static Direction chooseMove() throws GameActionException {
         //decide whether to engage
-        if (nearbyEnemyRobots.length > 0) {
             System.out.println("trying to pick best spot" + Clock.getBytecodeNum());
             movingSafely = false;
             return pickOptimalDir();
-        }
-
-        movingSafely = true;
-        if (myRand.nextDouble() < .1) {
-            return here.directionTo(Util.rc.getInitialArchonLocations(enemy)[0]);
-        } else {
-            return Util.randomDirection();
-        }
+        
     }
 
     /**
@@ -103,8 +91,11 @@ public class RangedCombat extends Bot {
             System.out.println("picking best spot" + Clock.getBytecodeNum());
 
             potentialLoc = here.add(dir, rc.getType().strideRadius);
-            score = hypotheticalDamageToSpot(potentialLoc) + knownDamageToLoc(potentialLoc);
-            score += numberOfUnitsWeBlock(potentialLoc);
+
+            score = hypotheticalDamageToSpot(potentialLoc)
+                    + knownDamageToLoc(potentialLoc)
+                    + numberOfUnitsWeBlock(potentialLoc);
+
             if (score < bestScore && rc.canMove(dir)) {
                 bestScore = score;
                 bestDir = dir;
@@ -135,36 +126,6 @@ public class RangedCombat extends Bot {
         return num;
     }
 
-    /**
-     * NOT USED
-     * Checks if we can win the 1v1
-     * @param enemy enemy to check against
-     * @return true if we can win
-     */
-//    public static boolean canWin1v1(RobotInfo enemy) {
-//        if (enemy.type == RobotType.ARCHON || enemy.type == RobotType.GARDENER)
-//            return true;
-//        int turnsToKillEnemy = (int) (enemy.health / rc.getType().attackPower);
-//        int turnsForEnemyToKillUs = (int) (rc.getHealth() / enemy.getType().attackPower);
-//        return turnsToKillEnemy <= turnsForEnemyToKillUs;
-//    }
-
-    /**
-     * finds the number of allies that can also see this loc.
-     *
-     * @param loc place to check if they can see
-     * @return number of allies who can see the loc
-     */
-    public static int numOtherAlliesInSightRange(MapLocation loc) {
-        int ret = 0;
-        for (RobotInfo ally : nearbyAlliedRobots) {
-            if (ally.getType().sensorRadius > loc.distanceTo(ally.location) && (ally.type != RobotType.ARCHON || ally.type != RobotType.GARDENER))
-                ret++;
-        }
-        return ret;
-    }
-
-
     ///////////////////// Shooting and Target Micro/////////////////////
 
     /**
@@ -173,8 +134,9 @@ public class RangedCombat extends Bot {
      * @return
      * @throws GameActionException
      */
-    private static BodyInfo chooseTargetAndShotType() throws GameActionException {
+    private static potentialAttackStats chooseTargetAndShotType() throws GameActionException {
         int score;
+        int shotValue = 0;
         int bestScore = -999999;
         RobotInfo bestRobot = null;
         int canWeHitThemValue;
@@ -196,19 +158,7 @@ public class RangedCombat extends Bot {
             }
         }
 
-//            if(nearbyEnemyTrees.length>0) {
-//                float bestD = 0;
-//                float d;
-//                for(TreeInfo tree: nearbyEnemyTrees){
-//                    d = here.distanceTo(tree.location);
-//                    if(d < bestD && isDirectionSafe(tree)) {
-//                        bestD = d;
-//                        bestTree = tree;
-//                    }
-//                }
-//            }
-        shotType = calculateShotType(bestRobot);
-        return bestRobot;
+        return new potentialAttackStats(bestRobot,calculateShotType(bestRobot),shotValue);
     }
 
     /**
@@ -298,6 +248,23 @@ public class RangedCombat extends Bot {
     }
 
 
+    /**
+     * finds the number of allies that can also see this loc.
+     *
+     * @param loc place to check if they can see
+     * @return number of allies who can see the loc
+     */
+    public static int numOtherAlliesInSightRange(MapLocation loc) {
+        int ret = 0;
+        for (RobotInfo ally : nearbyAlliedRobots) {
+            if (ally.getType().sensorRadius > loc.distanceTo(ally.location) && (ally.type != RobotType.ARCHON || ally.type != RobotType.GARDENER))
+                ret++;
+        }
+        return ret;
+    }
+
+
+
     ///////////////////// These Might Belong in Util/////////////////////
     public static void shootSingleShot(BodyInfo target) throws GameActionException {
         if (rc.canFireSingleShot() && target != null) {
@@ -318,6 +285,44 @@ public class RangedCombat extends Bot {
             rc.firePentadShot(rc.getLocation().directionTo(target.getLocation()));
         }
 
+    }
+
+
+    ///////////class
+    private static class potentialAttackStats{
+        BodyInfo target;
+        String shotType;
+        int shotValue;
+
+        public potentialAttackStats(BodyInfo target, String shotType, int shotValue){
+            this.target = target;
+            this.shotType = shotType;
+            this.shotValue = shotValue;
+        }
+
+        public BodyInfo getTarget() {
+            return target;
+        }
+
+        public void setTarget(BodyInfo target) {
+            this.target = target;
+        }
+
+        public String getShotType() {
+            return shotType;
+        }
+
+        public void setShotType(String shotType) {
+            this.shotType = shotType;
+        }
+
+        public int getShotValue() {
+            return shotValue;
+        }
+
+        public void setShotValue(int shotValue) {
+            this.shotValue = shotValue;
+        }
     }
 }
 
