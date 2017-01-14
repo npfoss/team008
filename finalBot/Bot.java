@@ -204,7 +204,7 @@ public class Bot {
 	}
 
 	private static boolean tryMoveDirection(Direction dir) throws GameActionException {
-		if (dir == null){
+		if (dir == null) {
 			dir = here.directionTo(MapAnalysis.center);
 		}
 		if (tryMove(dir, type.strideRadius)) {
@@ -332,6 +332,12 @@ public class Bot {
 				}
 			} else if (couldLumberJackHitLoc(loc, robot)) {
 				damageToSpot += robot.getType().attackPower;
+			}
+		}
+
+		for (RobotInfo robot : nearbyAlliedRobots) {
+			if (robot.type == RobotType.LUMBERJACK && couldLumberJackHitLoc(loc, robot)) {
+				damageToSpot += robot.type.attackPower / 2;
 			}
 		}
 
