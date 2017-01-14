@@ -199,7 +199,7 @@ public class MapAnalysis extends Bot {
 				} else if (numGardener < 10){
 					rc.broadcast(13, 2);
 					rc.broadcast(14, 5);
-
+					
 				}
 
 			}
