@@ -14,7 +14,9 @@ public class RangedCombat extends Bot {
     //forgive me for I have sinned
     private static boolean movingSafely = true;
 
-
+    /*
+     * to call execute, number of enemies must be > 0
+     */
     public static void execute() throws GameActionException {
 
 
@@ -67,18 +69,10 @@ public class RangedCombat extends Bot {
      */
     private static Direction chooseMove() throws GameActionException {
         //decide whether to engage
-        if (nearbyEnemyRobots.length > 0) {
             System.out.println("trying to pick best spot" + Clock.getBytecodeNum());
             movingSafely = false;
             return pickOptimalDir();
-        }
-
-        movingSafely = true;
-        if (myRand.nextDouble() < .1) {
-            return here.directionTo(Util.rc.getInitialArchonLocations(enemy)[0]);
-        } else {
-            return Util.randomDirection();
-        }
+        
     }
 
     /**
