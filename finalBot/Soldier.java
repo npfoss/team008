@@ -4,17 +4,20 @@ import battlecode.common.*;
 
 public class Soldier extends Bot {
 
-    public Soldier(RobotController r){
+    public Soldier(RobotController r) throws GameActionException{
         super(r);
         //anything else soldier specific
     }
     
 	public void takeTurn() throws Exception{
 
-		nearbyEnemyRobots = rc.senseNearbyRobots(-1,enemy);
-		if(nearbyEnemyRobots.length > 0){
-			if(rc.getRoundNum() % 25 == 0){
-				Util.notifyFriendsOfEnemies(nearbyEnemyRobots);
+//		if(target != null){
+//			rc.setIndicatorDot(target, 255, 0, 0);
+//		}
+		RobotInfo[] enemies = rc.senseNearbyRobots(-1,enemy);
+		if(enemies.length > 0){
+			if(rc.getRoundNum() % 35 == 0){
+				Util.notifyFriendsOfEnemies(enemies);
 			}
 			RangedCombat.execute();
 			return;
