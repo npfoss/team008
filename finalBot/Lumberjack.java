@@ -75,8 +75,8 @@ public class Lumberjack extends Bot {
             if (lowestStrengthEnemy != null) {
                 rc.setIndicatorLine(rc.getLocation(), lowestStrengthEnemy.getLocation(),0, 255, 0);
                 rc.chop(lowestStrengthEnemy.getID());
-            } else {
-                rc.setIndicatorLine(rc.getLocation(), lowestStrengthNeutral.getLocation(),0, 255, 0);
+                //rc.setIndicatorLine(rc.getLocation(), lowestStrengthEnemy.getLocation(),0, 255, 0);
+            } else if(lowestStrengthNeutral!=null){
                 rc.chop(lowestStrengthNeutral.getID());
             }
         } else {
@@ -91,14 +91,14 @@ public class Lumberjack extends Bot {
                 if (lowestStrengthEnemy != null) {
                     rc.setIndicatorLine(rc.getLocation(), lowestStrengthEnemy.getLocation(),0, 255, 0);
                     rc.chop(lowestStrengthEnemy.getID());
-                } else {
-                    rc.setIndicatorLine(rc.getLocation(), lowestStrengthNeutral.getLocation(),0, 255, 0);
+                    //rc.setIndicatorLine(rc.getLocation(), lowestStrengthEnemy.getLocation(),0, 255, 0);
+                } else if(lowestStrengthNeutral != null){
                     rc.chop(lowestStrengthNeutral.getID());
                 }
             }
         }
         if(rc.canStrike()){
-            System.out.println("uh oh, didn't chop");
+            //System.out.println("uh oh, didn't chop");
         }
     }
 

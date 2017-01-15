@@ -10,13 +10,14 @@ public class Soldier extends Bot {
     }
     
 	public void takeTurn() throws Exception{
+
 //		if(target != null){
 //			rc.setIndicatorDot(target, 255, 0, 0);
 //		}
-		RobotInfo[] enemies = rc.senseNearbyRobots(-1,enemy);
-		if(enemies.length > 0){
-			if(rc.getRoundNum() % 35 == 0){
-				Util.notifyFriendsOfEnemies(enemies);
+
+		if(nearbyEnemyRobots.length > 0){
+			if((rc.getRoundNum() +rc.getID()) % 25 == 0){
+				Util.notifyFriendsOfEnemies(nearbyEnemyRobots);
 			}
 			RangedCombat.execute();
 			return;
@@ -24,7 +25,7 @@ public class Soldier extends Bot {
 		if(target == null){
 			assignNewTarget();
 		}
-		else if (target != null && rc.getLocation().distanceTo(target) < 2 && enemies.length == 0){
+		else if (target != null && rc.getLocation().distanceTo(target) < 3 && nearbyEnemyRobots.length == 0){
 			Messaging.removeEnemyArmyLocation(target);
 			Messaging.removeEnemyUnitLocation(target);
 			target = null;
