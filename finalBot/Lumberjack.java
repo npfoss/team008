@@ -35,35 +35,36 @@ public class Lumberjack extends Bot {
 			int start = Clock.getBytecodeNum();
             doLumberjackMicro();
             System.out.println("micro took " + (Clock.getBytecodeNum() - start) + " bytecodes");
-            if ( rc.canStrike() ){
-                cutDownTrees();
+        } else {
+            if(target == null){
+                assignNewTarget();
             }
-        } else {// don't need to worry about bullets, should always move safely
-            // move to best tree-cutting location
-            if (nearbyNeutralTrees.length + nearbyEnemyTrees.length > 0) {
-                optimizeLocForWoodcutting(nearbyNeutralTrees, nearbyEnemyTrees);
-                // chop best trees
-                cutDownTrees();
-            } else { // no trees in sight
-
-                // TODO: move to where the scout tells us instead
-                if(target == null){
-                    assignNewTarget();
+            if (target != null && Util.distanceSquaredTo(here, target) < 6){
+                if (debug) { System.out.print("removing distress loc... "); }
+                if( !Messaging.removeDistressLocation(target)) {
+                    if (debug) { System.out.println("failed"); }
+                    Messaging.removeEnemyTreeLocation(target);
                 }
-        		else if (target != null && rc.getLocation().distanceTo(target) < 2){
-                    Messaging.removeEnemyArmyLocation(target);
-                    Messaging.removeEnemyUnitLocation(target);
-                    target = null;
-                    assignNewTarget();
-                }
-                if(target != null){
-                    goTo(target);
-                }
-        		else{
+                target = null;
+                assignNewTarget();
+            }
+            if(target != null){
+                goTo(target);
+            } else{
+                if (nearbyNeutralTrees.length + nearbyEnemyTrees.length > 0) {
+                    // move to best tree-cutting location
+                    optimizeLocForWoodcutting(nearbyNeutralTrees, nearbyEnemyTrees);
+                    // chop best trees
+                    cutDownTrees();
+                } else {
                     goTo(here.directionTo(Util.rc.getInitialArchonLocations(enemy)[0]));
                 }
             }
         }
+        if ( rc.canStrike() ){
+            cutDownTrees();
+        }
+
         if (rc.canStrike() && !rc.hasMoved()){
             turnsWithoutMovingOrAttacking += 1;
         } else {
@@ -72,6 +73,15 @@ public class Lumberjack extends Bot {
         }
         if (debug) { System.out.println("turnsWithoutMovingOrAttacking: " + turnsWithoutMovingOrAttacking); }
 	}
+
+    public void assignNewTarget() throws GameActionException {
+        target = Messaging.getClosestEnemyTreeLocation(here);
+        MapLocation alt = Messaging.getClosestDistressSignal(here);
+        if (target == null || (alt != null && Util.distanceSquaredTo(here, alt) < Util.distanceSquaredTo(here, target))) {
+            target = alt;
+        }
+        if (debug && target != null) { System.out.println("new target: " + target.x + " " + target.y); }
+    }
 
 	public void cutDownTrees() throws Exception{
         TreeInfo lowestStrengthNeutral = Util.leastHealthTouchingRadius(nearbyNeutralTrees, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS);
