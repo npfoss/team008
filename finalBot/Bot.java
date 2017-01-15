@@ -5,33 +5,33 @@ import java.util.Random;
 import battlecode.common.*;
 
 public class Bot {
-	// for everyone to use
-	public static RobotController rc;
-	public static RobotType type;
-	public static Team enemy;
-	public static Team us;
-	public static MapLocation here;
 
-	// most units will need this
-	public static Direction dirIAmMoving;
-	public static MapLocation target;
-	public static Direction calculatedMove;
+	//for everyone to use
+    public static RobotController rc;
+    public static RobotType type;
+    public static Team enemy;
+    public static Team us;
+    public static MapLocation here;
+    
+    //most units will need this
+    public static Direction dirIAmMoving;
+    public static MapLocation target;
+    public static Direction calculatedMove;
 
-	// finding these is expensive so lets only do it once
-	public static TreeInfo[] nearbyNeutralTrees;
-	public static TreeInfo[] nearbyEnemyTrees;
-	public static TreeInfo[] nearbyAlliedTrees;
-	public static TreeInfo[] nearbyTrees;
-	public static RobotInfo[] nearbyAlliedRobots;
-	public static RobotInfo[] nearbyEnemyRobots;
-	public static BulletInfo[] nearbyBullets;
-	public static RobotInfo[] nearbyRobots;
-	public static Random myRand;
-	public static int strategy = 0;
-	public static int bytecode;
+    //finding these is expensive so lets only do it once
+    public static TreeInfo[] nearbyTrees;
+    public static TreeInfo[] nearbyNeutralTrees;
+    public static TreeInfo[] nearbyAlliedTrees;
+    public static TreeInfo[] nearbyEnemyTrees;
+    public static RobotInfo[] nearbyRobots;
+    public static RobotInfo[] nearbyAlliedRobots;
+    public static RobotInfo[] nearbyEnemyRobots;
+    public static BulletInfo[] nearbyBullets;
+    public static Random myRand;
+    public static int strategy = 0;
+    public static int bytecode;
 
-	public Bot() {
-	}
+    public Bot(){}
 
 	public Bot(RobotController r) throws GameActionException {
 		rc = r;
@@ -42,7 +42,6 @@ public class Bot {
 		myRand = new Random(rc.getID());
 		dirIAmMoving = null;
 		MapAnalysis.center = MapAnalysis.findCenter();
-
 	}
 
 	public void loop() {
@@ -56,15 +55,15 @@ public class Bot {
 				here = rc.getLocation();
 				// TODO: have our Util sort a single call rather than calling
 				// multiple times
-				nearbyNeutralTrees = rc.senseNearbyTrees(-1, Team.NEUTRAL);
-				nearbyEnemyTrees = rc.senseNearbyTrees(-1, enemy);
-				nearbyAlliedTrees = rc.senseNearbyTrees(-1, us);
-				nearbyTrees = rc.senseNearbyTrees(-1);
-				nearbyBullets = rc.senseNearbyBullets();
+                nearbyTrees = rc.senseNearbyTrees(-1);
+                nearbyNeutralTrees = rc.senseNearbyTrees(-1, Team.NEUTRAL);
+                nearbyAlliedTrees = rc.senseNearbyTrees(-1, us);
+                nearbyEnemyTrees = rc.senseNearbyTrees(-1, enemy);
 				nearbyRobots = rc.senseNearbyRobots(-1);
-				nearbyAlliedRobots = rc.senseNearbyRobots(-1, us);
-				nearbyEnemyRobots = rc.senseNearbyRobots(-1, enemy);
-				if (rc.getRoundNum() + 5 > GameConstants.GAME_DEFAULT_ROUNDS
+                nearbyAlliedRobots = rc.senseNearbyRobots(-1, us);
+                nearbyEnemyRobots = rc.senseNearbyRobots(-1, enemy);
+                nearbyBullets = rc.senseNearbyBullets();
+                if (rc.getRoundNum() + 5 > GameConstants.GAME_DEFAULT_ROUNDS
 						|| rc.getTeamVictoryPoints() + rc.getTeamBullets() / 10 > 1000) {
 					rc.donate(((int) (rc.getTeamBullets() / 10)) * 10);
 				}
@@ -114,6 +113,15 @@ public class Bot {
 			target = Messaging.getClosestEnemyUnitLocation(here);
 		}
 	}
+
+    public static void notifyFriendsOfEnemies(RobotInfo[] enemies) throws GameActionException{
+        if(enemies.length == 1 && !(type == RobotType.ARCHON || type == RobotType.GARDENER)){
+            Messaging.updateEnemyUnitLocation(enemies[0].location);
+        }
+        else if (enemies.length > 1 || (type == RobotType.ARCHON || type == RobotType.GARDENER)){
+            Messaging.updateEnemyArmyLocation(Util.centroidOfUnits(enemies));
+        }
+    }
 
 	/******* ALL NAVIGATION METHODS BELOW *******/
 	// TODO: navigate/implement bugging

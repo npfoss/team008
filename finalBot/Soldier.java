@@ -17,7 +17,7 @@ public class Soldier extends Bot {
 
 		if(nearbyEnemyRobots.length > 0){
 			if((rc.getRoundNum() +rc.getID()) % 25 == 0 || target == null){
-				Util.notifyFriendsOfEnemies(nearbyEnemyRobots);
+				notifyFriendsOfEnemies(nearbyEnemyRobots);
 			}
 			RangedCombat.execute();
 			return;
