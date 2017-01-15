@@ -67,17 +67,17 @@ public class Lumberjack extends Bot {
         if (rc.canStrike() && !rc.hasMoved()){
             turnsWithoutMovingOrAttacking += 1;
         } else {
-            System.out.println("I did something this turn?" + rc.canStrike() + rc.hasMoved());
+            if (debug) { System.out.println("I did something this turn?" + rc.canStrike() + rc.hasMoved()); }
             turnsWithoutMovingOrAttacking = 0;
         }
-        System.out.println("turnsWithoutMovingOrAttacking: " + turnsWithoutMovingOrAttacking);
+        if (debug) { System.out.println("turnsWithoutMovingOrAttacking: " + turnsWithoutMovingOrAttacking); }
 	}
 
 	public void cutDownTrees() throws Exception{
         TreeInfo lowestStrengthNeutral = Util.leastHealthTouchingRadius(nearbyNeutralTrees, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS);
         if (lowestStrengthNeutral != null && lowestStrengthNeutral.getHealth() <= GameConstants.LUMBERJACK_CHOP_DAMAGE) {
             // definitely prioritize, might have goodies
-            rc.setIndicatorLine(rc.getLocation(), lowestStrengthNeutral.getLocation(),0, 255, 0);
+            if (debug) { rc.setIndicatorLine(rc.getLocation(), lowestStrengthNeutral.getLocation(),0, 255, 0); }
             rc.chop(lowestStrengthNeutral.getID());
             return;
         }
@@ -91,15 +91,15 @@ public class Lumberjack extends Bot {
 
         if (lowestStrengthEnemy != null && lowestStrengthEnemy.getHealth() <= GameConstants.LUMBERJACK_CHOP_DAMAGE && lowestStrengthEnemy.getHealth() > RobotType.LUMBERJACK.attackPower) {
             // seems optimal to take out enemy trees when possible, but if low enough to strike then maybe do that
-            rc.setIndicatorLine(rc.getLocation(), lowestStrengthEnemy.getLocation(),0, 255, 0);
+            if (debug) { rc.setIndicatorLine(rc.getLocation(), lowestStrengthEnemy.getLocation(),0, 255, 0); }
             rc.chop(lowestStrengthEnemy.getID());
         } else if (Util.containsBodiesTouchingRadius(nearbyAlliedRobots, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS)){
             // not safe to strike, would hit friends
             if (lowestStrengthEnemy != null) {
-                rc.setIndicatorLine(rc.getLocation(), lowestStrengthEnemy.getLocation(),0, 255, 0);
+                if (debug) { rc.setIndicatorLine(rc.getLocation(), lowestStrengthEnemy.getLocation(),0, 255, 0); }
                 rc.chop(lowestStrengthEnemy.getID());
             } else if(lowestStrengthNeutral!=null){
-                rc.setIndicatorLine(rc.getLocation(), lowestStrengthNeutral.getLocation(),0, 255, 0);
+                if (debug) { rc.setIndicatorLine(rc.getLocation(), lowestStrengthNeutral.getLocation(),0, 255, 0); }
                 rc.chop(lowestStrengthNeutral.getID());
             }
         } else {
@@ -109,13 +109,13 @@ public class Lumberjack extends Bot {
                     Util.numBodiesTouchingRadius(nearbyEnemyTrees, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS))
                     * RobotType.LUMBERJACK.attackPower > GameConstants.LUMBERJACK_CHOP_DAMAGE) {
                 rc.strike();
-                rc.setIndicatorDot(rc.getLocation(), 0, 255, 0);
+                if (debug) { rc.setIndicatorDot(rc.getLocation(), 0, 255, 0); }
             } else { // chopping does more total damage
                 if (lowestStrengthEnemy != null) {
-                    rc.setIndicatorLine(rc.getLocation(), lowestStrengthEnemy.getLocation(),0, 255, 0);
+                    if (debug) { rc.setIndicatorLine(rc.getLocation(), lowestStrengthEnemy.getLocation(),0, 255, 0); }
                     rc.chop(lowestStrengthEnemy.getID());
                 } else if(lowestStrengthNeutral != null){
-                    rc.setIndicatorLine(rc.getLocation(), lowestStrengthNeutral.getLocation(),0, 255, 0);
+                    if (debug) { rc.setIndicatorLine(rc.getLocation(), lowestStrengthNeutral.getLocation(),0, 255, 0); }
                     rc.chop(lowestStrengthNeutral.getID());
                 }
             }
@@ -139,7 +139,7 @@ public class Lumberjack extends Bot {
 	public void doLumberjackMicro() throws Exception{
 	    // gets called when there are enemies that can be seen
         // don't worry about chopping trees here, that's checked for after. only enemies
-        System.out.println("whee micro");
+        if (debug) { System.out.println("whee micro"); }
 
         // TODO: add kamikaze function: if about to die anyways, just go for best place to attack for final stand
 
@@ -148,7 +148,7 @@ public class Lumberjack extends Bot {
                         // there should be a way to remove the attack bit here such that
                         //     a better location won't be disregarded since we can attack
                         //     here and then move there
-        System.out.println("here score " + bestMoveScore);
+        if (debug) { System.out.println("here score " + bestMoveScore); }
         MapLocation bestLoc = here;
         float bestLocAttackScore = -999;
         MapLocation currLoc;
@@ -164,11 +164,11 @@ public class Lumberjack extends Bot {
             // stop when the average time it takes to eval puts us over the WHEN_TO_STOP_MICRO threshold
             currLoc = here.add(Util.radians(currentTheta), stridedist);
             if (rc.canMove(currLoc)) {
-                rc.setIndicatorDot(currLoc, 0, 0, (int)(1.0*currentTheta / 360 * 255));
+                if (debug) { rc.setIndicatorDot(currLoc, 0, 0, (int)(1.0*currentTheta / 360 * 255)); }
                 attackScore = evalForAttacking(currLoc);
                 score = evaluateLocation(currLoc) + (attackScoreHere < 0 ? 0 : MOVE_ATTACK_MOD * attackScoreHere);
                 //                                  if you're not going to attack anyways, it doesn't matter how bad it is
-                System.out.println(currentTheta + " " + currLoc.x + " " + currLoc.y + " score " + score);
+                if (debug) { System.out.println(currentTheta + " " + currLoc.x + " " + currLoc.y + " score " + score); }
                 if (score > bestMoveScore) {
                     bestLoc = currLoc;
                     bestLocAttackScore = attackScore;
@@ -185,23 +185,23 @@ public class Lumberjack extends Bot {
                 currentTheta = 0;
                 dtheta = dtheta * 5 / 3; // it'll get more dense as it gets closer so adjust a little for that
                 if (stridedist < .187) { // probably silly to keep checking
-                    System.out.print("I've tried everything dammit");
+                    if (debug) { System.out.print("I've tried everything dammit"); }
                     break;
                 }
             }
         }
-        System.out.println("tried " + numLocsEvaled + " locs and finished at theta " + currentTheta + " and radius " + stridedist);
+        if (debug) { System.out.println("tried " + numLocsEvaled + " locs and finished at theta " + currentTheta + " and radius " + stridedist); }
 
         if ( attackScoreHere > bestLocAttackScore && attackScoreHere > 0){
             // attack first, then move
-            rc.setIndicatorDot(here, 255,0,0); //red dot == SMASH
+            if (debug) {rc.setIndicatorDot(here, 255,0,0); }//red dot == SMASH
             rc.strike();
             rc.move(bestLoc);
 
         } else if (bestLocAttackScore > 0){
             // move first, then attack
             rc.move(bestLoc);
-            rc.setIndicatorDot(bestLoc, 255,0,0); //red dot == SMASH
+            if (debug) { rc.setIndicatorDot(bestLoc, 255, 0, 0); }//red dot == SMASH
             rc.strike();
         } else if (bestLoc != here){
             // just move
