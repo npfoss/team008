@@ -6,7 +6,7 @@ import battlecode.common.*;
 
 public class Bot {
 	//for debugging
-	public boolean debug = true;
+	public boolean debug = false;
 
 	//for everyone to use
     public static RobotController rc;
