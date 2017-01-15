@@ -23,7 +23,7 @@ public class Lumberjack extends Bot {
         HYPOTHETICAL_DAMAGE_MOD = -.8f; // TODO: actually optimize
         PROGRESS_MOD = -.2f; // no idea what to make this TODO: don't just guess
         PROXIMITY_MOD = -2; // no idea... TODO: optimize
-        IMPATIENCE_MOD = -.05f; // TODO: optimize
+        IMPATIENCE_MOD = -.07f; // TODO: optimize
 	}
 	
 	public void takeTurn() throws Exception{
@@ -67,8 +67,10 @@ public class Lumberjack extends Bot {
         if (rc.canStrike() && !rc.hasMoved()){
             turnsWithoutMovingOrAttacking += 1;
         } else {
+            System.out.println("I did something this turn?" + rc.canStrike() + rc.hasMoved());
             turnsWithoutMovingOrAttacking = 0;
         }
+        System.out.println("turnsWithoutMovingOrAttacking: " + turnsWithoutMovingOrAttacking);
 	}
 
 	public void cutDownTrees() throws Exception{
@@ -201,7 +203,7 @@ public class Lumberjack extends Bot {
             rc.move(bestLoc);
             rc.setIndicatorDot(bestLoc, 255,0,0); //red dot == SMASH
             rc.strike();
-        } else {
+        } else if (bestLoc != here){
             // just move
             rc.move(bestLoc);
         }

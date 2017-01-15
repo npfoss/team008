@@ -416,7 +416,7 @@ public class Bot {
 
 		for (RobotInfo robot : nearbyAlliedRobots) {
 			if (robot.type == RobotType.LUMBERJACK && couldLumberJackHitLoc(loc, robot)) {
-				damageToSpot += robot.type.attackPower / 2;
+				damageToSpot += robot.type.attackPower;
 			}
 		}
 		return damageToSpot;
