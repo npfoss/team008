@@ -49,7 +49,7 @@ public class Gardener extends Bot {
 			Util.notifyFriendsOfEnemies(nearbyEnemyRobots);
 		}
 		if (isExploring) {
-			if (myRand.nextDouble() < .2) {
+			if (dirIAmMoving == null || myRand.nextDouble() < .2) {
 				dirIAmMoving = findOpenSpaces();
 			}
 			goTo(dirIAmMoving);
