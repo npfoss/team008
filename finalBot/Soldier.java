@@ -16,7 +16,7 @@ public class Soldier extends Bot {
 //		}
 
 		if(nearbyEnemyRobots.length > 0){
-			if(rc.getRoundNum() % 35 == 0){
+			if((rc.getRoundNum() +rc.getID()) % 25 == 0){
 				Util.notifyFriendsOfEnemies(nearbyEnemyRobots);
 			}
 			RangedCombat.execute();
@@ -25,7 +25,7 @@ public class Soldier extends Bot {
 		if(target == null){
 			assignNewTarget();
 		}
-		else if (target != null && rc.getLocation().distanceTo(target) < 2 && Bot.nearbyEnemyRobots.length == 0){
+		else if (target != null && rc.getLocation().distanceTo(target) < 3 && nearbyEnemyRobots.length == 0){
 			Messaging.removeEnemyArmyLocation(target);
 			Messaging.removeEnemyUnitLocation(target);
 			target = null;
