@@ -1,18 +1,9 @@
 package team008.finalBot;
-import battlecode.common.*;
-import sun.reflect.generics.tree.Tree;
 
+import battlecode.common.*;
 import java.util.ArrayList;
 
-
-/**
- * Created by Jonah on 1/13/2017.
- */
 public class FastMethods extends Bot {
-    public static float fastDistanceSquaredTo(MapLocation loc){
-        return ((loc.x-here.x)*(loc.x - here.x)) + ((loc.y-here.y)*(loc.y - here.y));
-    }
-
 
     public static void initializeNearbyEnemeyRobots(){
         ArrayList<RobotInfo> holder = new ArrayList<>();

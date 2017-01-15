@@ -21,7 +21,7 @@ public class Archon extends Bot {
 			unitsBuilt++;
 		}
 		if(nearbyEnemyRobots.length > 0){
-				Util.notifyFriendsOfEnemies(nearbyEnemyRobots);
+				notifyFriendsOfEnemies(nearbyEnemyRobots);
 		}
 
 

@@ -4,7 +4,37 @@ import battlecode.common.*;
 
 public class RobotPlayer {
     public static void run(RobotController rc) throws GameActionException {
+
+        TreeInfo[] nearby = rc.senseNearbyTrees();
+        if (nearby.length > 0){
+            int start = Clock.getBytecodeNum();
+            for (int i = nearby.length; i-- > 0;) {
+                float dist = rc.getLocation().distanceTo(nearby[i].getLocation());
+                dist = rc.getLocation().distanceTo(nearby[i].getLocation());
+                dist = rc.getLocation().distanceTo(nearby[i].getLocation());
+                dist = rc.getLocation().distanceTo(nearby[i].getLocation());
+            }
+            System.out.println("method 1: " + (Clock.getBytecodeNum() - start));
+
+            start = Clock.getBytecodeNum();
+            for(TreeInfo t : nearby) {
+                float dist = rc.getLocation().distanceTo(t.getLocation());
+                dist = rc.getLocation().distanceTo(t.getLocation());
+                dist = rc.getLocation().distanceTo(t.getLocation());
+                dist = rc.getLocation().distanceTo(t.getLocation());
+            }
+            System.out.println("method 2: " + (Clock.getBytecodeNum() - start));
+        }
+        /********** FINDINGS :
+         * method 1 is better with only 1-2 accessions (using nearby[i] / t)
+         *
+         * method 2 is better with 3 accessions or more
+         */
+
         while (true) {
+            while(rc.getTeamBullets() >= GameConstants.BULLET_EXCHANGE_RATE){
+                rc.donate(GameConstants.BULLET_EXCHANGE_RATE);
+            }
             Clock.yield();
         }
     }

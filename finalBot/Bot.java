@@ -109,6 +109,15 @@ public class Bot {
 		}
 	}
 
+	public static void notifyFriendsOfEnemies(RobotInfo[] enemies) throws GameActionException{
+		if(enemies.length == 1 && !(type == RobotType.ARCHON || type == RobotType.GARDENER)){
+			Messaging.updateEnemyUnitLocation(enemies[0].location);
+		}
+		else if (enemies.length > 1){
+			Messaging.updateEnemyArmyLocation(Util.centroidOfUnits(enemies));
+		}
+	}
+
 	/******* ALL NAVIGATION METHODS BELOW *******/
 	// TODO: navigate/implement bugging
 	private static MapLocation dest = null;

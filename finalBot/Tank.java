@@ -10,7 +10,7 @@ public class Tank extends Bot {
 	public void takeTurn() throws Exception{
 		if(nearbyEnemyRobots.length > 0){
 			if((rc.getRoundNum() +rc.getID() )% 25 == 0){
-				Util.notifyFriendsOfEnemies(nearbyEnemyRobots);
+				notifyFriendsOfEnemies(nearbyEnemyRobots);
 			}
 			RangedCombat.execute();
 			return;

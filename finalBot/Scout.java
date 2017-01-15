@@ -36,7 +36,7 @@ public class Scout extends Bot {
 	  // rc.setIndicatorDot(here,0,255,0);
 		if(nearbyEnemyRobots.length > 0 && rc.getRoundNum() % 10 == 0){
 			//rc.setIndicatorDot(enemies[0].location, 255, 0, 0);
-			Util.notifyFriendsOfEnemies(nearbyEnemyRobots);
+			notifyFriendsOfEnemies(nearbyEnemyRobots);
 		}
        return;
 	}
