@@ -23,7 +23,6 @@ public class FastMethods extends Bot {
             }
         }
         nearbyAlliedRobots = holder.toArray( new RobotInfo[holder.size()]);
-
     }
 
     public static void initializeNearbyEnemyTrees(){
@@ -53,7 +52,6 @@ public class FastMethods extends Bot {
             }
         }
         nearbyAlliedTrees = holder.toArray( new TreeInfo[holder.size()]);
-
     }
 
 
