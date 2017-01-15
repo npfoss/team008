@@ -128,7 +128,7 @@ public class Bot {
 	private static MapLocation dest = null;
 	private static boolean isBugging = false;
 
-	private static int dangerRating(MapLocation loc) {
+	protected static int dangerRating(MapLocation loc) {
 		float danger = 0;
 		for (BulletInfo b : nearbyBullets) {
 			if (willCollide(b, loc)) {
@@ -153,15 +153,14 @@ public class Bot {
 						}
 					}
 				} else {
-					if(!doneRangers){
-					if (loc.distanceTo(l.location) < l.type.bodyRadius + l.type.strideRadius + l.type.bulletSpeed
-							+ RobotType.SCOUT.bodyRadius) {
+					if (!doneRangers) {
+						if (loc.distanceTo(l.location) < l.type.bodyRadius + l.type.strideRadius + l.type.bulletSpeed
+								+ RobotType.SCOUT.bodyRadius) {
 
-						danger += (10.0 - loc.distanceTo(l.location))*10.0* l.type.attackPower ;
-					}
-					else{
-					doneRangers = true;	
-					}
+							danger += (10.0 - loc.distanceTo(l.location)) * 10.0 * l.type.attackPower;
+						} else {
+							doneRangers = true;
+						}
 					}
 				}
 
@@ -229,7 +228,7 @@ public class Bot {
 	private static int tryMove(Direction dir, float dist, boolean makeMove) throws GameActionException {
 		if (rc.canMove(dir, dist)) {
 			int danger = 0;
-			if((nearbyBullets.length > 5 || nearbyEnemyRobots.length > 1 )&& type == RobotType.LUMBERJACK){
+			if((nearbyBullets.length > 5 && nearbyEnemyRobots.length > 1 )&& type == RobotType.LUMBERJACK){
 				//for now since attacking > dodging
 			}else{
 			danger = dangerRating(here.add(dir, dist));

@@ -11,7 +11,7 @@ public class Scout extends Bot {
 	public Scout(RobotController r) throws GameActionException {
 		super(r);
 		targetGardenerID = -1;
-		initLocations = rc.getInitialArchonLocations(enemy);
+		initLocations = MapAnalysis.initialEnemyArchonLocations;
 		locNum = 0;
 	}
 
@@ -29,7 +29,7 @@ public class Scout extends Bot {
 		}
 
 		// rc.setIndicatorDot(here,0,255,0);
-		if (nearbyEnemyRobots.length > 0 && rc.getRoundNum() % 10 == 0) {
+		if (nearbyEnemyRobots.length > 0 && rc.getRoundNum() +rc.getID() % 25 == 0) {
 			// rc.setIndicatorDot(enemies[0].location, 255, 0, 0);
 			notifyFriendsOfEnemies(nearbyEnemyRobots);
 		}
@@ -97,29 +97,29 @@ public class Scout extends Bot {
 			if (targetGardenerID != -1) {
 				System.out.println("new target gardener: id = " + targetGardenerID);
 				targetG = rc.senseRobot(targetGardenerID);
-				updateTargetLoc(nearbyTrees, targetG);
+				//updateTargetLoc(nearbyTrees, targetG);
 			}
 		}
 		if (targetGardenerID != -1) {
 			targetG = rc.senseRobot(targetGardenerID);
-			if (targetLoc == null && rc.getRoundNum() % 10 == 6) {
 				updateTargetLoc(nearbyTrees, targetG);
-			}
 			if (targetLoc == null) {
 				System.out.println("can't find a tree, but still trying to kill gardener");
 				if (here.distanceTo(targetG.location) < 2.5) {
 					RangedCombat.shootSingleShot(targetG);
-				} else {
-					goTo(targetG.location);
 				}
+				goTo(targetG.location);
 			} else if (inGoodSpot(targetLoc)) {
 				// rc.setIndicatorLine(here,targetG.location,0,0,255);
+				shiftButtSlightly(targetLoc, targetG);
 				harassFromTree(targetG);
 			} else {
 				// rc.setIndicatorLine(here,targetLoc,0,0,255);
 				System.out.println("heading toward tree");
-				// System.out.println(here.distanceTo(bestTree.location));
-				goTo(targetLoc);
+				if (here.distanceTo(targetG.location) < 2.5) {
+					RangedCombat.shootSingleShot(targetG);
+				}
+					goTo(targetLoc);
 			}
 			return true;
 		}
@@ -131,31 +131,23 @@ public class Scout extends Bot {
 		if (targetLoc != null) {
 			inTree = inGoodSpot(targetLoc);
 			if (inTree && rc.canSenseRobot(targetGardenerID)) {
-				if (rc.getHealth() > rc.senseRobot(targetGardenerID).health * 1.5 || (rc.getHealth() == RobotType.SCOUT.maxHealth && nearbyEnemyRobots.length < 4))
-					return false;
+				for (RobotInfo enemy : nearbyEnemyRobots) {
+					if (enemy.location.distanceTo(here) < RobotType.LUMBERJACK.bodyRadius +RobotType.LUMBERJACK.strideRadius + 1.1
+							+ RobotType.SCOUT.bodyRadius) {
+						if (enemy.type == RobotType.LUMBERJACK) {
+							return true;
+						}
+					} else {
+						break;
+					}
+				}
+			}
+			else{
+				if(dangerRating(here) > 0){
+					return true;
+				}
 			}
 		}
-		BulletInfo closestBullet = null;
-		if(nearbyBullets.length > 0)
-			closestBullet = nearbyBullets[0];
-		if (closestBullet != null && here.distanceTo(closestBullet.location) < 3) {
-			System.out.println("in danger.");
-			return true;
-		}
-		double notInTreeMultiplier = 1;
-		if (!inTree) {
-			notInTreeMultiplier = 1.75;
-		}
-		for (RobotInfo e : nearbyEnemyRobots) {
-			if (e.location.distanceTo(here) > 3 * notInTreeMultiplier)
-				break;
-			if (e.type == RobotType.LUMBERJACK || e.type == RobotType.SOLDIER || e.type == RobotType.SCOUT
-					|| e.type == RobotType.TANK) {
-				System.out.println("in danger.");
-				return true;
-			}
-		}
-		System.out.println("not in danger");
 		return false;
 	}
 
@@ -166,12 +158,15 @@ public class Scout extends Bot {
 		}
 	}
 
-	private static void updateTargetLoc(TreeInfo[] nearbyTrees, RobotInfo targetG) {
+	private static void updateTargetLoc(TreeInfo[] nearbyTrees, RobotInfo targetG) throws GameActionException {
 		TreeInfo bestTree = closestSafeTree(nearbyTrees, targetG.location);
 		if (bestTree != null) {
 			MapLocation outerEdge = bestTree.location.add(bestTree.location.directionTo(targetG.location),
 					bestTree.radius);
-			targetLoc = outerEdge.add(outerEdge.directionTo(bestTree.location), (float) (1.01));
+			targetLoc = outerEdge.add(targetG.location.directionTo(bestTree.location),(float) 1.005);
+			rc.setIndicatorLine(here, targetLoc, 255, 255, 255);
+			rc.setIndicatorLine(here, bestTree.location, 0, 0, 0);
+
 		}
 	}
 
@@ -182,16 +177,13 @@ public class Scout extends Bot {
 		float bestDist = 5;
 		float dist;
 		for (int i = trees.length; i-- > 0;) {
-			dist = toHere.distanceTo(trees[i].location);
+			dist = toHere.distanceTo(trees[i].location) + here.distanceTo(trees[i].location)/10;
 			if (dist < bestDist) {
-				RobotInfo closestAlly = Util.closestRobot(nearbyAlliedRobots, trees[i].location);
-				if (closestAlly == null || closestAlly.location.distanceTo(trees[i].location) > 2) {
-					RobotInfo[] enemiesWithinRangeOfTree = rc.senseNearbyRobots(trees[i].location, 3, enemy);
+					RobotInfo[] enemiesWithinRangeOfTree = rc.senseNearbyRobots(trees[i].location, (float) 3.5, enemy);
 					if (consistsOfOnlyHarmlessUnits(enemiesWithinRangeOfTree)) {
 						bestDist = dist;
 						closest = trees[i];
 					}
-				}
 			}
 		}
 		return closest;
@@ -218,13 +210,28 @@ public class Scout extends Bot {
 
 	private static boolean consistsOfOnlyHarmlessUnits(RobotInfo[] enemiesWithinRangeOfGardener) {
 		for (RobotInfo e : enemiesWithinRangeOfGardener) {
-			if (e.type != RobotType.ARCHON && e.type != RobotType.GARDENER) {
+			if (e.type == RobotType.LUMBERJACK){//(e.type != RobotType.ARCHON && e.type != RobotType.GARDENER) {
 				return false;
 			}
 		}
 		return true;
 	}
 
+	private static void shiftButtSlightly(MapLocation targetLoc, RobotInfo targetG) throws GameActionException {
+		RobotInfo meanie = closestShooter();
+		if (meanie != null) {
+			MapLocation outerEdge = targetLoc.add(targetLoc.directionTo(targetG.location), nearbyTrees[0].radius);
+			goTo(outerEdge.add(closestShooter().location.directionTo(targetLoc), (float) 1.005));
+		}
+	}
+	private static RobotInfo closestShooter(){
+		for (RobotInfo r : nearbyRobots){
+			if (r.type == RobotType.SCOUT || r.type == RobotType.SOLDIER || r.type == RobotType.TANK){
+				return r;
+			}
+		}
+		return null;
+	}
 	/**
 	 * Checks how close we are to our target tree
 	 * 
