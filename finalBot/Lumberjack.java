@@ -2,8 +2,6 @@ package team008.finalBot;
 
 import battlecode.common.*;
 
-import java.awt.*;
-
 public class Lumberjack extends Bot {
     public int WHEN_TO_STOP_MICRO;
     public float MOVE_ATTACK_MOD;
@@ -206,7 +204,7 @@ public class Lumberjack extends Bot {
         //     but NOT attacking damage
         // TODO: take into account other strategery like defending our trees/units, swarming or not, etc
 
-        float distToNearestEnemy = Util.distToClosestBody(nearbyEnemyRobots, loc);
+        float distToNearestEnemy = (loc == here ? here.distanceTo(nearbyEnemyRobots[0].getLocation()) : Util.distToClosestBody(nearbyEnemyRobots, loc));
         /*if (distToNearestEnemy < GameConstants.LUMBERJACK_STRIKE_RADIUS + RobotType.LUMBERJACK.strideRadius + 1){
             distToNearestEnemy = 0; // close enough to hit already
         }*/
