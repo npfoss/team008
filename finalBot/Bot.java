@@ -230,7 +230,7 @@ public class Bot {
 		if (rc.canMove(dir, dist)) {
 			int danger = 0;
 			if((nearbyBullets.length > 5 || nearbyEnemyRobots.length > 1 )&& type == RobotType.LUMBERJACK){
-				
+				//for now since attacking > dodging
 			}else{
 			danger = dangerRating(here.add(dir, dist));
 			}
