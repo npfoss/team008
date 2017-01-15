@@ -128,7 +128,7 @@ public class Bot {
 	private static MapLocation dest = null;
 	private static boolean isBugging = false;
 
-	private static int dangerRating(MapLocation loc) {
+	protected static int dangerRating(MapLocation loc) {
 		float danger = 0;
 		for (BulletInfo b : nearbyBullets) {
 			if (willCollide(b, loc)) {
@@ -153,15 +153,14 @@ public class Bot {
 						}
 					}
 				} else {
-					if(!doneRangers){
-					if (loc.distanceTo(l.location) < l.type.bodyRadius + l.type.strideRadius + l.type.bulletSpeed
-							+ RobotType.SCOUT.bodyRadius) {
+					if (!doneRangers) {
+						if (loc.distanceTo(l.location) < l.type.bodyRadius + l.type.strideRadius + l.type.bulletSpeed
+								+ RobotType.SCOUT.bodyRadius) {
 
-						danger += (10.0 - loc.distanceTo(l.location))*10.0* l.type.attackPower ;
-					}
-					else{
-					doneRangers = true;	
-					}
+							danger += (10.0 - loc.distanceTo(l.location)) * 10.0 * l.type.attackPower;
+						} else {
+							doneRangers = true;
+						}
 					}
 				}
 

@@ -14,7 +14,7 @@ public class Lumberjack extends Bot {
 	public void takeTurn() throws Exception{
         if(nearbyEnemyRobots.length > 0) {
         	//Let other robots know where you are!
-        	if(rc.getRoundNum() % 25 == 0){
+        	if((rc.getRoundNum() +rc.getID()) % 25 == 0 || target == null){
 				notifyFriendsOfEnemies(nearbyEnemyRobots);
 			}
             // Use strike() to hit all nearby robots!
