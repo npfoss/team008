@@ -25,6 +25,7 @@ public class FastMethods extends Bot {
         nearbyAlliedRobots = holder.toArray( new RobotInfo[holder.size()]);
 
     }
+
     public static void initializeNearbyEnemyTrees(){
         ArrayList<TreeInfo> holder = new ArrayList<>();
         for(TreeInfo tree: nearbyTrees){

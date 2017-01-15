@@ -52,7 +52,7 @@ public class Util extends Bot {
         TreeInfo closest = null;
         float bestDist = 999999;
         float dist;
-        for (int i = 0; i < size; i++) {
+        for (int i = size; i-- > 0;) {
             dist = distanceSquaredTo(toHere, robots[i].location);
             if (dist < bestDist) {
                 bestDist = dist;
@@ -86,12 +86,12 @@ public class Util extends Bot {
         RobotInfo closest = null;
         float bestDist = 99999;
         float dist;
-        for (int i = robots.length; i-- > 0;) {
-            if (robots[i].type == type && robots[i].getTeam() == team) {
-                dist = distanceSquaredTo(toHere, robots[i].location);
+        for (RobotInfo bot : robots) {
+            if (bot.type == type && bot.getTeam() == team) {
+                dist = distanceSquaredTo(toHere, bot.location);
                 if (dist < bestDist) {
                     bestDist = dist;
-                    closest = robots[i];
+                    closest = bot;
                 }
             }
         }
@@ -140,10 +140,10 @@ public class Util extends Bot {
     public static RobotInfo leastHealth(RobotInfo[] robots, boolean excludeArchons) {
         RobotInfo ret = null;
         double minHealth = 99999;
-        for (int i = 0; i < robots.length; i++) {
-            if (robots[i].health < minHealth && ( !excludeArchons || robots[i].type != RobotType.ARCHON)) {
-                minHealth = robots[i].health;
-                ret = robots[i];
+        for (RobotInfo bot : robots) {
+            if (bot.health < minHealth && ( !excludeArchons || bot.type != RobotType.ARCHON)) {
+                minHealth = bot.health;
+                ret = bot;
             }
         }
         return ret;
@@ -152,10 +152,10 @@ public class Util extends Bot {
     public static TreeInfo leastHealth(TreeInfo[] trees, boolean canWater) {
         TreeInfo ret = null;
         double minHealth = 1e99;
-        for (int i = 0; i < trees.length; i++) {
-            if ((!canWater || rc.canWater(trees[i].ID)) && trees[i].health < minHealth) {
-                minHealth = trees[i].health;
-                ret = trees[i];
+        for (TreeInfo tree : trees) {
+            if ((!canWater || rc.canWater(tree.ID)) && tree.health < minHealth) {
+                minHealth = tree.health;
+                ret = tree;
             }
         }
         return ret;
