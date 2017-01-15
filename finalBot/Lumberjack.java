@@ -19,8 +19,8 @@ public class Lumberjack extends Bot {
         WHEN_TO_STOP_MICRO = RobotType.LUMBERJACK.bytecodeLimit - 2000; //TODO: don't just guess
         MOVE_ATTACK_MOD = 1; // TODO: actually optimize
         TREE_DAMAGE_MOD = .2f; // TODO: actually optimize
-        KNOWN_DAMAGE_MOD = -1;
-        HYPOTHETICAL_DAMAGE_MOD = -.8f; // TODO: actually optimize
+        KNOWN_DAMAGE_MOD = -1.2f;
+        HYPOTHETICAL_DAMAGE_MOD = -1f; // TODO: actually optimize
         PROGRESS_MOD = -.2f; // no idea what to make this TODO: don't just guess
         PROXIMITY_MOD = -2; // no idea... TODO: optimize
         IMPATIENCE_MOD = -.07f; // TODO: optimize
@@ -39,7 +39,7 @@ public class Lumberjack extends Bot {
             if(target == null){
                 assignNewTarget();
             }
-            if (target != null && Util.distanceSquaredTo(here, target) < 6){
+            if (target != null && Util.distanceSquaredTo(here, target) < 15 && nearbyEnemyRobots.length + nearbyEnemyTrees.length == 0){
                 if (debug) { System.out.print("removing distress loc... "); }
                 if( !Messaging.removeDistressLocation(target)) {
                     if (debug) { System.out.println("failed"); }
