@@ -163,7 +163,7 @@ public class Scout extends Bot {
 		if (bestTree != null) {
 			MapLocation outerEdge = bestTree.location.add(bestTree.location.directionTo(targetG.location),
 					bestTree.radius);
-			targetLoc = outerEdge.add(targetG.location.directionTo(bestTree.location),1);
+			targetLoc = outerEdge.add(targetG.location.directionTo(bestTree.location),(float) 1.005);
 			rc.setIndicatorLine(here, targetLoc, 255, 255, 255);
 			rc.setIndicatorLine(here, bestTree.location, 0, 0, 0);
 
