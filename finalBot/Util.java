@@ -214,7 +214,7 @@ public class Util extends Bot {
         return new Direction( myRand.nextFloat() * 2 * (float) Math.PI);
     }
 
-    public static float radians(int degrees){ return degrees / (float)Math.PI / 180; }
+    public static float radians(int degrees){ return degrees * (float)Math.PI / 180; }
 
     public static boolean containsBodiesTouchingRadius(BodyInfo[] robots, MapLocation toHere, float radius){
         for (BodyInfo bot : robots){

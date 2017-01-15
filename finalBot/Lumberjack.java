@@ -10,6 +10,8 @@ public class Lumberjack extends Bot {
     public float HYPOTHETICAL_DAMAGE_MOD;
     public float PROGRESS_MOD;
     public float PROXIMITY_MOD;
+    public float IMPATIENCE_MOD;
+    public int turnsWithoutMovingOrAttacking;
 
 	public Lumberjack(RobotController r) throws GameActionException{
 		super(r);
@@ -21,6 +23,7 @@ public class Lumberjack extends Bot {
         HYPOTHETICAL_DAMAGE_MOD = -.8f; // TODO: actually optimize
         PROGRESS_MOD = -.2f; // no idea what to make this TODO: don't just guess
         PROXIMITY_MOD = -2; // no idea... TODO: optimize
+        IMPATIENCE_MOD = -.05f; // TODO: optimize
 	}
 	
 	public void takeTurn() throws Exception{
@@ -60,6 +63,11 @@ public class Lumberjack extends Bot {
                     goTo(here.directionTo(Util.rc.getInitialArchonLocations(enemy)[0]));
                 }
             }
+        }
+        if (rc.canStrike() && !rc.hasMoved()){
+            turnsWithoutMovingOrAttacking += 1;
+        } else {
+            turnsWithoutMovingOrAttacking = 0;
         }
 	}
 
@@ -134,7 +142,7 @@ public class Lumberjack extends Bot {
         // TODO: add kamikaze function: if about to die anyways, just go for best place to attack for final stand
 
         float attackScoreHere = evalForAttacking(here);
-        float bestMoveScore = evaluateLocation(here) + (attackScoreHere < 0 ? 0 : MOVE_ATTACK_MOD * attackScoreHere);
+        float bestMoveScore = evaluateLocation(here) + (attackScoreHere < 0 ? 0 : MOVE_ATTACK_MOD * attackScoreHere) + IMPATIENCE_MOD * turnsWithoutMovingOrAttacking;
                         // there should be a way to remove the attack bit here such that
                         //     a better location won't be disregarded since we can attack
                         //     here and then move there
@@ -145,7 +153,7 @@ public class Lumberjack extends Bot {
         float score, attackScore;
         int startTheta = 0; // if we want to start at something nonzero then change the hardcoded zeroes below
         int currentTheta = 0;
-        int dtheta = 40; // must evenly divide 360
+        int dtheta = 36;
         int numLocsEvaled = 0;
         float stridedist = RobotType.LUMBERJACK.strideRadius;
 
@@ -168,13 +176,13 @@ public class Lumberjack extends Bot {
             }
 
             currentTheta += dtheta;
-            if (currentTheta == 360){
+            if (currentTheta >= 360){
                 // tried every point around a circle, now try closer
                 // TODO: make the test points more evenly distributed inside (see circle-packing on wikipedia)
                 stridedist /= 2;
                 currentTheta = 0;
-                dtheta = 60; // it'll get more dense as it gets closer so adjust a little for that
-                if (stridedist < .25) { // probably silly to keep checking
+                dtheta = dtheta * 5 / 3; // it'll get more dense as it gets closer so adjust a little for that
+                if (stridedist < .187) { // probably silly to keep checking
                     System.out.print("I've tried everything dammit");
                     break;
                 }
