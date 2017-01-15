@@ -29,7 +29,7 @@ public class Lumberjack extends Bot {
         if(nearbyEnemyRobots.length > 0) {
         	//Let other robots know where you are!
         	if(rc.getRoundNum() % 25 == 0){
-				Util.notifyFriendsOfEnemies(nearbyEnemyRobots);
+				notifyFriendsOfEnemies(nearbyEnemyRobots);
 			}
 			int start = Clock.getBytecodeNum();
             doLumberjackMicro();
@@ -125,7 +125,7 @@ public class Lumberjack extends Bot {
         } else {
             targets = nearbyNeutralTrees;
         }
-        goTo(Util.closestBody(targets, rc.getLocation()).getLocation());
+        goTo(targets[0].getLocation());
     }
 
 	public void doLumberjackMicro() throws Exception{
