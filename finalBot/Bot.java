@@ -129,10 +129,10 @@ public class Bot {
 	private static boolean isBugging = false;
 
 	private static int dangerRating(MapLocation loc) {
-		int danger = 0;
+		float danger = 0;
 		for (BulletInfo b : nearbyBullets) {
 			if (willCollide(b, loc)) {
-				danger += (int) (b.damage * 10);
+				danger += b.damage * 10;
 			}
 		}
 		boolean enemiesNearby = nearbyEnemyRobots.length > 0;
@@ -147,7 +147,7 @@ public class Bot {
 					if (!doneLumbers) {
 						if (loc.distanceTo(l.location) < RobotType.LUMBERJACK.bodyRadius
 								+ RobotType.LUMBERJACK.strideRadius + 1.1 + RobotType.SCOUT.bodyRadius) {
-							danger += (50 - loc.distanceTo(l.location));
+							danger += (10.0 - loc.distanceTo(l.location))*10;
 						} else {
 							doneLumbers = true;
 						}
@@ -157,7 +157,7 @@ public class Bot {
 					if (loc.distanceTo(l.location) < l.type.bodyRadius + l.type.strideRadius + l.type.bulletSpeed
 							+ RobotType.SCOUT.bodyRadius) {
 
-						danger += (10 * l.type.attackPower - loc.distanceTo(l.location));
+						danger += (10.0 - loc.distanceTo(l.location))*10.0* l.type.attackPower ;
 					}
 					else{
 					doneRangers = true;	
@@ -178,7 +178,7 @@ public class Bot {
 							if (!doneEnemyLumbers) {
 								if (loc.distanceTo(l.location) < RobotType.LUMBERJACK.bodyRadius
 										+ RobotType.LUMBERJACK.strideRadius + 1.1 + type.bodyRadius) {
-									danger += (50 - loc.distanceTo(l.location));
+									danger += (10.0 - loc.distanceTo(l.location))*50;
 								} else {
 									doneEnemyLumbers = true;
 								}
@@ -188,7 +188,7 @@ public class Bot {
 							if (!doneEnemyRangers) {
 								if (loc.distanceTo(l.location) < l.type.bodyRadius + l.type.strideRadius
 										+ l.type.bulletSpeed + type.bodyRadius) {
-									danger += (10 * l.type.attackPower - loc.distanceTo(l.location));
+									danger += (10.0 - loc.distanceTo(l.location))*10.0* l.type.attackPower ;
 								} else {
 									doneEnemyRangers = true;
 								}
@@ -199,7 +199,7 @@ public class Bot {
 					if (l.type == RobotType.LUMBERJACK) {
 						if (!doneOurLumbers) {
 							if (loc.distanceTo(l.location) < RobotType.LUMBERJACK.bodyRadius + +1.1 + type.bodyRadius) {
-								danger += (10 * RobotType.LUMBERJACK.attackPower - loc.distanceTo(l.location));
+								danger +=(10.0 - loc.distanceTo(l.location))*50.0 ;
 
 							} else {
 								doneOurLumbers = true;
@@ -223,7 +223,7 @@ public class Bot {
 				}
 			}
 		}
-		return danger;
+		return (int) danger;
 	}
 
 	private static int tryMove(Direction dir, float dist, boolean makeMove) throws GameActionException {
