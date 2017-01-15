@@ -50,7 +50,6 @@ public class Archon extends Bot {
 
 		}
 		return mod;
-
 	}
 
 	public void runAway(RobotInfo[] enemies) throws GameActionException {

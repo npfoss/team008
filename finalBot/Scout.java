@@ -76,6 +76,7 @@ public class Scout extends Bot {
 			return false;
 		}
 		TreeInfo closestBulletTree = Util.closestTree(bulletTrees, rc.getLocation(), i);
+
 		goTo(closestBulletTree.location);
 
 		return true;
