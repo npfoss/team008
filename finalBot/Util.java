@@ -26,7 +26,7 @@ public class Util extends Bot {
 		if(enemies.length == 1 && !(type == RobotType.ARCHON || type == RobotType.GARDENER)){
 			Messaging.updateEnemyUnitLocation(enemies[0].location);
 		}
-		else if (enemies.length > 1){
+		else if (enemies.length > 1 || (type == RobotType.ARCHON || type == RobotType.GARDENER)){
 			Messaging.updateEnemyArmyLocation(Util.centroidOfUnits(enemies));
 		}
 	}
