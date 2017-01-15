@@ -1,4 +1,5 @@
 package team008.finalBot;
+
 import battlecode.common.*;
 
 public class Util extends Bot {
@@ -38,6 +39,18 @@ public class Util extends Bot {
             }
         }
         return closest;
+    }
+
+    public static float distToClosestBody(BodyInfo[] robots, MapLocation toHere) {
+        float bestDist = 999999;
+        float dist;
+        for (int i = robots.length; i-- > 0;) {
+            dist = toHere.distanceTo(robots[i].getLocation());
+            if (dist < bestDist) {
+                bestDist = dist;
+            }
+        }
+        return bestDist;
     }
 
     public static RobotInfo closestRobot(RobotInfo[] robots, MapLocation toHere) {
@@ -112,6 +125,17 @@ public class Util extends Bot {
             }
         }
         return closest;
+    }
+
+    public static float avgDistTo(BodyInfo[] robots, MapLocation loc){
+        if (robots.length == 0){
+            return -1;
+        }
+        float sum = 0;
+        for (BodyInfo bot : robots){
+            sum += loc.distanceTo(bot.getLocation());
+        }
+        return sum / robots.length;
     }
 
     ////////////------ counting methods -----/////////////
@@ -190,7 +214,7 @@ public class Util extends Bot {
         return new Direction( myRand.nextFloat() * 2 * (float) Math.PI);
     }
 
-    public static float radians(int degrees){ return degrees / (float)Math.PI / 180; }
+    public static float radians(int degrees){ return degrees * (float)Math.PI / 180; }
 
     public static boolean containsBodiesTouchingRadius(BodyInfo[] robots, MapLocation toHere, float radius){
         for (BodyInfo bot : robots){

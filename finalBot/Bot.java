@@ -381,6 +381,18 @@ public class Bot {
 		}
 	}
 
+    /**
+     * Checks if hypothetically a lumberjack could hit this spot next turn.
+     * @param loc
+     * @param robot
+     * @return true if a lumberjack could hit this spot next turn
+     */
+    private static boolean couldLumberJackHitLoc(MapLocation loc, RobotInfo robot){
+        return loc.distanceTo(robot.location) < RobotType.LUMBERJACK.bodyRadius
+                + RobotType.LUMBERJACK.strideRadius
+                + GameConstants.LUMBERJACK_STRIKE_RADIUS;
+    }
+
 	/////////////////// Danger Calculation Tools/////////////
 	/**
 	 * This takes into account only hypothetical damage to this spot.
@@ -403,30 +415,10 @@ public class Bot {
 
 		for (RobotInfo robot : nearbyAlliedRobots) {
 			if (robot.type == RobotType.LUMBERJACK && couldLumberJackHitLoc(loc, robot)) {
-				damageToSpot += robot.type.attackPower / 2;
+				damageToSpot += robot.type.attackPower;
 			}
 		}
-
 		return damageToSpot;
-
-	}
-
-	/**
-	 * Checks if hypothetically a lumberjack could hit this spot next turn.
-	 * 
-	 * @param loc
-	 * @param robot
-	 * @return true if a lumberjack could hit this spot next turn
-	 */
-	private static boolean couldLumberJackHitLoc(MapLocation loc, RobotInfo robot) {
-		return (loc.distanceTo(robot.location) < RobotType.LUMBERJACK.bodyRadius + RobotType.LUMBERJACK.strideRadius
-				+ 1.1 // lumber
-						// jack
-						// swing
-						// radius
-
-				+ type.bodyRadius);
-
 	}
 
 	/**
