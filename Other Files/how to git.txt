@@ -19,7 +19,6 @@ git merge origin/<diff branch> //update current branch with changes from <diff b
 1) git merge origin/<parent branch>
 2) //resolve conflicts and stuff the usual way
 3) GO TO THE REPO ONLINE and submit a pull request **make sure you are merging into the correct branch (not usually master!)**
-
 ONLY WHEN THERE ARE NO BUGS IN YOUR CODE
 
 //---all this from last year still applies within each branch---//

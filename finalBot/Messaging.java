@@ -40,7 +40,7 @@ public class Messaging extends Bot{
 			if(code == 0)
 				continue;
 			MapLocation decoded = new MapLocation((float)((code/6000)/10.0),(float)((code % 6000)/10.0));
-			if(decoded != null && loc.distanceTo(decoded) < 10){
+			if(decoded != null && Util.distanceSquaredTo(loc, decoded) < 25){
 				return true;
 			}
 		}
@@ -66,8 +66,8 @@ public class Messaging extends Bot{
 				continue;
 			}
 			MapLocation decoded = new MapLocation((float)((code/6000)/10.0),(float)((code % 6000)/10.0));
-			if(decoded != null && toHere.distanceTo(decoded) < dist){
-				dist = toHere.distanceTo(decoded);
+			if(decoded != null && Util.distanceSquaredTo(toHere, decoded) < dist){
+				dist = Util.distanceSquaredTo(toHere, decoded);
 				ret = decoded;
 			}
 		}
@@ -76,9 +76,11 @@ public class Messaging extends Bot{
 	
 	public boolean removeNeutralUnitTreeLocation(MapLocation loc) throws GameActionException{
 		int code = (int)(loc.x*10)*6000 + (int)(loc.y*10);
-		for(int i = 1; i <= rc.readBroadcast(50); i++){
+		int size = rc.readBroadcast(50);
+		for(int i = 1; i <= size; i++){
 			if(rc.readBroadcast(50 + i) == code){
-				rc.broadcast(50 + i, 0);
+				rc.broadcast(50 + i, rc.readBroadcast(50+size));
+				rc.broadcast(50, size-1);
 				return true;
 			}
 		}
@@ -104,8 +106,8 @@ public class Messaging extends Bot{
 				continue;
 			}
 			MapLocation decoded = new MapLocation((float)((code/6000)/10.0),(float)((code % 6000)/10.0));
-			if(decoded != null && toHere.distanceTo(decoded) < dist){
-				dist = toHere.distanceTo(decoded);
+			if(decoded != null && Util.distanceSquaredTo(toHere, decoded) < dist){
+				dist = Util.distanceSquaredTo(toHere, decoded);
 				ret = decoded;
 			}
 		}
@@ -114,9 +116,11 @@ public class Messaging extends Bot{
 	
 	public boolean removeNeutralTreeLocation(MapLocation loc) throws GameActionException{
 		int code = (int)(loc.x*10)*6000 + (int)(loc.y*10);
-		for(int i = 1; i <= rc.readBroadcast(100); i++){
+		int size = rc.readBroadcast(100);
+		for(int i = 1; i <= size; i++){
 			if(rc.readBroadcast(100 + i) == code){
-				rc.broadcast(100 + i, 0);
+				rc.broadcast(100 + i, rc.readBroadcast(100+size));
+				rc.broadcast(100, size-1);
 				return true;
 			}
 		}
@@ -133,7 +137,7 @@ public class Messaging extends Bot{
 		rc.broadcast(200, index+1);
 	}
 	
-	public MapLocation getClosestEnemyTreeLocation(MapLocation toHere) throws GameActionException{
+	public static MapLocation getClosestEnemyTreeLocation(MapLocation toHere) throws GameActionException{
 		MapLocation ret = null;
 		float dist = 999999;
 		for(int i = 1; i <= rc.readBroadcast(200); i++){
@@ -142,19 +146,21 @@ public class Messaging extends Bot{
 				continue;
 			}
 			MapLocation decoded = new MapLocation((float)((code/6000)/10.0),(float)((code % 6000)/10.0));
-			if(decoded != null && toHere.distanceTo(decoded) < dist){
-				dist = toHere.distanceTo(decoded);
+			if(decoded != null && Util.distanceSquaredTo(toHere, decoded) < dist){
+				dist = Util.distanceSquaredTo(toHere, decoded);
 				ret = decoded;
 			}
 		}
 		return ret;
 	}
 	
-	public boolean removeEnemyTreeLocation(MapLocation loc) throws GameActionException{
+	public static boolean removeEnemyTreeLocation(MapLocation loc) throws GameActionException{
 		int code = (int)(loc.x*10)*6000 + (int)(loc.y*10);
-		for(int i = 1; i <= rc.readBroadcast(200); i++){
+		int size = rc.readBroadcast(200);
+		for(int i = 1; i <= size; i++){
 			if(rc.readBroadcast(200 + i) == code){
-				rc.broadcast(200 + i, 0);
+				rc.broadcast(200 + i, rc.readBroadcast(200+size));
+				rc.broadcast(200, size-1);
 				return true;
 			}
 		}
@@ -180,8 +186,8 @@ public class Messaging extends Bot{
 				continue;
 			}
 			MapLocation decoded = new MapLocation((float)((code/6000)/10.0),(float)((code % 6000)/10.0));
-			if(decoded != null && toHere.distanceTo(decoded) < dist){
-				dist = toHere.distanceTo(decoded);
+			if(decoded != null && Util.distanceSquaredTo(toHere, decoded) < dist){
+				dist = Util.distanceSquaredTo(toHere, decoded);
 				ret = decoded;
 			}
 		}
@@ -190,9 +196,11 @@ public class Messaging extends Bot{
 	
 	public static boolean removeEnemyArmyLocation(MapLocation loc) throws GameActionException{
 		int code = (int)(loc.x*10)*6000 + (int)(loc.y*10);
+		int size = rc.readBroadcast(300);
 		for(int i = 1; i <= rc.readBroadcast(300); i++){
 			if(rc.readBroadcast(300 + i) == code){
-				rc.broadcast(300 + i, 0);
+				rc.broadcast(300 + i, rc.readBroadcast(200+size));
+				rc.broadcast(300, size-1);
 				return true;
 			}
 		}
@@ -218,8 +226,8 @@ public class Messaging extends Bot{
 				continue;
 			}
 			MapLocation decoded = new MapLocation((float)((code/6000)/10.0),(float)((code % 6000)/10.0));
-			if(decoded != null && toHere.distanceTo(decoded) < dist){
-				dist = toHere.distanceTo(decoded);
+			if(decoded != null && Util.distanceSquaredTo(toHere, decoded) < dist){
+				dist = Util.distanceSquaredTo(toHere, decoded);
 				ret = decoded;
 			}
 		}
@@ -228,13 +236,56 @@ public class Messaging extends Bot{
 	
 	public static boolean removeEnemyUnitLocation(MapLocation loc) throws GameActionException{
 		int code = (int)(loc.x*10)*6000 + (int)(loc.y*10);
+		int size = rc.readBroadcast(700);
 		for(int i = 1; i <= rc.readBroadcast(700); i++){
 			if(rc.readBroadcast(700 + i) == code){
-				rc.broadcast(700 + i, 0);
+				rc.broadcast(700 + i, rc.readBroadcast(700+size));
+				rc.broadcast(700, size-1);
 				return true;
 			}
 		}
 		return false;
 	}
-	
+
+	public static boolean sendDistressSignal(MapLocation loc) throws GameActionException {
+		int index = rc.readBroadcast(850);
+		if (index > 49)return false;
+		if(duplicateInRange(loc,851,850+index))
+			return false;
+		int x = (int) (loc.x * 10);
+		int y = (int) (loc.y * 10);
+		rc.broadcast(850 + index + 1, (x*6000 + y));
+		rc.broadcast(850, index+1);
+		return true;
+	}
+
+	public static MapLocation getClosestDistressSignal(MapLocation toHere) throws GameActionException{
+		MapLocation ret = null;
+		float dist = 999999;
+		for(int i = 1; i <= rc.readBroadcast(850); i++){
+			int code = rc.readBroadcast(850 + i);
+			if(code == 0){
+				continue;
+			}
+			MapLocation decoded = new MapLocation((float)((code/6000)/10.0),(float)((code % 6000)/10.0));
+			if(decoded != null && Util.distanceSquaredTo(toHere, decoded) < dist){
+				dist = Util.distanceSquaredTo(toHere, decoded);
+				ret = decoded;
+			}
+		}
+		return ret;
+	}
+
+	public static boolean removeDistressLocation(MapLocation loc) throws GameActionException{
+		int code = (int)(loc.x*10)*6000 + (int)(loc.y*10);
+		int size = rc.readBroadcast(850);
+		for(int i = 1; i <= size; i++){
+			if(rc.readBroadcast(850 + i) == code){
+				rc.broadcast(850 + i, rc.readBroadcast(850+size));
+				rc.broadcast(850, size-1);
+				return true;
+			}
+		}
+		return false;
+	}
 }
