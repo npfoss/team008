@@ -16,8 +16,8 @@ public class Soldier extends Bot {
 //		}
 
 		if(nearbyEnemyRobots.length > 0){
-			if((rc.getRoundNum() +rc.getID()) % 25 == 0){
-				Util.notifyFriendsOfEnemies(nearbyEnemyRobots);
+			if((rc.getRoundNum() +rc.getID()) % 25 == 0 || target == null){
+				notifyFriendsOfEnemies(nearbyEnemyRobots);
 			}
 			RangedCombat.execute();
 			return;
@@ -31,11 +31,12 @@ public class Soldier extends Bot {
 			target = null;
 			assignNewTarget();
 		}
-		if(target != null){
-			goTo(target);
-		}
-		else{
-			goTo(here.directionTo(Util.rc.getInitialArchonLocations(enemy)[0]));
+		if (rc.getMoveCount() == 0) {
+			if (target != null) {
+				goTo(target);
+			} else {
+				goTo(here.directionTo(Util.rc.getInitialArchonLocations(enemy)[0]));
+			}
 		}
 	}
 	

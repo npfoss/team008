@@ -5,33 +5,35 @@ import java.util.Random;
 import battlecode.common.*;
 
 public class Bot {
-	// for everyone to use
-	public static RobotController rc;
-	public static RobotType type;
-	public static Team enemy;
-	public static Team us;
-	public static MapLocation here;
+	//for debugging
+	public boolean debug = false;
 
-	// most units will need this
-	public static Direction dirIAmMoving;
-	public static MapLocation target;
-	public static Direction calculatedMove;
+	//for everyone to use
+    public static RobotController rc;
+    public static RobotType type;
+    public static Team enemy;
+    public static Team us;
+    public static MapLocation here;
+    
+    //most units will need this
+    public static Direction dirIAmMoving;
+    public static MapLocation target;
+    public static Direction calculatedMove;
 
-	// finding these is expensive so lets only do it once
-	public static TreeInfo[] nearbyNeutralTrees;
-	public static TreeInfo[] nearbyEnemyTrees;
-	public static TreeInfo[] nearbyAlliedTrees;
-	public static TreeInfo[] nearbyTrees;
-	public static RobotInfo[] nearbyAlliedRobots;
-	public static RobotInfo[] nearbyEnemyRobots;
-	public static BulletInfo[] nearbyBullets;
-	public static RobotInfo[] nearbyRobots;
-	public static Random myRand;
-	public static int strategy = 0;
-	public static int bytecode;
+    //finding these is expensive so lets only do it once
+    public static TreeInfo[] nearbyTrees;
+    public static TreeInfo[] nearbyNeutralTrees;
+    public static TreeInfo[] nearbyAlliedTrees;
+    public static TreeInfo[] nearbyEnemyTrees;
+    public static RobotInfo[] nearbyRobots;
+    public static RobotInfo[] nearbyAlliedRobots;
+    public static RobotInfo[] nearbyEnemyRobots;
+    public static BulletInfo[] nearbyBullets;
+    public static Random myRand;
+    public static int strategy = 0;
+    public static int bytecode;
 
-	public Bot() {
-	}
+    public Bot(){}
 
 	public Bot(RobotController r) throws GameActionException {
 		rc = r;
@@ -42,7 +44,6 @@ public class Bot {
 		myRand = new Random(rc.getID());
 		dirIAmMoving = null;
 		MapAnalysis.center = MapAnalysis.findCenter();
-
 	}
 
 	public void loop() {
@@ -56,15 +57,15 @@ public class Bot {
 				here = rc.getLocation();
 				// TODO: have our Util sort a single call rather than calling
 				// multiple times
-				nearbyNeutralTrees = rc.senseNearbyTrees(-1, Team.NEUTRAL);
-				nearbyEnemyTrees = rc.senseNearbyTrees(-1, enemy);
-				nearbyAlliedTrees = rc.senseNearbyTrees(-1, us);
-				nearbyTrees = rc.senseNearbyTrees(-1);
-				nearbyBullets = rc.senseNearbyBullets();
+                nearbyTrees = rc.senseNearbyTrees(-1);
+                nearbyNeutralTrees = rc.senseNearbyTrees(-1, Team.NEUTRAL);
+                nearbyAlliedTrees = rc.senseNearbyTrees(-1, us);
+                nearbyEnemyTrees = rc.senseNearbyTrees(-1, enemy);
 				nearbyRobots = rc.senseNearbyRobots(-1);
-				nearbyAlliedRobots = rc.senseNearbyRobots(-1, us);
-				nearbyEnemyRobots = rc.senseNearbyRobots(-1, enemy);
-				if (rc.getRoundNum() + 5 > GameConstants.GAME_DEFAULT_ROUNDS
+                nearbyAlliedRobots = rc.senseNearbyRobots(-1, us);
+                nearbyEnemyRobots = rc.senseNearbyRobots(-1, enemy);
+                nearbyBullets = rc.senseNearbyBullets();
+                if (rc.getRoundNum() + 5 > GameConstants.GAME_DEFAULT_ROUNDS
 						|| rc.getTeamVictoryPoints() + rc.getTeamBullets() / 10 > 1000) {
 					rc.donate(((int) (rc.getTeamBullets() / 10)) * 10);
 				}
@@ -109,84 +110,131 @@ public class Bot {
 	}
 
 	public void assignNewTarget() throws GameActionException {
-		target = Messaging.getClosestEnemyArmyLocation(rc.getLocation());
+		target = Messaging.getClosestEnemyArmyLocation(here);
 		if (target == null) {
-			target = Messaging.getClosestEnemyUnitLocation(rc.getLocation());
+			target = Messaging.getClosestEnemyUnitLocation(here);
 		}
 	}
+
+    public static void notifyFriendsOfEnemies(RobotInfo[] enemies) throws GameActionException{
+        if(enemies.length == 1 && !(type == RobotType.ARCHON || type == RobotType.GARDENER)){
+            Messaging.updateEnemyUnitLocation(enemies[0].location);
+        }
+        else if (enemies.length > 1 || (type == RobotType.ARCHON || type == RobotType.GARDENER)){
+            Messaging.updateEnemyArmyLocation(Util.centroidOfUnits(enemies));
+        }
+    }
 
 	/******* ALL NAVIGATION METHODS BELOW *******/
 	// TODO: navigate/implement bugging
 	private static MapLocation dest = null;
 	private static boolean isBugging = false;
 
-	private static int dangerRating(MapLocation loc) {
-		int danger = 0;
+	protected static int dangerRating(MapLocation loc) {
+		float danger = 0;
 		for (BulletInfo b : nearbyBullets) {
 			if (willCollide(b, loc)) {
-				danger += (int) (b.damage * 10);
+				danger += b.damage * 10;
 			}
 		}
 		boolean enemiesNearby = nearbyEnemyRobots.length > 0;
 		if (type == RobotType.SCOUT) {
+			boolean doneLumbers = false;
+			boolean doneRangers = false;
 			for (RobotInfo l : nearbyRobots) {
 				if (l.team == us && l.type != RobotType.LUMBERJACK || l.type == RobotType.ARCHON
 						|| l.type == RobotType.GARDENER) {
 
 				} else if (l.type == RobotType.LUMBERJACK) {
-					if (loc.distanceTo(l.location) < RobotType.LUMBERJACK.bodyRadius + RobotType.LUMBERJACK.strideRadius
-							+ 1.1 + RobotType.SCOUT.bodyRadius) {
-						danger += (10 * RobotType.LUMBERJACK.attackPower - loc.distanceTo(l.location));
+					if (!doneLumbers) {
+						if (loc.distanceTo(l.location) < RobotType.LUMBERJACK.bodyRadius
+								+ RobotType.LUMBERJACK.strideRadius + 1.1 + RobotType.SCOUT.bodyRadius) {
+							danger += (10.0 - loc.distanceTo(l.location))*10;
+						} else {
+							doneLumbers = true;
+						}
 					}
 				} else {
-					if (loc.distanceTo(l.location) < l.type.bodyRadius + l.type.strideRadius + l.type.bulletSpeed
-							+ RobotType.SCOUT.bodyRadius) {
+					if (!doneRangers) {
+						if (loc.distanceTo(l.location) < l.type.bodyRadius + l.type.strideRadius + l.type.bulletSpeed
+								+ RobotType.SCOUT.bodyRadius) {
 
-						danger += (10 * l.type.attackPower - loc.distanceTo(l.location));
+							danger += (10.0 - loc.distanceTo(l.location)) * 10.0 * l.type.attackPower;
+						} else {
+							doneRangers = true;
+						}
 					}
 				}
 
 			}
 		} else {
+			boolean doneEnemyLumbers = false;
+			boolean doneOurLumbers = false;
+			boolean doneEnemyRangers = false;
+			boolean doneOurRangers = false;
 			for (RobotInfo l : nearbyRobots) {
 				if (l.team == enemy) {
 					if (type != RobotType.LUMBERJACK) {
-						if (l.type == RobotType.LUMBERJACK
-								&& loc.distanceTo(l.location) < RobotType.LUMBERJACK.bodyRadius
-
+						if (l.type == RobotType.LUMBERJACK) {
+							if (!doneEnemyLumbers) {
+								if (loc.distanceTo(l.location) < RobotType.LUMBERJACK.bodyRadius
 										+ RobotType.LUMBERJACK.strideRadius + 1.1 + type.bodyRadius) {
-							danger += (10 - loc.distanceTo(l.location));
+									danger += (10.0 - loc.distanceTo(l.location))*50;
+								} else {
+									doneEnemyLumbers = true;
+								}
+							}
 						} else if (l.type == RobotType.SCOUT || l.type == RobotType.SOLDIER
 								|| l.type == RobotType.TANK) {
-							if (type != RobotType.LUMBERJACK && loc.distanceTo(l.location) < l.type.bodyRadius
-									+ l.type.strideRadius + l.type.bulletSpeed + type.bodyRadius) {
-								danger += (10 * l.type.attackPower - loc.distanceTo(l.location));
+							if (!doneEnemyRangers) {
+								if (loc.distanceTo(l.location) < l.type.bodyRadius + l.type.strideRadius
+										+ l.type.bulletSpeed + type.bodyRadius) {
+									danger += (10.0 - loc.distanceTo(l.location))*10.0* l.type.attackPower ;
+								} else {
+									doneEnemyRangers = true;
+								}
 							}
 						}
 					}
 				} else {
-					if (l.type == RobotType.LUMBERJACK
-							&& loc.distanceTo(l.location) < RobotType.LUMBERJACK.bodyRadius + +1.1 + type.bodyRadius) {
-						danger += (10 * RobotType.LUMBERJACK.attackPower - loc.distanceTo(l.location));
+					if (l.type == RobotType.LUMBERJACK) {
+						if (!doneOurLumbers) {
+							if (loc.distanceTo(l.location) < RobotType.LUMBERJACK.bodyRadius + +1.1 + type.bodyRadius) {
+								danger +=(10.0 - loc.distanceTo(l.location))*50.0 ;
 
+							} else {
+								doneOurLumbers = true;
+							}
+						}
 					}
 					if (enemiesNearby
 							&& (l.type == RobotType.SOLDIER || l.type == RobotType.TANK || l.type == RobotType.SCOUT)) {
-						MapLocation possibleShot = nearbyEnemyRobots[0].location;
-						if (loc.directionTo(possibleShot).radiansBetween(l.location.directionTo(possibleShot)) < Math.PI
-								/ 6 && loc.distanceTo(possibleShot) < l.location.distanceTo(possibleShot)) {
-							danger += 10 * l.type.attackPower;
+						if (!doneOurRangers) {
+							MapLocation possibleShot = nearbyEnemyRobots[0].location;
+
+							if (loc.directionTo(possibleShot)
+									.radiansBetween(l.location.directionTo(possibleShot)) < Math.PI / 12
+									&& loc.distanceTo(possibleShot) < l.location.distanceTo(possibleShot)) {
+								danger += 10 * l.type.attackPower;
+							} else {
+								doneOurRangers = true;
+							}
 						}
 					}
 				}
 			}
 		}
-		return danger;
+		return (int) danger;
 	}
 
 	private static int tryMove(Direction dir, float dist, boolean makeMove) throws GameActionException {
 		if (rc.canMove(dir, dist)) {
-			int danger = dangerRating(here.add(dir, dist));
+			int danger = 0;
+			if((nearbyBullets.length > 5 && nearbyEnemyRobots.length > 1 )&& type == RobotType.LUMBERJACK){
+				//for now since attacking > dodging
+			}else{
+			danger = dangerRating(here.add(dir, dist));
+			}
 			if (danger == 0) {
 				if (makeMove) {
 					rc.move(dir, dist);
@@ -213,9 +261,9 @@ public class Bot {
 			bestDir = dir;
 			bestDanger = tempDanger;
 		}
-		Direction left = dir.rotateLeftDegrees(30);
-		Direction right = dir.rotateRightDegrees(30);
-		for (int i = 0; i < 6; i++) {
+		Direction left = dir.rotateLeftDegrees(10);
+		Direction right = dir.rotateRightDegrees(10);
+		for (int i = 0; i < 18; i++) {
 
 			tempDanger = tryMove(left, type.strideRadius, makeMove);
 			if (tempDanger == 0) {
@@ -233,8 +281,8 @@ public class Bot {
 				bestDir = right;
 				bestDanger = tempDanger;
 			}
-			left = left.rotateLeftDegrees(30);
-			right = right.rotateRightDegrees(30);
+			left = left.rotateLeftDegrees(10);
+			right = right.rotateRightDegrees(10);
 		}
 		tempDanger = dangerRating(here);
 		if (tempDanger < bestDanger) {
@@ -335,6 +383,18 @@ public class Bot {
 		}
 	}
 
+    /**
+     * Checks if hypothetically a lumberjack could hit this spot next turn.
+     * @param loc
+     * @param robot
+     * @return true if a lumberjack could hit this spot next turn
+     */
+    private static boolean couldLumberJackHitLoc(MapLocation loc, RobotInfo robot){
+        return loc.distanceTo(robot.location) < RobotType.LUMBERJACK.bodyRadius
+                + RobotType.LUMBERJACK.strideRadius
+                + GameConstants.LUMBERJACK_STRIKE_RADIUS;
+    }
+
 	/////////////////// Danger Calculation Tools/////////////
 	/**
 	 * This takes into account only hypothetical damage to this spot.
@@ -357,30 +417,10 @@ public class Bot {
 
 		for (RobotInfo robot : nearbyAlliedRobots) {
 			if (robot.type == RobotType.LUMBERJACK && couldLumberJackHitLoc(loc, robot)) {
-				damageToSpot += robot.type.attackPower / 2;
+				damageToSpot += robot.type.attackPower;
 			}
 		}
-
 		return damageToSpot;
-
-	}
-
-	/**
-	 * Checks if hypothetically a lumberjack could hit this spot next turn.
-	 * 
-	 * @param loc
-	 * @param robot
-	 * @return true if a lumberjack could hit this spot next turn
-	 */
-	private static boolean couldLumberJackHitLoc(MapLocation loc, RobotInfo robot) {
-		return (loc.distanceTo(robot.location) < RobotType.LUMBERJACK.bodyRadius + RobotType.LUMBERJACK.strideRadius
-				+ 1.1 // lumber
-						// jack
-						// swing
-						// radius
-
-				+ type.bodyRadius);
-
 	}
 
 	/**

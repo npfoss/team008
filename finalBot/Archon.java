@@ -21,7 +21,7 @@ public class Archon extends Bot {
 			unitsBuilt++;
 		}
 		if(nearbyEnemyRobots.length > 0){
-				Util.notifyFriendsOfEnemies(nearbyEnemyRobots);
+				notifyFriendsOfEnemies(nearbyEnemyRobots);
 		}
 
 
@@ -50,7 +50,6 @@ public class Archon extends Bot {
 
 		}
 		return mod;
-
 	}
 
 	public void runAway(RobotInfo[] enemies) throws GameActionException {

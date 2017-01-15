@@ -2,9 +2,6 @@ package team008.finalBot;
 
 import battlecode.common.*;
 
-/**
- * Created by jmac on 1/10/17.
- */
 public class RangedCombat extends Bot {
 
 	private static final String SINGLE_SHOT = "single shot";
@@ -22,7 +19,7 @@ public class RangedCombat extends Bot {
 			MapLocation tempLoc = here;
 			here = here.add(calculatedMove, type.strideRadius);
 			potentialAttackStats attack2 = chooseTargetAndShotType();
-			
+
 			if (attack2.getShotValue() > attack.getShotValue() || attack.getTarget() != null && tempLoc.directionTo(attack.getTarget().getLocation())
 					.radiansBetween(calculatedMove) < Math.PI / 2) {
 				rc.move(calculatedMove, type.strideRadius);
@@ -36,12 +33,12 @@ public class RangedCombat extends Bot {
 		}
 		if(rc.getMoveCount()  == 0 && calculatedMove != null)
 			rc.move(calculatedMove, type.strideRadius);
-		
+
 	}
-	
+
 	/**
 	 * Tries to asses if its work shooting.
-	 * 
+	 *
 	 * @return
 	 */
 	private static boolean worthShooting(int shotValue) {
@@ -151,7 +148,7 @@ public class RangedCombat extends Bot {
 		for (RobotInfo friend : nearbyAlliedRobots) {
 			if (friend.location.distanceTo(here) < here.distanceTo(target.location) - type.bodyRadius
 					- target.type.bodyRadius) {
-				
+
 				if (intendedAttackDir.radiansBetween(here.directionTo(friend.location)) < Math.PI / 12) {
 					return false;
 				}
