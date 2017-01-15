@@ -188,7 +188,6 @@ public class Bot {
 		if (rc.canMove(dir, dist)) {
 			int danger = dangerRating(here.add(dir, dist));
 			if (danger == 0) {
-				System.out.println("Moving this turn used: " + (Clock.getBytecodeNum() - bytecode) + " bytecodes.");
 				if (makeMove) {
 					rc.move(dir, dist);
 					here = rc.getLocation();
@@ -203,7 +202,6 @@ public class Bot {
 	}
 
 	public static boolean tryMoveDirection(Direction dir, boolean makeMove) throws GameActionException {
-		int bytecode = Clock.getBytecodeNum();
 		Direction bestDir = dir;
 		int bestDanger = 9999;
 		int tempDanger = 0;
@@ -247,7 +245,6 @@ public class Bot {
 		if (bestDir != null && makeMove) {
 			rc.move(bestDir, type.strideRadius);
 			here = rc.getLocation();
-			System.out.println("Moving this turn used: " + (Clock.getBytecodeNum() - bytecode) + " bytecodes.");
 			return true;
 		}
 		return false;

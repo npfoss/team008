@@ -16,7 +16,6 @@ public class RangedCombat extends Bot {
 	 * to call execute, number of enemies must be > 0
 	 */
 	public static void execute() throws GameActionException {
-		bytecode = Clock.getBytecodeNum();
 		tryMoveDirection(here.directionTo(nearbyEnemyRobots[0].location), false);
 		potentialAttackStats attack = chooseTargetAndShotType();
 		if (calculatedMove != null) {
@@ -37,7 +36,6 @@ public class RangedCombat extends Bot {
 		}
 		if(rc.getMoveCount()  == 0 && calculatedMove != null)
 			rc.move(calculatedMove, type.strideRadius);
-		System.out.println("Attacking this turn used: " + (Clock.getBytecodeNum() - bytecode) + " bytecodes.");
 		
 	}
 	
@@ -64,12 +62,12 @@ public class RangedCombat extends Bot {
 		int bestScore = -999999;
 		RobotInfo bestRobot = null;
 		int canWeHitThemValue;
-		int robotsToCalculate = 3;
+		int robotsToCalculate = 2;
 		int calculated = 0;
 		for (RobotInfo robot : nearbyEnemyRobots) {
 			canWeHitThemValue = canWeHitHeuristic(robot);
 			score = (int) (-robot.getHealth() + robot.getType().attackPower + canWeHitThemValue);
-			
+
 			if (score > bestScore && isDirectionSafe(robot)) {
 				bestScore = score;
 				bestRobot = robot;
@@ -172,16 +170,16 @@ public class RangedCombat extends Bot {
 				break;
 			}
 		}
-		for (TreeInfo friend : nearbyNeutralTrees) {
-			if (friend.location.distanceTo(here) < here.distanceTo(target.location) - type.bodyRadius
-					- target.type.bodyRadius) {
-				if (intendedAttackDir.radiansBetween(here.directionTo(friend.location)) < Math.PI / 12) {
-					return false;
-				}
-			} else {
-				break;
-			}
-		}
+//		for (TreeInfo friend : nearbyNeutralTrees) {
+//			if (friend.location.distanceTo(here) < here.distanceTo(target.location) - type.bodyRadius
+//					- target.type.bodyRadius) {
+//				if (intendedAttackDir.radiansBetween(here.directionTo(friend.location)) < Math.PI / 12) {
+//					return false;
+//				}
+//			} else {
+//				break;
+//			}
+//		}
 		return true;
 	}
 
