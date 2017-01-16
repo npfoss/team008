@@ -58,7 +58,9 @@ public class Bot {
 				// TODO: have our Util sort a single call rather than calling
 				// multiple times
                 nearbyTrees = rc.senseNearbyTrees(-1);
-                FastMethods.
+                FastMethods.initializeNearbyNeutralTrees();
+                FastMethods.initializeNearbyEnemyTrees();
+                FastMethods.initializeNearbyAlliedTrees();
 				nearbyRobots = rc.senseNearbyRobots(-1);
 				FastMethods.initializeNearbyAlliedRobots();
 				FastMethods.initializeNearbyEnemeyRobots();
