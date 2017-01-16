@@ -133,10 +133,10 @@ public class MapAnalysis extends Bot {
 				maxY = loc.y;
 			}
 		}
-		Messaging.updateMinX(minX);
-		Messaging.updateMinY(minY);
-		Messaging.updateMaxX(maxX);
-		Messaging.updateMaxY(maxY);
+		//Messaging.updateMinX(minX);
+		//Messaging.updateMinY(minY);
+		//Messaging.updateMaxX(maxX);
+		//Messaging.updateMaxY(maxY);
 	}
 
 	public static void possiblyMakeDecisions() throws GameActionException {
