@@ -101,7 +101,7 @@ public class Bot {
 			if (tree.containedBullets > 0 && rc.canShake(tree.ID)) {
 				rc.shake(tree.ID);
 				if (rc.getType() != RobotType.SCOUT) {
-					System.out.println("***A robot that isn't a scout just shook a tree!!!");
+					//System.out.println("***A robot that isn't a scout just shook a tree!!!");
 					return;
 				}
 			}

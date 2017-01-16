@@ -70,7 +70,7 @@ public class Scout extends Bot {
 				minX = edge.x;
 				updated = true;
 				foundMinX = true;
-				System.out.println("updated min x to " + minX);
+				//System.out.println("updated min x to " + minX);
 			}
 		}
 		if(minY == 0 && !foundMinY){
@@ -80,7 +80,7 @@ public class Scout extends Bot {
 				minY = edge.y;
 				updated = true;
 				foundMinY = true;
-				System.out.println("updated min y to " + minY);
+				//System.out.println("updated min y to " + minY);
 			}
 		}
 		if(maxX == 0 && !foundMaxX){
@@ -90,7 +90,7 @@ public class Scout extends Bot {
 				maxX = edge.x;
 				updated = true;
 				foundMaxX = true;
-				System.out.println("updated max x to " + maxX);
+				//System.out.println("updated max x to " + maxX);
 			}
 		}
 		if(maxY == 0 && !foundMaxY){
@@ -100,13 +100,13 @@ public class Scout extends Bot {
 				maxY = edge.y;
 				updated = true;
 				foundMaxY = true;
-				System.out.println("updated max y to " + maxY);
+				//System.out.println("updated max y to " + maxY);
 			}
 		}
 		if(updated){
 			float area = (maxX - minX) * (maxY - minY);
 			Messaging.updateArea(area);
-			System.out.println("area = " + area);
+			//System.out.println("area = " + area);
 		}
 	}
 
@@ -177,7 +177,7 @@ public class Scout extends Bot {
 	private boolean tryToHarass(TreeInfo[] nearbyTrees) throws GameActionException {
 		RobotInfo targetG = null;
 		if (inDanger(nearbyEnemyRobots, nearbyBullets)) {
-			System.out.println("ranged combat");
+			//System.out.println("ranged combat");
 			goTo(new Direction(here,MapAnalysis.center));
 			return true;
 		}
