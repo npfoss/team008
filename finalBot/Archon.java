@@ -1,111 +1,112 @@
 package team008.finalBot;
+
 import battlecode.common.*;
 
 public class Archon extends Bot {
-	public static Direction lastDirection = new Direction(0);
-	public static int numGardenersCreated = 0;
 
-	public Archon(RobotController r){
+	public Archon(RobotController r) throws GameActionException {
 		super(r);
-		//anything else archon specific
+		// anything else archon specific
 	}
 
-	public static Direction findOpenSpaces(){
-		int spaces = 0;
-		Direction dir = new Direction(0);
-		float xavg = 0;
-		float yavg = 0;
-		for(int i =0; i < 36; i++){
-			if (rc.canMove(dir, type.sensorRadius)){
-				MapLocation temp = here.add(dir, type.sensorRadius);
-				xavg+= temp.x;
-				yavg+= temp.y;
-				spaces++;
-			}
-			dir = dir.rotateLeftDegrees(10);
-		}
-		return here.directionTo(new MapLocation(xavg/spaces, yavg/spaces));
-		
-	}
-
-	public void takeTurn() throws Exception{
-
-
-		if(rc.getRoundNum() % 10==0){
-	    lastDirection = findOpenSpaces();
-		}
-	    if(rc.getRoundNum() + 5 > GameConstants.GAME_DEFAULT_ROUNDS || rc.getTeamVictoryPoints() + rc.getTeamBullets()/10 > 1000){
-			rc.donate(((int)(rc.getTeamBullets()/10))*10);
-		}
-	    else if(rc.getTreeCount() < 20 && rc.getTeamBullets() > 100  && rc.getRoundNum() > 500|| rc.getTeamBullets() > 120 || rc.getRoundNum() < 400 && rc.getTeamBullets() > 100  && Messaging.getStrategy() == 0 || rc.getRoundNum() < 100&& rc.getTeamBullets() > 100){
-	    	hireGardener();
-		}
-
-
-	    RobotInfo[] enemies = rc.senseNearbyRobots(-1,enemy);
-		RobotInfo[] allies = rc.senseNearbyRobots(-1,us);
-
-	    if(enemies.length > 0){
-	    	Messaging.setStrategy(1);
-			rc.setIndicatorDot(here,0,255,0);
-			runAway(enemies ,allies);
-	    }
-	    goTo(lastDirection);
-	}
 	
 
-	public void hireGardener() throws GameActionException{
-		Direction dir = lastDirection.opposite();
-		for(int i = 15; i --> 0;){
-		    if (rc.canHireGardener(dir)) {
-		        rc.hireGardener(dir);
-		        numGardenersCreated++;
-		        break;
-		    }
-		    else{
-		    	dir = dir.rotateLeftDegrees(24);
-		    }
-		}
-	}
+	public static int unitsBuilt = 0;
 
-	private static double wallModCalc(MapLocation retreatLoc,Direction dir) throws GameActionException{
-		double mod = 0;
-		while(here.distanceTo(retreatLoc)<type.sensorRadius && rc.onTheMap(retreatLoc)){
-			retreatLoc = retreatLoc.add(dir);
-			mod+=1.0;
-
+	public void takeTurn() throws Exception {
+		//quick method of somewhat alternating which archon builds the gardener
+		if (rc.getTeamBullets() > 100 + ((rc.readBroadcast(4) > 1) ? unitsBuilt * 10 : 0)
+				&& rc.readBroadcast(13) > 0) {
+			hireGardener();
+			unitsBuilt++;
 		}
-		return mod;
+		if(nearbyEnemyRobots.length > 0){
+				notifyFriendsOfEnemies(nearbyEnemyRobots);
+				runAway();
+		}
 
 	}
-	public void runAway(RobotInfo[] enemies, RobotInfo[] allies) throws GameActionException{
-		Direction bestRetreatDir = null;
-		double bestValue = -10000;
-		int count = 0;
-		Direction dir = new Direction(0);
-
-		while( count < 36 ) {
-
-			MapLocation retreatLoc = here.add(dir,rc.getType().strideRadius);
-			RobotInfo closestEnemy = Util.closestRobot(enemies, retreatLoc);
-
-			float dist = retreatLoc.distanceTo(closestEnemy.location);
-			double allyMod = RangedCombat.numOtherAlliesInSightRange( here.add(dir,rc.getType().strideRadius), allies);
-			double wallMod = wallModCalc(retreatLoc,dir);
-
-			if (dist+allyMod+wallMod> bestValue) {
-				bestValue = dist+allyMod+wallMod;
-				bestRetreatDir = dir;
+	
+	public void hireGardener() throws GameActionException {
+		// System.out.println("Trying to hire a gardener");
+		Direction dir = here.directionTo(MapAnalysis.center);
+		if (rc.canHireGardener(dir)) {
+			rc.hireGardener(dir);
+			rc.broadcast(13, rc.readBroadcast(13) - 1);
+			return;
+		}
+		Direction left = dir.rotateLeftDegrees(10);
+		Direction right = dir.rotateRightDegrees(10);
+		for (int i = 18; i-- > 0;) {
+			if (rc.canHireGardener(left)) {
+				rc.hireGardener(left);
+				rc.broadcast(13, rc.readBroadcast(13) - 1);
+				return;
 			}
-			count++;
-			dir = dir.rotateRightDegrees(10);
-
+			if (rc.canHireGardener(right)) {
+				rc.hireGardener(right);
+				rc.broadcast(13, rc.readBroadcast(13) - 1);
+				return;
+			}
+			left = left.rotateLeftDegrees(10);
+			right = right.rotateRightDegrees(10);
 		}
-
-
-		if (bestRetreatDir != null) {
-			goTo(bestRetreatDir);
-		}
-		goTo(Util.randomDirection());
 	}
+public static void runAway() throws GameActionException{
+	Direction dir = new Direction(0);
+	int thingsInTheWay = 0;
+	int bestScore = 10000;
+	Direction bestDir = new Direction(0);
+	for (int i = 0; i < 16; i++) {
+		if (!rc.onTheMap(here.add(dir, (float) (type.sensorRadius - .001)))) {
+			thingsInTheWay += 100;
+		}
+		
+		for (RobotInfo t : nearbyRobots)
+			if (Util.isDangerous(t.type)&& dir.radiansBetween(here.directionTo(t.location)) < Math.PI / 2) {
+				thingsInTheWay += (t.team == us) ? -10*t.type.attackPower : 10*t.type.attackPower;
+			}
+		if (thingsInTheWay < bestScore) {
+			bestDir = dir;
+			bestScore = thingsInTheWay;
+		}
+		dir = dir.rotateLeftDegrees((float) 22.5);
+		thingsInTheWay = 0;
+	}
+	tryMoveDirectionDangerous(bestDir);
+}
+//Used too much bytecode, incorporated into runAway
+//	private static double wallModCalc(MapLocation retreatLoc, Direction dir) throws GameActionException {
+//		double mod = 0;
+//		while (here.distanceTo(retreatLoc) < type.sensorRadius && rc.onTheMap(retreatLoc)) {
+//			retreatLoc = retreatLoc.add(dir);
+//			mod += 1.0;
+//		}
+//		return mod;
+//	}
+//	public void runAway2(RobotInfo[] enemies) throws GameActionException {
+//		Direction bestRetreatDir = null;
+//		double bestValue = -10000;
+//		int count = 0;
+//		Direction dir = new Direction(0);
+//		while (count < 36) {
+//			MapLocation retreatLoc = here.add(dir,type.strideRadius);
+//			RobotInfo closestEnemy = Util.closestRobot(enemies, retreatLoc);
+//			float dist = retreatLoc.distanceTo(closestEnemy.location);
+//			double allyMod = RangedCombat.numOtherAlliesInSightRange(here.add(dir, rc.getType().strideRadius));
+//			double wallMod = wallModCalc(retreatLoc, dir);
+//			if (dist + allyMod + wallMod > bestValue) {
+//				bestValue = dist + allyMod + wallMod;
+//				bestRetreatDir = dir;
+//			}
+//			count++;
+//			dir = dir.rotateRightDegrees(10);
+//		}
+//		if (!rc.hasMoved()) {
+//			if (bestRetreatDir != null) {
+//				goTo(bestRetreatDir);
+//			}
+//			goTo(Util.randomDirection());
+//		}
+//	}
 }
