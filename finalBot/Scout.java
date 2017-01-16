@@ -108,7 +108,9 @@ public class Scout extends Bot {
 				if (here.distanceTo(targetG.location) < 2.5) {
 					RangedCombat.shootSingleShot(targetG);
 				}
+				int test = Clock.getBytecodeNum();
 				goTo(targetG.location);
+				System.out.println("Used: " + (Clock.getBytecodeNum() - test));
 			} else if (inGoodSpot(targetLoc)) {
 				// rc.setIndicatorLine(here,targetG.location,0,0,255);
 				shiftButtSlightly(targetLoc, targetG);
@@ -119,7 +121,9 @@ public class Scout extends Bot {
 				if (here.distanceTo(targetG.location) < 2.5) {
 					RangedCombat.shootSingleShot(targetG);
 				}
-					goTo(targetLoc);
+				int test = Clock.getBytecodeNum();
+				goTo(targetLoc);
+				System.out.println("Used: " + (Clock.getBytecodeNum() - test));
 			}
 			return true;
 		}
