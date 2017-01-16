@@ -114,6 +114,7 @@ public class Scout extends Bot {
 			} else if (inGoodSpot(targetLoc)) {
 				// rc.setIndicatorLine(here,targetG.location,0,0,255);
 				shiftButtSlightly(targetLoc, targetG);
+				System.out.println("shifting my butt");
 				harassFromTree(targetG);
 			} else {
 				// rc.setIndicatorLine(here,targetLoc,0,0,255);
@@ -132,15 +133,15 @@ public class Scout extends Bot {
 		boolean inTree = false;
 		if (targetLoc != null) {
 			inTree = inGoodSpot(targetLoc);
-			if (inTree && rc.canSenseRobot(targetGardenerID)) {
+			if (inTree && rc.canSenseRobot(targetGardenerID)&& rc.senseRobot(targetGardenerID).health > 39) {
 				for (RobotInfo enemy : nearbyEnemyRobots) {
-					if (enemy.type == RobotType.LUMBERJACK && Util.distanceSquaredTo(here, enemy.location) < 21) {
+					if (enemy.type == RobotType.LUMBERJACK && Util.distanceSquaredTo(here, enemy.location) < 10) {
 						return true;
 					}
 				}
 			}
 		}
-		if (dangerRating(here) > 0) {
+		else if (dangerRating(here) > 0) {
 			return true;
 		}
 
@@ -175,7 +176,7 @@ public class Scout extends Bot {
 		for (int i = trees.length; i-- > 0;) {
 			dist = toHere.distanceTo(trees[i].location) + here.distanceTo(trees[i].location)/10;
 			if (dist < bestDist) {
-					RobotInfo[] enemiesWithinRangeOfTree = rc.senseNearbyRobots(trees[i].location, (float) 3.5, enemy);
+					RobotInfo[] enemiesWithinRangeOfTree = rc.senseNearbyRobots(trees[i].location, (float) 2.1, enemy);
 					if (consistsOfOnlyHarmlessUnits(enemiesWithinRangeOfTree)) {
 						bestDist = dist;
 						closest = trees[i];
@@ -216,8 +217,8 @@ public class Scout extends Bot {
 	private static void shiftButtSlightly(MapLocation targetLoc, RobotInfo targetG) throws GameActionException {
 		RobotInfo meanie = closestShooter();
 		if (meanie != null) {
-			MapLocation outerEdge = targetLoc.add(targetLoc.directionTo(targetG.location), nearbyTrees[0].radius);
-			goTo(outerEdge.add(closestShooter().location.directionTo(targetLoc), (float) 1.005));
+			MapLocation outerEdge = targetLoc.add(targetLoc.directionTo(targetG.location), nearbyTrees[0].radius-1);
+			goTo(outerEdge.add(closestShooter().location.directionTo(targetLoc), (float) .005));
 		}
 	}
 	private static RobotInfo closestShooter(){
