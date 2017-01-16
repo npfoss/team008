@@ -46,10 +46,7 @@ public class Gardener extends Bot {
 	public void takeTurn() throws GameActionException {
 		waterLowestHealthTree();
 		if (nearbyEnemyRobots.length > 0) {
-			notifyFriendsOfEnemies(nearbyEnemyRobots);
-			if ( nearbyAlliedTrees.length > 0){
 				Messaging.sendDistressSignal(here);
-			}
 		}
 		if (isExploring) {
 			if (dirIAmMoving == null || myRand.nextDouble() < .2) {

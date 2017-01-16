@@ -114,10 +114,10 @@ public class Bot {
 	}
 
     public static void notifyFriendsOfEnemies(RobotInfo[] enemies) throws GameActionException{
-        if(enemies.length == 1 && !(type == RobotType.ARCHON || type == RobotType.GARDENER)){
+        if(enemies.length == 1){
             Messaging.updateEnemyUnitLocation(enemies[0].location);
         }
-        else if (enemies.length > 1 || (type == RobotType.ARCHON || type == RobotType.GARDENER)){
+        else if (enemies.length > 1){
             Messaging.updateEnemyArmyLocation(Util.centroidOfUnits(enemies));
         }
     }
@@ -227,20 +227,15 @@ public class Bot {
 	private static int tryMove(Direction dir, float dist, boolean makeMove) throws GameActionException {
 		if (rc.canMove(dir, dist)) {
 			int danger = 0;
-			if((nearbyBullets.length > 5 && nearbyEnemyRobots.length > 1 )&& type == RobotType.LUMBERJACK){
-				//for now since attacking > dodging
-			}else{
 			danger = dangerRating(here.add(dir, dist));
-			}
 			if (danger == 0) {
 				if (makeMove) {
 					rc.move(dir, dist);
 					here = rc.getLocation();
 				}
-				calculatedMove = dir;
-				return danger;
-
 			}
+			calculatedMove = dir;
+			return danger;
 		}
 		return 9999;
 

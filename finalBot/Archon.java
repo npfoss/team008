@@ -20,10 +20,10 @@ public class Archon extends Bot {
 			hireGardener();
 			unitsBuilt++;
 		}
-		if(nearbyEnemyRobots.length > 0){
-				notifyFriendsOfEnemies(nearbyEnemyRobots);
-				runAway();
-		}
+		if (nearbyEnemyRobots.length > 0) {
+			Messaging.sendDistressSignal(here);
+			runAway();
+	}
 
 	}
 	
