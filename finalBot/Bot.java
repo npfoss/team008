@@ -467,7 +467,7 @@ public class Bot {
 		MapLocation bulletLocation = bullet.location;
 		float bulletSpeed = bullet.speed;
 		// Calculate bullet relations to this robot
-		Direction directionToRobot = bulletLocation.directionTo(loc);
+		Direction directionToRobot = new Direction(bulletLocation,loc);
 		float distToRobot = bulletLocation.distanceTo(loc);
 		float theta = propagationDirection.radiansBetween(directionToRobot);
 
@@ -476,12 +476,9 @@ public class Bot {
 		if (Math.abs(theta) > Math.PI / 2) {
 			return false;
 		}
-		float perpendicularDist = (float) Math.abs(distToRobot * Math.sin(theta)); // soh
-																					// cah
-																					// toa
-																					// :)
+		float perpendicularDist = (float) Math.abs(distToRobot * Math.sin(theta)); 
 		// parallel distance not completely accurate but fast to calculate
 		return (perpendicularDist <= type.bodyRadius
-				&& (nearbyNeutralTrees.length > 3 ? true : (distToRobot - type.bodyRadius < bulletSpeed)));
+				&& (nearbyTrees.length > 3 ? true : (distToRobot - type.bodyRadius < bulletSpeed)));
 	}
 }
