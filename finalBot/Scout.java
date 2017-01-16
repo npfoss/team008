@@ -7,12 +7,22 @@ public class Scout extends Bot {
 	private static int locNum;
 	private static MapLocation targetLoc;
 	private static int targetGardenerID;
+	private static boolean searchingForEdges;
+	private static boolean foundMaxX;
+	private static boolean foundMaxY;
+	private static boolean foundMinX;
+	private static boolean foundMinY;
 
 	public Scout(RobotController r) throws GameActionException {
 		super(r);
+		searchingForEdges = true;
 		targetGardenerID = -1;
 		initLocations = MapAnalysis.initialEnemyArchonLocations;
 		locNum = 0;
+		foundMaxX = false;
+		foundMaxY = false;
+		foundMinY = false;
+		foundMaxX = false;
 	}
 
 	public void takeTurn() throws Exception {
@@ -22,7 +32,8 @@ public class Scout extends Bot {
 		 * if(numHostiles > 0){ System.out.println("Ranged Combat");
 		 * RangedCombat.execute(); }
 		 */
-		if (!tryToHarass(Util.combineTwoTIArrays(nearbyEnemyTrees, nearbyNeutralTrees))) {
+
+		if (!tryToHarass(nearbyTrees)) {
 			if (!dealWithNearbyTrees()) {
 				moveToHarass();
 			}
@@ -33,7 +44,87 @@ public class Scout extends Bot {
 			// rc.setIndicatorDot(enemies[0].location, 255, 0, 0);
 			notifyFriendsOfEnemies(nearbyEnemyRobots);
 		}
+		
+		if(Clock.getBytecodesLeft() > 3000 && searchingForEdges){
+			searchForEdges();
+		}
 		return;
+	}
+
+	private void searchForEdges() throws GameActionException {
+		if(foundMaxX && foundMinY && foundMinX && foundMaxY){
+			searchingForEdges = false;
+			return;
+		}
+		//System.out.println("searching");
+		boolean updated = false;
+	    float minX = Messaging.getMinX();
+	    float minY = Messaging.getMinY();
+		float maxX = Messaging.getMaxX();
+		float maxY = Messaging.getMaxY();
+		//System.out.println(Math.abs(maxY));
+		if(minX == 0 && !foundMinX){
+			MapLocation edge = checkForEdge(Direction.getWest());
+			if(edge != null){
+				Messaging.updateMinX(edge.x);
+				minX = edge.x;
+				updated = true;
+				foundMinX = true;
+				//System.out.println("updated min x to " + minX);
+			}
+		}
+		if(minY == 0 && !foundMinY){
+			MapLocation edge = checkForEdge(Direction.getSouth());
+			if(edge != null){
+				Messaging.updateMinY(edge.y);
+				minY = edge.y;
+				updated = true;
+				foundMinY = true;
+				//System.out.println("updated min y to " + minY);
+			}
+		}
+		if(maxX == 0 && !foundMaxX){
+			MapLocation edge = checkForEdge(Direction.getEast());
+			if(edge != null){
+				Messaging.updateMaxX(edge.x);
+				maxX = edge.x;
+				updated = true;
+				foundMaxX = true;
+				//System.out.println("updated max x to " + maxX);
+			}
+		}
+		if(maxY == 0 && !foundMaxY){
+			MapLocation edge = checkForEdge(Direction.getNorth());
+			if(edge != null){
+				Messaging.updateMaxY(edge.y);
+				maxY = edge.y;
+				updated = true;
+				foundMaxY = true;
+				//System.out.println("updated max y to " + maxY);
+			}
+		}
+		if(updated){
+			float area = (maxX - minX) * (maxY - minY);
+			Messaging.updateArea(area);
+			//System.out.println("area = " + area);
+		}
+	}
+
+	private MapLocation checkForEdge(Direction dir) throws GameActionException {
+		float highDist = type.sensorRadius;
+		if(rc.onTheMap(here.add(dir,highDist - (float)(0.01))))
+			return null;
+		float lowDist = type.bodyRadius;
+		while(highDist - lowDist > .01){
+			float midDist = (highDist + lowDist) / 2;
+			if(rc.onTheMap(here.add(dir,midDist))){
+				lowDist = midDist;
+			}
+			else{
+				highDist = midDist;
+			}	
+		}
+		return here.add(dir,highDist);
 	}
 
 	public static void moveToHarass() throws GameActionException {
@@ -86,16 +177,16 @@ public class Scout extends Bot {
 	private boolean tryToHarass(TreeInfo[] nearbyTrees) throws GameActionException {
 		RobotInfo targetG = null;
 		if (inDanger(nearbyEnemyRobots, nearbyBullets)) {
-			System.out.println("ranged combat");
-			RangedCombat.execute();
+			//System.out.println("ranged combat");
+			goTo(new Direction(here,MapAnalysis.center));
 			return true;
 		}
-		if (targetGardenerID == -1 || !rc.canSenseRobot(targetGardenerID) || (rc.getRoundNum() % 25 == 1 && (targetLoc == null || !inGoodSpot(targetLoc)))) {
+		if (targetGardenerID == -1 || !rc.canSenseRobot(targetGardenerID) || (rc.getRoundNum() % 25 == 3 && (targetLoc == null || !inGoodSpot(targetLoc)))) {
 			targetGardenerID = -1;
 			targetLoc = null;
 			updateTargetGardener();
 			if (targetGardenerID != -1) {
-				System.out.println("new target gardener: id = " + targetGardenerID);
+				//System.out.println("new target gardener: id = " + targetGardenerID);
 				targetG = rc.senseRobot(targetGardenerID);
 				//updateTargetLoc(nearbyTrees, targetG);
 			}
@@ -104,22 +195,23 @@ public class Scout extends Bot {
 			targetG = rc.senseRobot(targetGardenerID);
 				updateTargetLoc(nearbyTrees, targetG);
 			if (targetLoc == null) {
-				System.out.println("can't find a tree, but still trying to kill gardener");
+				//System.out.println("can't find a tree, but still trying to kill gardener");
 				if (here.distanceTo(targetG.location) < 2.5) {
 					RangedCombat.shootSingleShot(targetG);
 				}
-				goTo(targetG.location);
+				goToDangerous(targetG.location);
 			} else if (inGoodSpot(targetLoc)) {
 				// rc.setIndicatorLine(here,targetG.location,0,0,255);
 				shiftButtSlightly(targetLoc, targetG);
+				System.out.println("shifting my butt");
 				harassFromTree(targetG);
 			} else {
 				// rc.setIndicatorLine(here,targetLoc,0,0,255);
-				System.out.println("heading toward tree");
+				//System.out.println("heading toward tree");
 				if (here.distanceTo(targetG.location) < 2.5) {
 					RangedCombat.shootSingleShot(targetG);
 				}
-					goTo(targetLoc);
+				goToDangerous(targetLoc);
 			}
 			return true;
 		}
@@ -130,24 +222,18 @@ public class Scout extends Bot {
 		boolean inTree = false;
 		if (targetLoc != null) {
 			inTree = inGoodSpot(targetLoc);
-			if (inTree && rc.canSenseRobot(targetGardenerID)) {
+			if (inTree && rc.canSenseRobot(targetGardenerID)&& rc.senseRobot(targetGardenerID).health > 39) {
 				for (RobotInfo enemy : nearbyEnemyRobots) {
-					if (enemy.location.distanceTo(here) < RobotType.LUMBERJACK.bodyRadius +RobotType.LUMBERJACK.strideRadius + 1.1
-							+ RobotType.SCOUT.bodyRadius) {
-						if (enemy.type == RobotType.LUMBERJACK) {
-							return true;
-						}
-					} else {
-						break;
+					if (enemy.type == RobotType.LUMBERJACK && Util.distanceSquaredTo(here, enemy.location) < 10) {
+						return true;
 					}
 				}
 			}
-			else{
-				if(dangerRating(here) > 0){
-					return true;
-				}
-			}
 		}
+		else if (dangerRating(here) > 0) {
+			return true;
+		}
+
 		return false;
 	}
 
@@ -179,7 +265,7 @@ public class Scout extends Bot {
 		for (int i = trees.length; i-- > 0;) {
 			dist = toHere.distanceTo(trees[i].location) + here.distanceTo(trees[i].location)/10;
 			if (dist < bestDist) {
-					RobotInfo[] enemiesWithinRangeOfTree = rc.senseNearbyRobots(trees[i].location, (float) 3.5, enemy);
+					RobotInfo[] enemiesWithinRangeOfTree = rc.senseNearbyRobots(trees[i].location, (float) 2.1, enemy);
 					if (consistsOfOnlyHarmlessUnits(enemiesWithinRangeOfTree)) {
 						bestDist = dist;
 						closest = trees[i];
@@ -220,8 +306,8 @@ public class Scout extends Bot {
 	private static void shiftButtSlightly(MapLocation targetLoc, RobotInfo targetG) throws GameActionException {
 		RobotInfo meanie = closestShooter();
 		if (meanie != null) {
-			MapLocation outerEdge = targetLoc.add(targetLoc.directionTo(targetG.location), nearbyTrees[0].radius);
-			goTo(outerEdge.add(closestShooter().location.directionTo(targetLoc), (float) 1.005));
+			MapLocation outerEdge = targetLoc.add(targetLoc.directionTo(targetG.location), nearbyTrees[0].radius-1);
+			goToDangerous(outerEdge.add(closestShooter().location.directionTo(targetLoc), (float) .001));
 		}
 	}
 	private static RobotInfo closestShooter(){

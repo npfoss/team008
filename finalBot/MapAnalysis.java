@@ -133,10 +133,10 @@ public class MapAnalysis extends Bot {
 				maxY = loc.y;
 			}
 		}
-		Messaging.updateMinX(minX);
-		Messaging.updateMinY(minY);
-		Messaging.updateMaxX(maxX);
-		Messaging.updateMaxY(maxY);
+		//Messaging.updateMinX(minX);
+		//Messaging.updateMinY(minY);
+		//Messaging.updateMaxX(maxX);
+		//Messaging.updateMaxY(maxY);
 	}
 
 	public static void possiblyMakeDecisions() throws GameActionException {
@@ -156,7 +156,7 @@ public class MapAnalysis extends Bot {
 			if (rc.getRoundNum() < 5 && !startedGame) {
 				// rudimentary genetics strategy
 				startedGame = true;
-				guessMapSize();
+				//guessMapSize();
 				float TreesNearMe = 0;
 				for (TreeInfo tree : nearbyNeutralTrees) {
 					TreesNearMe ++;
@@ -184,7 +184,7 @@ public class MapAnalysis extends Bot {
 			} else if (rc.getRoundNum() % 25 == 2 && rc.getRoundNum() > 5) {
 				updateUnitCount();
 				updateMapSize();
-				if (numGardener == 0 || rc.getTeamBullets() > 150 && numGardener == 1) {
+				if (numGardener == 0 || rc.getTeamBullets() > 150 && numGardener < 10) {
 					rc.broadcast(13, 1);
 				}
 				if (numScout < 1) {

@@ -58,12 +58,12 @@ public class Bot {
 				// TODO: have our Util sort a single call rather than calling
 				// multiple times
                 nearbyTrees = rc.senseNearbyTrees(-1);
-                nearbyNeutralTrees = rc.senseNearbyTrees(-1, Team.NEUTRAL);
-                nearbyAlliedTrees = rc.senseNearbyTrees(-1, us);
-                nearbyEnemyTrees = rc.senseNearbyTrees(-1, enemy);
+                FastMethods.initializeNearbyNeutralTrees();
+                FastMethods.initializeNearbyEnemyTrees();
+                FastMethods.initializeNearbyAlliedTrees();
 				nearbyRobots = rc.senseNearbyRobots(-1);
-                nearbyAlliedRobots = rc.senseNearbyRobots(-1, us);
-                nearbyEnemyRobots = rc.senseNearbyRobots(-1, enemy);
+				FastMethods.initializeNearbyAlliedRobots();
+				FastMethods.initializeNearbyEnemeyRobots();
                 nearbyBullets = rc.senseNearbyBullets();
                 if (rc.getRoundNum() + 5 > GameConstants.GAME_DEFAULT_ROUNDS
 						|| rc.getTeamVictoryPoints() + rc.getTeamBullets() / 10 > 1000) {
@@ -74,7 +74,6 @@ public class Bot {
 				if (rc.getRoundNum() % 25 == 1) {
 					MapAnalysis.rollCall();
 				}
-
 				shakeNearbyTrees();
 				takeTurn();
 
@@ -97,16 +96,16 @@ public class Bot {
 		return;
 	}
 
-	public TreeInfo[] shakeNearbyTrees() throws Exception {
-		// TODO: optimize
-		TreeInfo shakeMe = Util.highestShakeableBulletTree(nearbyNeutralTrees);
-		if (shakeMe != null) {
-			rc.shake(shakeMe.getID());
-			if (rc.getType() != RobotType.SCOUT) {
-				System.out.println("***A robot that isn't a scout just shook a tree!!!");
+	public void shakeNearbyTrees() throws Exception {
+		for (TreeInfo tree : nearbyNeutralTrees) {
+			if (tree.containedBullets > 0 && rc.canShake(tree.ID)) {
+				rc.shake(tree.ID);
+				if (rc.getType() != RobotType.SCOUT) {
+					//System.out.println("***A robot that isn't a scout just shook a tree!!!");
+					return;
+				}
 			}
 		}
-		return nearbyNeutralTrees;
 	}
 
 	public void assignNewTarget() throws GameActionException {
@@ -117,10 +116,10 @@ public class Bot {
 	}
 
     public static void notifyFriendsOfEnemies(RobotInfo[] enemies) throws GameActionException{
-        if(enemies.length == 1 && !(type == RobotType.ARCHON || type == RobotType.GARDENER)){
+        if(enemies.length == 1){
             Messaging.updateEnemyUnitLocation(enemies[0].location);
         }
-        else if (enemies.length > 1 || (type == RobotType.ARCHON || type == RobotType.GARDENER)){
+        else if (enemies.length > 1){
             Messaging.updateEnemyArmyLocation(Util.centroidOfUnits(enemies));
         }
     }
@@ -147,9 +146,8 @@ public class Bot {
 
 				} else if (l.type == RobotType.LUMBERJACK) {
 					if (!doneLumbers) {
-						if (loc.distanceTo(l.location) < RobotType.LUMBERJACK.bodyRadius
-								+ RobotType.LUMBERJACK.strideRadius + 1.1 + RobotType.SCOUT.bodyRadius) {
-							danger += (10.0 - loc.distanceTo(l.location))*10;
+						if (Util.distanceSquaredTo(loc, l.location) < 21) {
+							danger += (10.0 - loc.distanceTo(l.location)) * 50;
 						} else {
 							doneLumbers = true;
 						}
@@ -177,9 +175,8 @@ public class Bot {
 					if (type != RobotType.LUMBERJACK) {
 						if (l.type == RobotType.LUMBERJACK) {
 							if (!doneEnemyLumbers) {
-								if (loc.distanceTo(l.location) < RobotType.LUMBERJACK.bodyRadius
-										+ RobotType.LUMBERJACK.strideRadius + 1.1 + type.bodyRadius) {
-									danger += (10.0 - loc.distanceTo(l.location))*50;
+								if (Util.distanceSquaredTo(loc, l.location) < 21) {
+									danger += (10.0 - loc.distanceTo(l.location)) * 50;
 								} else {
 									doneEnemyLumbers = true;
 								}
@@ -189,7 +186,7 @@ public class Bot {
 							if (!doneEnemyRangers) {
 								if (loc.distanceTo(l.location) < l.type.bodyRadius + l.type.strideRadius
 										+ l.type.bulletSpeed + type.bodyRadius) {
-									danger += (10.0 - loc.distanceTo(l.location))*10.0* l.type.attackPower ;
+									danger += (10.0 - loc.distanceTo(l.location)) * 10.0 * l.type.attackPower;
 								} else {
 									doneEnemyRangers = true;
 								}
@@ -199,8 +196,8 @@ public class Bot {
 				} else {
 					if (l.type == RobotType.LUMBERJACK) {
 						if (!doneOurLumbers) {
-							if (loc.distanceTo(l.location) < RobotType.LUMBERJACK.bodyRadius + +1.1 + type.bodyRadius) {
-								danger +=(10.0 - loc.distanceTo(l.location))*50.0 ;
+							if (Util.distanceSquaredTo(loc, l.location) < 21) {
+								danger += (10.0 - loc.distanceTo(l.location)) * 50.0;
 
 							} else {
 								doneOurLumbers = true;
@@ -222,6 +219,7 @@ public class Bot {
 						}
 					}
 				}
+
 			}
 		}
 		return (int) danger;
@@ -230,20 +228,15 @@ public class Bot {
 	private static int tryMove(Direction dir, float dist, boolean makeMove) throws GameActionException {
 		if (rc.canMove(dir, dist)) {
 			int danger = 0;
-			if((nearbyBullets.length > 5 && nearbyEnemyRobots.length > 1 )&& type == RobotType.LUMBERJACK){
-				//for now since attacking > dodging
-			}else{
 			danger = dangerRating(here.add(dir, dist));
-			}
 			if (danger == 0) {
 				if (makeMove) {
 					rc.move(dir, dist);
 					here = rc.getLocation();
 				}
-				calculatedMove = dir;
-				return danger;
-
 			}
+			calculatedMove = dir;
+			return danger;
 		}
 		return 9999;
 
@@ -261,9 +254,9 @@ public class Bot {
 			bestDir = dir;
 			bestDanger = tempDanger;
 		}
-		Direction left = dir.rotateLeftDegrees(10);
-		Direction right = dir.rotateRightDegrees(10);
-		for (int i = 0; i < 18; i++) {
+		Direction left = dir.rotateLeftDegrees(20);
+		Direction right = dir.rotateRightDegrees(20);
+		for (int i = 0; i < 9; i++) {
 
 			tempDanger = tryMove(left, type.strideRadius, makeMove);
 			if (tempDanger == 0) {
@@ -281,8 +274,8 @@ public class Bot {
 				bestDir = right;
 				bestDanger = tempDanger;
 			}
-			left = left.rotateLeftDegrees(10);
-			right = right.rotateRightDegrees(10);
+			left = left.rotateLeftDegrees(20);
+			right = right.rotateRightDegrees(20);
 		}
 		tempDanger = dangerRating(here);
 		if (tempDanger < bestDanger) {
@@ -316,12 +309,7 @@ public class Bot {
 		}
 
 		if (!isBugging || 1 == 1) {
-			if (here.distanceTo(dest) < type.strideRadius
-					&& rc.canMove(here.directionTo(dest), here.distanceTo(dest))) {
-				rc.move(here.directionTo(dest), here.distanceTo(dest));
-				here = rc.getLocation();
-				return;
-			}
+			
 			if (tryMoveDirection(here.directionTo(dest), true)) {
 				return;
 			} else {
@@ -352,10 +340,17 @@ public class Bot {
 	}
 
 	/////////////////////////////// Dangerous Nav///////////////////////////////
+	public static void goToDangerous(MapLocation loc) throws GameActionException{
+		if (here.distanceTo(loc) < type.strideRadius
+				&& rc.canMove(loc)) {
+			rc.move(loc);
+			here = rc.getLocation();
+			return;
+		}
+		tryMoveDirectionDangerous(here.directionTo(loc));
+	}
 	public static boolean tryMoveDirectionDangerous(Direction dir) throws GameActionException {
-
 		if (tryMoveDangerous(dir, type.strideRadius)) {
-
 			return true;
 		}
 		Direction left = dir.rotateLeftDegrees(10);
@@ -372,7 +367,6 @@ public class Bot {
 		}
 		return false;
 	}
-
 	private static boolean tryMoveDangerous(Direction dir, float dist) throws GameActionException {
 		if (rc.canMove(dir, dist)) {
 			rc.move(dir, dist);
@@ -470,21 +464,23 @@ public class Bot {
 		MapLocation bulletLocation = bullet.location;
 		float bulletSpeed = bullet.speed;
 		// Calculate bullet relations to this robot
-		Direction directionToRobot = bulletLocation.directionTo(loc);
+		Direction directionToRobot = new Direction(bulletLocation,loc);
 		float distToRobot = bulletLocation.distanceTo(loc);
-		float theta = propagationDirection.radiansBetween(directionToRobot);
+		float theta = Math.abs(propagationDirection.radiansBetween(directionToRobot));
 
 		// If theta > 90 degrees, then the bullet is traveling away from us and
 		// we can break early
-		if (Math.abs(theta) > Math.PI / 2) {
+		if (theta > Math.PI / 2) {
 			return false;
 		}
-		float perpendicularDist = (float) Math.abs(distToRobot * Math.sin(theta)); // soh
+
+		float perpendicularDist = (float) (distToRobot * Lookup.lookupSin(theta)); // soh
 																					// cah
 																					// toa
 																					// :)
+
 		// parallel distance not completely accurate but fast to calculate
 		return (perpendicularDist <= type.bodyRadius
-				&& (nearbyNeutralTrees.length > 3 ? true : (distToRobot - type.bodyRadius < bulletSpeed)));
+				&& (nearbyTrees.length > 3 ? true : (distToRobot - type.bodyRadius < bulletSpeed)));
 	}
 }

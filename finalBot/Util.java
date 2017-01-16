@@ -213,6 +213,9 @@ public class Util extends Bot {
     public static Direction randomDirection() {
         return new Direction( myRand.nextFloat() * 2 * (float) Math.PI);
     }
+    public static boolean isDangerous(RobotType t){
+    	return !(t == RobotType.ARCHON || t == RobotType.GARDENER);
+    }
 
     public static float radians(int degrees){ return degrees * (float)Math.PI / 180; }
 
@@ -223,18 +226,6 @@ public class Util extends Bot {
             }
         }
         return false;
-    }
-
-    public static TreeInfo highestShakeableBulletTree(TreeInfo[] trees){
-        int mostBullets = 0;
-        TreeInfo bestTree = null;
-        for (TreeInfo tree : trees){
-            if (tree.getContainedBullets() > mostBullets && rc.canShake(tree.getID())){
-                mostBullets = tree.getContainedBullets();
-                bestTree = tree;
-            }
-        }
-        return bestTree;
     }
     
     public static TreeInfo[] combineTwoTIArrays( TreeInfo[] array1, TreeInfo[] array2){

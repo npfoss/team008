@@ -11,7 +11,7 @@ public class Gardener extends Bot {
 		// anything else gardener specific
 	}
 
-	public static Direction findOpenSpaces() throws GameActionException {
+	private static Direction findOpenSpaces() throws GameActionException {
 
 		Direction dir = new Direction(0);
 		int thingsInTheWay = 0;
@@ -35,7 +35,7 @@ public class Gardener extends Bot {
 				bestDir = dir;
 				bestScore = thingsInTheWay;
 			}
-			dir = dir.rotateLeftDegrees(360 / 16);
+			dir = dir.rotateLeftDegrees((float) 22.5);
 			thingsInTheWay = 0;
 		}
 
@@ -46,10 +46,7 @@ public class Gardener extends Bot {
 	public void takeTurn() throws GameActionException {
 		waterLowestHealthTree();
 		if (nearbyEnemyRobots.length > 0) {
-			notifyFriendsOfEnemies(nearbyEnemyRobots);
-			if ( nearbyAlliedTrees.length > 0){
 				Messaging.sendDistressSignal(here);
-			}
 		}
 		if (isExploring) {
 			if (dirIAmMoving == null || myRand.nextDouble() < .2) {
@@ -91,7 +88,7 @@ public class Gardener extends Bot {
 		int typeToBuild = rc.readBroadcast(14);
 		int numToBuild = rc.readBroadcast(15);
 		if (typeToBuild == 3 && numToBuild > 0) {
-			System.out.println("I must build Unit Type:" + typeToBuild + ":" + numToBuild);
+			//System.out.println("I must build Unit Type:" + typeToBuild + ":" + numToBuild);
 			if (buildRobot(RobotType.SCOUT)) {
 				rc.broadcast(15, numToBuild - 1);
 			}
@@ -99,7 +96,7 @@ public class Gardener extends Bot {
 		}
 		if (nearbyEnemyRobots.length > 0) {
 			if (numToBuild > 0) {
-				System.out.println("I must build Unit Type:" + typeToBuild + ":" + numToBuild);
+				//System.out.println("I must build Unit Type:" + typeToBuild + ":" + numToBuild);
 				switch (typeToBuild) {
 				case 0:
 					break;
@@ -135,7 +132,7 @@ public class Gardener extends Bot {
 		if (plantATree())
 			return;
 		if (numToBuild > 0) {
-			System.out.println("I must build Unit Type:" + typeToBuild + ":" + numToBuild);
+			//System.out.println("I must build Unit Type:" + typeToBuild + ":" + numToBuild);
 			switch (typeToBuild) {
 			case 0:
 				break;
