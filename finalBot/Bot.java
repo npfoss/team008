@@ -469,14 +469,19 @@ public class Bot {
 		// Calculate bullet relations to this robot
 		Direction directionToRobot = new Direction(bulletLocation,loc);
 		float distToRobot = bulletLocation.distanceTo(loc);
-		float theta = propagationDirection.radiansBetween(directionToRobot);
+		float theta = Math.abs(propagationDirection.radiansBetween(directionToRobot));
 
 		// If theta > 90 degrees, then the bullet is traveling away from us and
 		// we can break early
-		if (Math.abs(theta) > Math.PI / 2) {
+		if (theta > Math.PI / 2) {
 			return false;
 		}
-		float perpendicularDist = (float) Math.abs(distToRobot * Math.sin(theta)); 
+
+		float perpendicularDist = (float) (distToRobot * Lookup.lookupSin(theta)); // soh
+																					// cah
+																					// toa
+																					// :)
+
 		// parallel distance not completely accurate but fast to calculate
 		return (perpendicularDist <= type.bodyRadius
 				&& (nearbyTrees.length > 3 ? true : (distToRobot - type.bodyRadius < bulletSpeed)));
