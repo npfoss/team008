@@ -34,7 +34,7 @@ public class Lumberjack extends Bot {
 			}
 			int start = Clock.getBytecodeNum();
             doLumberjackMicro();
-            System.out.println("micro took " + (Clock.getBytecodeNum() - start) + " bytecodes");
+            //System.out.println("micro took " + (Clock.getBytecodeNum() - start) + " bytecodes");
         } else {
             if(target == null){
                 assignNewTarget();
@@ -95,7 +95,7 @@ public class Lumberjack extends Bot {
         TreeInfo lowestStrengthEnemy = Util.leastHealthTouchingRadius(nearbyEnemyTrees, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS);
         //just in case...
         if (lowestStrengthNeutral == null && lowestStrengthEnemy == null){
-            System.out.println("phew, just saved us from an error");
+            //System.out.println("phew, just saved us from an error");
             return;
         }
 
