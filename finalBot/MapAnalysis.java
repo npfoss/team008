@@ -184,7 +184,7 @@ public class MapAnalysis extends Bot {
 			} else if (rc.getRoundNum() % 25 == 2 && rc.getRoundNum() > 5) {
 				updateUnitCount();
 				updateMapSize();
-				if (numGardener == 0 || rc.getTeamBullets() > 150 && numGardener == 1) {
+				if (numGardener == 0 || rc.getTeamBullets() > 150 && numGardener < 10) {
 					rc.broadcast(13, 1);
 				}
 				if (numScout < 1) {
