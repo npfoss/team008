@@ -199,9 +199,7 @@ public class Scout extends Bot {
 				if (here.distanceTo(targetG.location) < 2.5) {
 					RangedCombat.shootSingleShot(targetG);
 				}
-				int test = Clock.getBytecodeNum();
-				goTo(targetG.location);
-				System.out.println("Used: " + (Clock.getBytecodeNum() - test));
+				goToDangerous(targetG.location);
 			} else if (inGoodSpot(targetLoc)) {
 				// rc.setIndicatorLine(here,targetG.location,0,0,255);
 				shiftButtSlightly(targetLoc, targetG);
@@ -213,7 +211,7 @@ public class Scout extends Bot {
 				if (here.distanceTo(targetG.location) < 2.5) {
 					RangedCombat.shootSingleShot(targetG);
 				}
-				goTo(targetLoc);
+				goToDangerous(targetLoc);
 			}
 			return true;
 		}
@@ -309,7 +307,7 @@ public class Scout extends Bot {
 		RobotInfo meanie = closestShooter();
 		if (meanie != null) {
 			MapLocation outerEdge = targetLoc.add(targetLoc.directionTo(targetG.location), nearbyTrees[0].radius-1);
-			goTo(outerEdge.add(closestShooter().location.directionTo(targetLoc), (float) .005));
+			goToDangerous(outerEdge.add(closestShooter().location.directionTo(targetLoc), (float) .001));
 		}
 	}
 	private static RobotInfo closestShooter(){

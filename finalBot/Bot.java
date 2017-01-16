@@ -309,12 +309,7 @@ public class Bot {
 		}
 
 		if (!isBugging || 1 == 1) {
-			if (here.distanceTo(dest) < type.strideRadius
-					&& rc.canMove(here.directionTo(dest), here.distanceTo(dest))) {
-				rc.move(here.directionTo(dest), here.distanceTo(dest));
-				here = rc.getLocation();
-				return;
-			}
+			
 			if (tryMoveDirection(here.directionTo(dest), true)) {
 				return;
 			} else {
@@ -345,6 +340,15 @@ public class Bot {
 	}
 
 	/////////////////////////////// Dangerous Nav///////////////////////////////
+	public static void goToDangerous(MapLocation loc) throws GameActionException{
+		if (here.distanceTo(loc) < type.strideRadius
+				&& rc.canMove(loc)) {
+			rc.move(loc);
+			here = rc.getLocation();
+			return;
+		}
+		tryMoveDirectionDangerous(here.directionTo(loc));
+	}
 	public static boolean tryMoveDirectionDangerous(Direction dir) throws GameActionException {
 		if (tryMoveDangerous(dir, type.strideRadius)) {
 			return true;
