@@ -32,8 +32,8 @@ public class Scout extends Bot {
 		 * if(numHostiles > 0){ System.out.println("Ranged Combat");
 		 * RangedCombat.execute(); }
 		 */
-		
-		if (!tryToHarass(Util.combineTwoTIArrays(nearbyEnemyTrees, nearbyNeutralTrees))) {
+
+		if (!tryToHarass(nearbyTrees)) {
 			if (!dealWithNearbyTrees()) {
 				moveToHarass();
 			}
@@ -177,11 +177,11 @@ public class Scout extends Bot {
 	private boolean tryToHarass(TreeInfo[] nearbyTrees) throws GameActionException {
 		RobotInfo targetG = null;
 		if (inDanger(nearbyEnemyRobots, nearbyBullets)) {
-			//System.out.println("ranged combat");
-			RangedCombat.execute();
+			System.out.println("ranged combat");
+			goTo(new Direction(here,MapAnalysis.center));
 			return true;
 		}
-		if (targetGardenerID == -1 || !rc.canSenseRobot(targetGardenerID) || (rc.getRoundNum() % 25 == 1 && (targetLoc == null || !inGoodSpot(targetLoc)))) {
+		if (targetGardenerID == -1 || !rc.canSenseRobot(targetGardenerID) || (rc.getRoundNum() % 25 == 3 && (targetLoc == null || !inGoodSpot(targetLoc)))) {
 			targetGardenerID = -1;
 			targetLoc = null;
 			updateTargetGardener();
@@ -199,7 +199,9 @@ public class Scout extends Bot {
 				if (here.distanceTo(targetG.location) < 2.5) {
 					RangedCombat.shootSingleShot(targetG);
 				}
+				int test = Clock.getBytecodeNum();
 				goTo(targetG.location);
+				System.out.println("Used: " + (Clock.getBytecodeNum() - test));
 			} else if (inGoodSpot(targetLoc)) {
 				// rc.setIndicatorLine(here,targetG.location,0,0,255);
 				shiftButtSlightly(targetLoc, targetG);
@@ -210,7 +212,7 @@ public class Scout extends Bot {
 				if (here.distanceTo(targetG.location) < 2.5) {
 					RangedCombat.shootSingleShot(targetG);
 				}
-					goTo(targetLoc);
+				goTo(targetLoc);
 			}
 			return true;
 		}
@@ -223,22 +225,16 @@ public class Scout extends Bot {
 			inTree = inGoodSpot(targetLoc);
 			if (inTree && rc.canSenseRobot(targetGardenerID)) {
 				for (RobotInfo enemy : nearbyEnemyRobots) {
-					if (enemy.location.distanceTo(here) < RobotType.LUMBERJACK.bodyRadius +RobotType.LUMBERJACK.strideRadius + 1.1
-							+ RobotType.SCOUT.bodyRadius) {
-						if (enemy.type == RobotType.LUMBERJACK) {
-							return true;
-						}
-					} else {
-						break;
+					if (enemy.type == RobotType.LUMBERJACK && Util.distanceSquaredTo(here, enemy.location) < 21) {
+						return true;
 					}
 				}
 			}
-			else{
-				if(dangerRating(here) > 0){
-					return true;
-				}
-			}
 		}
+		if (dangerRating(here) > 0) {
+			return true;
+		}
+
 		return false;
 	}
 
