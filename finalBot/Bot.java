@@ -353,9 +353,7 @@ public class Bot {
 
 	/////////////////////////////// Dangerous Nav///////////////////////////////
 	public static boolean tryMoveDirectionDangerous(Direction dir) throws GameActionException {
-
 		if (tryMoveDangerous(dir, type.strideRadius)) {
-
 			return true;
 		}
 		Direction left = dir.rotateLeftDegrees(10);
@@ -372,7 +370,6 @@ public class Bot {
 		}
 		return false;
 	}
-
 	private static boolean tryMoveDangerous(Direction dir, float dist) throws GameActionException {
 		if (rc.canMove(dir, dist)) {
 			rc.move(dir, dist);
