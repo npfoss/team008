@@ -213,6 +213,9 @@ public class Util extends Bot {
     public static Direction randomDirection() {
         return new Direction( myRand.nextFloat() * 2 * (float) Math.PI);
     }
+    public static boolean isDangerous(RobotType t){
+    	return !(t == RobotType.ARCHON || t == RobotType.GARDENER);
+    }
 
     public static float radians(int degrees){ return degrees * (float)Math.PI / 180; }
 

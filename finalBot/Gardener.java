@@ -11,7 +11,7 @@ public class Gardener extends Bot {
 		// anything else gardener specific
 	}
 
-	public static Direction findOpenSpaces() throws GameActionException {
+	private static Direction findOpenSpaces() throws GameActionException {
 
 		Direction dir = new Direction(0);
 		int thingsInTheWay = 0;
@@ -35,7 +35,7 @@ public class Gardener extends Bot {
 				bestDir = dir;
 				bestScore = thingsInTheWay;
 			}
-			dir = dir.rotateLeftDegrees(360 / 16);
+			dir = dir.rotateLeftDegrees((float) 22.5);
 			thingsInTheWay = 0;
 		}
 

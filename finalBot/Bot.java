@@ -353,9 +353,7 @@ public class Bot {
 
 	/////////////////////////////// Dangerous Nav///////////////////////////////
 	public static boolean tryMoveDirectionDangerous(Direction dir) throws GameActionException {
-
 		if (tryMoveDangerous(dir, type.strideRadius)) {
-
 			return true;
 		}
 		Direction left = dir.rotateLeftDegrees(10);
@@ -372,7 +370,6 @@ public class Bot {
 		}
 		return false;
 	}
-
 	private static boolean tryMoveDangerous(Direction dir, float dist) throws GameActionException {
 		if (rc.canMove(dir, dist)) {
 			rc.move(dir, dist);
@@ -470,7 +467,7 @@ public class Bot {
 		MapLocation bulletLocation = bullet.location;
 		float bulletSpeed = bullet.speed;
 		// Calculate bullet relations to this robot
-		Direction directionToRobot = bulletLocation.directionTo(loc);
+		Direction directionToRobot = new Direction(bulletLocation,loc);
 		float distToRobot = bulletLocation.distanceTo(loc);
 		float theta = Math.abs(propagationDirection.radiansBetween(directionToRobot));
 
@@ -479,12 +476,14 @@ public class Bot {
 		if (theta > Math.PI / 2) {
 			return false;
 		}
+
 		float perpendicularDist = (float) (distToRobot * Lookup.lookupSin(theta)); // soh
 																					// cah
 																					// toa
 																					// :)
+
 		// parallel distance not completely accurate but fast to calculate
 		return (perpendicularDist <= type.bodyRadius
-				&& (nearbyNeutralTrees.length > 3 ? true : (distToRobot - type.bodyRadius < bulletSpeed)));
+				&& (nearbyTrees.length > 3 ? true : (distToRobot - type.bodyRadius < bulletSpeed)));
 	}
 }
