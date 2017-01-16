@@ -22,7 +22,7 @@ public class Scout extends Bot {
 		 * if(numHostiles > 0){ System.out.println("Ranged Combat");
 		 * RangedCombat.execute(); }
 		 */
-		if (!tryToHarass(Util.combineTwoTIArrays(nearbyEnemyTrees, nearbyNeutralTrees))) {
+		if (!tryToHarass(nearbyTrees)) {
 			if (!dealWithNearbyTrees()) {
 				moveToHarass();
 			}
@@ -136,13 +136,8 @@ public class Scout extends Bot {
 			inTree = inGoodSpot(targetLoc);
 			if (inTree && rc.canSenseRobot(targetGardenerID)) {
 				for (RobotInfo enemy : nearbyEnemyRobots) {
-					if (enemy.location.distanceTo(here) < RobotType.LUMBERJACK.bodyRadius +RobotType.LUMBERJACK.strideRadius + 1.1
-							+ RobotType.SCOUT.bodyRadius) {
-						if (enemy.type == RobotType.LUMBERJACK) {
-							return true;
-						}
-					} else {
-						break;
+					if(enemy.type == RobotType.LUMBERJACK && Util.distanceSquaredTo(here, enemy.location) < 21){
+						return true;
 					}
 				}
 			}

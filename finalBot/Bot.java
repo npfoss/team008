@@ -138,55 +138,88 @@ public class Bot {
 		}
 		boolean enemiesNearby = nearbyEnemyRobots.length > 0;
 		if (type == RobotType.SCOUT) {
+			boolean doneLumbers = false;
+			boolean doneRangers = false;
 			for (RobotInfo l : nearbyRobots) {
 				if (l.team == us && l.type != RobotType.LUMBERJACK || l.type == RobotType.ARCHON
 						|| l.type == RobotType.GARDENER) {
 
 				} else if (l.type == RobotType.LUMBERJACK) {
-					//RobotType.LUMBERJACK.bodyRadius + RobotType.LUMBERJACK.strideRadius + 1.1 + RobotType.SCOUT.bodyRadius
-					if (Util.distanceSquaredTo(loc,l.location) < 21) {
-						danger += (10.0 - loc.distanceTo(l.location)) * 50;
+					if (!doneLumbers) {
+						if (Util.distanceSquaredTo(loc, l.location) < 21) {
+							danger += (10.0 - loc.distanceTo(l.location)) * 50;
+						} else {
+							doneLumbers = true;
+						}
 					}
 				} else {
-					if (loc.distanceTo(l.location) < l.type.bodyRadius + l.type.strideRadius + l.type.bulletSpeed
-							+ RobotType.SCOUT.bodyRadius) {
-						danger += (10.0 - loc.distanceTo(l.location)) * 10.0 * l.type.attackPower;
+					if (!doneRangers) {
+						if (loc.distanceTo(l.location) < l.type.bodyRadius + l.type.strideRadius + l.type.bulletSpeed
+								+ RobotType.SCOUT.bodyRadius) {
+
+							danger += (10.0 - loc.distanceTo(l.location)) * 10.0 * l.type.attackPower;
+						} else {
+							doneRangers = true;
+						}
 					}
 				}
 
 			}
 		} else {
+			boolean doneEnemyLumbers = false;
+			boolean doneOurLumbers = false;
+			boolean doneEnemyRangers = false;
+			boolean doneOurRangers = false;
 			for (RobotInfo l : nearbyRobots) {
 				if (l.team == enemy) {
 					if (type != RobotType.LUMBERJACK) {
 						if (l.type == RobotType.LUMBERJACK) {
-							if (Util.distanceSquaredTo(loc,l.location) < 21) {
-								danger += (10.0 - loc.distanceTo(l.location)) * 50;
+							if (!doneEnemyLumbers) {
+								if (Util.distanceSquaredTo(loc, l.location) < 21) {
+									danger += (10.0 - loc.distanceTo(l.location)) * 50;
+								} else {
+									doneEnemyLumbers = true;
+								}
 							}
-						}
-					} else if (l.type == RobotType.SCOUT || l.type == RobotType.SOLDIER || l.type == RobotType.TANK) {
-						if (loc.distanceTo(l.location) < l.type.bodyRadius + l.type.strideRadius + l.type.bulletSpeed
-								+ type.bodyRadius) {
-							danger += (10.0 - loc.distanceTo(l.location)) * 10.0 * l.type.attackPower;
-
+						} else if (l.type == RobotType.SCOUT || l.type == RobotType.SOLDIER
+								|| l.type == RobotType.TANK) {
+							if (!doneEnemyRangers) {
+								if (loc.distanceTo(l.location) < l.type.bodyRadius + l.type.strideRadius
+										+ l.type.bulletSpeed + type.bodyRadius) {
+									danger += (10.0 - loc.distanceTo(l.location)) * 10.0 * l.type.attackPower;
+								} else {
+									doneEnemyRangers = true;
+								}
+							}
 						}
 					}
 				} else {
 					if (l.type == RobotType.LUMBERJACK) {
-						if (loc.distanceTo(l.location) < RobotType.LUMBERJACK.bodyRadius + +1.1 + type.bodyRadius) {
-							danger += (10.0 - loc.distanceTo(l.location)) * 50.0;
+						if (!doneOurLumbers) {
+							if (Util.distanceSquaredTo(loc, l.location) < 21) {
+								danger += (10.0 - loc.distanceTo(l.location)) * 50.0;
+
+							} else {
+								doneOurLumbers = true;
+							}
 						}
-						if (enemiesNearby && (l.type == RobotType.SOLDIER || l.type == RobotType.TANK
-								|| l.type == RobotType.SCOUT)) {
+					}
+					if (enemiesNearby
+							&& (l.type == RobotType.SOLDIER || l.type == RobotType.TANK || l.type == RobotType.SCOUT)) {
+						if (!doneOurRangers) {
 							MapLocation possibleShot = nearbyEnemyRobots[0].location;
+
 							if (loc.directionTo(possibleShot)
 									.radiansBetween(l.location.directionTo(possibleShot)) < Math.PI / 12
 									&& loc.distanceTo(possibleShot) < l.location.distanceTo(possibleShot)) {
 								danger += 10 * l.type.attackPower;
+							} else {
+								doneOurRangers = true;
 							}
 						}
 					}
 				}
+
 			}
 		}
 		return (int) danger;

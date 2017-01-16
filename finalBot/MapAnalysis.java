@@ -156,7 +156,7 @@ public class MapAnalysis extends Bot {
 			if (rc.getRoundNum() < 5 && !startedGame) {
 				// rudimentary genetics strategy
 				startedGame = true;
-				guessMapSize();
+				//guessMapSize();
 				float TreesNearMe = 0;
 				for (TreeInfo tree : nearbyNeutralTrees) {
 					TreesNearMe ++;
