@@ -141,12 +141,11 @@ public class Scout extends Bot {
 					}
 				}
 			}
-			else{
-				if(dangerRating(here) > 0){
-					return true;
-				}
-			}
 		}
+			if(dangerRating(here) > 0){
+				return true;
+			}
+
 		return false;
 	}
 
