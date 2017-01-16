@@ -154,7 +154,7 @@ public class Util extends Bot {
         for (BodyInfo tree : trees){
             if (distanceSquaredTo(toHere, tree.getLocation()) <= (radius + tree.getRadius())*(radius + tree.getRadius())){
                 count++;
-            }
+            } 
         }
         return count;
     }
