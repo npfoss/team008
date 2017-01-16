@@ -227,18 +227,6 @@ public class Util extends Bot {
         }
         return false;
     }
-
-    public static TreeInfo highestShakeableBulletTree(TreeInfo[] trees){
-        int mostBullets = 0;
-        TreeInfo bestTree = null;
-        for (TreeInfo tree : trees){
-            if (tree.getContainedBullets() > mostBullets && rc.canShake(tree.getID())){
-                mostBullets = tree.getContainedBullets();
-                bestTree = tree;
-            }
-        }
-        return bestTree;
-    }
     
     public static TreeInfo[] combineTwoTIArrays( TreeInfo[] array1, TreeInfo[] array2){
         TreeInfo[] combo = new TreeInfo[array1.length + array2.length];
