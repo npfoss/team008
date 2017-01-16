@@ -87,10 +87,10 @@ public class Scout extends Bot {
 		RobotInfo targetG = null;
 		if (inDanger(nearbyEnemyRobots, nearbyBullets)) {
 			System.out.println("ranged combat");
-			RangedCombat.execute();
+			goTo(new Direction(here,MapAnalysis.center));
 			return true;
 		}
-		if (targetGardenerID == -1 || !rc.canSenseRobot(targetGardenerID) || (rc.getRoundNum() % 25 == 1 && (targetLoc == null || !inGoodSpot(targetLoc)))) {
+		if (targetGardenerID == -1 || !rc.canSenseRobot(targetGardenerID) || (rc.getRoundNum() % 25 == 3 && (targetLoc == null || !inGoodSpot(targetLoc)))) {
 			targetGardenerID = -1;
 			targetLoc = null;
 			updateTargetGardener();
@@ -121,9 +121,7 @@ public class Scout extends Bot {
 				if (here.distanceTo(targetG.location) < 2.5) {
 					RangedCombat.shootSingleShot(targetG);
 				}
-				int test = Clock.getBytecodeNum();
 				goTo(targetLoc);
-				System.out.println("Used: " + (Clock.getBytecodeNum() - test));
 			}
 			return true;
 		}
@@ -136,15 +134,15 @@ public class Scout extends Bot {
 			inTree = inGoodSpot(targetLoc);
 			if (inTree && rc.canSenseRobot(targetGardenerID)) {
 				for (RobotInfo enemy : nearbyEnemyRobots) {
-					if(enemy.type == RobotType.LUMBERJACK && Util.distanceSquaredTo(here, enemy.location) < 21){
+					if (enemy.type == RobotType.LUMBERJACK && Util.distanceSquaredTo(here, enemy.location) < 21) {
 						return true;
 					}
 				}
 			}
 		}
-			if(dangerRating(here) > 0){
-				return true;
-			}
+		if (dangerRating(here) > 0) {
+			return true;
+		}
 
 		return false;
 	}

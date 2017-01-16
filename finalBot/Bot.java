@@ -254,9 +254,9 @@ public class Bot {
 			bestDir = dir;
 			bestDanger = tempDanger;
 		}
-		Direction left = dir.rotateLeftDegrees(10);
-		Direction right = dir.rotateRightDegrees(10);
-		for (int i = 0; i < 18; i++) {
+		Direction left = dir.rotateLeftDegrees(20);
+		Direction right = dir.rotateRightDegrees(20);
+		for (int i = 0; i < 9; i++) {
 
 			tempDanger = tryMove(left, type.strideRadius, makeMove);
 			if (tempDanger == 0) {
@@ -274,8 +274,8 @@ public class Bot {
 				bestDir = right;
 				bestDanger = tempDanger;
 			}
-			left = left.rotateLeftDegrees(10);
-			right = right.rotateRightDegrees(10);
+			left = left.rotateLeftDegrees(20);
+			right = right.rotateRightDegrees(20);
 		}
 		tempDanger = dangerRating(here);
 		if (tempDanger < bestDanger) {

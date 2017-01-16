@@ -13,8 +13,10 @@ public class RangedCombat extends Bot {
 	 * to call execute, number of enemies must be > 0
 	 */
 	public static void execute() throws GameActionException {
-		tryMoveDirection(new Direction(here,MapAnalysis.center), false);
+
 		int temp = Clock.getBytecodeNum();
+		tryMoveDirection(new Direction(here,MapAnalysis.center), false);
+		System.out.println("moving used: " + (Clock.getBytecodeNum() - temp));
 		potentialAttackStats attack = chooseTargetAndShotType();
 		if (calculatedMove != null) {
 			MapLocation tempLoc = here;
@@ -35,7 +37,6 @@ public class RangedCombat extends Bot {
 		if(rc.getMoveCount()  == 0 && calculatedMove != null){
 			rc.move(calculatedMove, type.strideRadius);
 		}
-		System.out.println("attacking used: " + (Clock.getBytecodeNum() - temp));
 
 	}
 
