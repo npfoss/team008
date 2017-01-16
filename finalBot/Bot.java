@@ -72,7 +72,6 @@ public class Bot {
 				if (rc.getRoundNum() % 25 == 1) {
 					MapAnalysis.rollCall();
 				}
-
 				shakeNearbyTrees();
 				takeTurn();
 
@@ -95,16 +94,16 @@ public class Bot {
 		return;
 	}
 
-	public TreeInfo[] shakeNearbyTrees() throws Exception {
-		// TODO: optimize
-		TreeInfo shakeMe = Util.highestShakeableBulletTree(nearbyNeutralTrees);
-		if (shakeMe != null) {
-			rc.shake(shakeMe.getID());
-			if (rc.getType() != RobotType.SCOUT) {
-				System.out.println("***A robot that isn't a scout just shook a tree!!!");
+	public void shakeNearbyTrees() throws Exception {
+		for (TreeInfo tree : nearbyNeutralTrees) {
+			if (tree.containedBullets > 0 && rc.canShake(tree.ID)) {
+				rc.shake(tree.ID);
+				if (rc.getType() != RobotType.SCOUT) {
+					System.out.println("***A robot that isn't a scout just shook a tree!!!");
+					return;
+				}
 			}
 		}
-		return nearbyNeutralTrees;
 	}
 
 	public void assignNewTarget() throws GameActionException {
