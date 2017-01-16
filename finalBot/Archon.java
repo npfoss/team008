@@ -14,7 +14,7 @@ public class Archon extends Bot {
 	public static int unitsBuilt = 0;
 
 	public void takeTurn() throws Exception {
-		//dirIAmMoving = findOpenSpaces();
+		//quick method of somewhat alternating which archon builds the gardener
 		if (rc.getTeamBullets() > 100 + ((rc.readBroadcast(4) > 1) ? unitsBuilt * 10 : 0)
 				&& rc.readBroadcast(13) > 0) {
 			hireGardener();
@@ -30,15 +30,26 @@ public class Archon extends Bot {
 	public void hireGardener() throws GameActionException {
 		// System.out.println("Trying to hire a gardener");
 		Direction dir = here.directionTo(MapAnalysis.center);
-		for (int i = 36; i-- > 0;) {
-			if (rc.canHireGardener(dir)) {
-				rc.hireGardener(dir);
+		if (rc.canHireGardener(dir)) {
+			rc.hireGardener(dir);
+			rc.broadcast(13, rc.readBroadcast(13) - 1);
+			return;
+		}
+		Direction left = dir.rotateLeftDegrees(10);
+		Direction right = dir.rotateRightDegrees(10);
+		for (int i = 18; i-- > 0;) {
+			if (rc.canHireGardener(left)) {
+				rc.hireGardener(left);
 				rc.broadcast(13, rc.readBroadcast(13) - 1);
-				// System.out.println("Hired a gardener!");
 				return;
-			} else {
-				dir = dir.rotateLeftDegrees(10);
 			}
+			if (rc.canHireGardener(right)) {
+				rc.hireGardener(right);
+				rc.broadcast(13, rc.readBroadcast(13) - 1);
+				return;
+			}
+			left = left.rotateLeftDegrees(10);
+			right = right.rotateRightDegrees(10);
 		}
 	}
 
@@ -60,7 +71,7 @@ public class Archon extends Bot {
 
 		while (count < 36) {
 
-			MapLocation retreatLoc = here.add(dir, rc.getType().strideRadius);
+			MapLocation retreatLoc = here.add(dir,type.strideRadius);
 			RobotInfo closestEnemy = Util.closestRobot(enemies, retreatLoc);
 
 			float dist = retreatLoc.distanceTo(closestEnemy.location);
