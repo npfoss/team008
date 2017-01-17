@@ -32,6 +32,7 @@ public class Bot {
     public static Random myRand;
     public static int strategy = 0;
     public static int bytecode;
+    public static int roundNum;
 
     public Bot(){}
 
@@ -54,6 +55,7 @@ public class Bot {
 			// Try/catch blocks stop unhandled exceptions, which cause your
 			// robot to explode
 			try {
+				int temp = rc.getRoundNum();
 				here = rc.getLocation();
 				// TODO: have our Util sort a single call rather than calling
 				// multiple times
@@ -63,24 +65,31 @@ public class Bot {
                 FastMethods.initializeNearbyAlliedTrees();
 				nearbyRobots = rc.senseNearbyRobots(-1);
 				FastMethods.initializeNearbyAlliedRobots();
-				FastMethods.initializeNearbyEnemeyRobots();
+				FastMethods.initializeNearbyEnemyRobots();
                 nearbyBullets = rc.senseNearbyBullets();
-                if (rc.getRoundNum() + 5 > GameConstants.GAME_DEFAULT_ROUNDS
+                roundNum = rc.getRoundNum();
+                if (roundNum + 5 > GameConstants.GAME_DEFAULT_ROUNDS
 						|| rc.getTeamVictoryPoints() + rc.getTeamBullets() / 10 > 1000) {
 					rc.donate(((int) (rc.getTeamBullets() / 10)) * 10);
 				}
 				MapAnalysis.possiblyMakeDecisions();
 				strategy = rc.readBroadcast(11);
-				if (rc.getRoundNum() % 25 == 1) {
+				if (roundNum % 25 == 1) {
 					MapAnalysis.rollCall();
 				}
 				shakeNearbyTrees();
+				if (nearbyEnemyTrees.length > 0 && (rc.getRoundNum() +rc.getID()) % 25 == 0) {
+					Messaging.updateEnemyTreeLocation(nearbyEnemyTrees[0].location);
+				}
 				takeTurn();
 
 				if (rc.canShake()) {
 					// don't need to update nearbyNeutralTrees since
 					// sensorRadius >>> strideRadius
 					shakeNearbyTrees();
+				}
+				if(rc.getRoundNum() != temp){
+					System.out.println("Oh shit we used way too many bytecodes");
 				}
 			} catch (Exception e) {
 				System.out.println(rc.getType().toString() + " Exception :(");

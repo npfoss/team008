@@ -40,7 +40,7 @@ public class Scout extends Bot {
 		}
 
 		// rc.setIndicatorDot(here,0,255,0);
-		if (nearbyEnemyRobots.length > 0 && rc.getRoundNum() +rc.getID() % 25 == 0) {
+		if (nearbyEnemyRobots.length > 0 && (rc.getRoundNum() + rc.getID()) % 25 == 0) {
 			// rc.setIndicatorDot(enemies[0].location, 255, 0, 0);
 			notifyFriendsOfEnemies(nearbyEnemyRobots);
 		}
@@ -52,60 +52,69 @@ public class Scout extends Bot {
 	}
 
 	private void searchForEdges() throws GameActionException {
-		if(foundMaxX && foundMinY && foundMinX && foundMaxY){
-			searchingForEdges = false;
-			return;
-		}
 		//System.out.println("searching");
-		boolean updated = false;
-	    float minX = Messaging.getMinX();
-	    float minY = Messaging.getMinY();
-		float maxX = Messaging.getMaxX();
-		float maxY = Messaging.getMaxY();
 		//System.out.println(Math.abs(maxY));
-		if(minX == 0 && !foundMinX){
-			MapLocation edge = checkForEdge(Direction.getWest());
-			if(edge != null){
-				Messaging.updateMinX(edge.x);
-				minX = edge.x;
-				updated = true;
+		if (!foundMinX) {
+			if (rc.readBroadcast(17) == 1) {
 				foundMinX = true;
-				//System.out.println("updated min x to " + minX);
+			} else {
+				MapLocation edge = checkForEdge(Direction.getWest());
+				if (edge != null) {
+					Messaging.updateMinX(edge.x);
+					foundMinX = true;
+					rc.broadcast(17, 1);
+					// System.out.println("updated min x to " + minX);
+				}
 			}
 		}
-		if(minY == 0 && !foundMinY){
-			MapLocation edge = checkForEdge(Direction.getSouth());
-			if(edge != null){
-				Messaging.updateMinY(edge.y);
-				minY = edge.y;
-				updated = true;
-				foundMinY = true;
-				//System.out.println("updated min y to " + minY);
-			}
-		}
-		if(maxX == 0 && !foundMaxX){
-			MapLocation edge = checkForEdge(Direction.getEast());
-			if(edge != null){
-				Messaging.updateMaxX(edge.x);
-				maxX = edge.x;
-				updated = true;
+		if(!foundMaxX){
+			if (rc.readBroadcast(18) == 1) {
 				foundMaxX = true;
-				//System.out.println("updated max x to " + maxX);
+			} 
+			else{
+				MapLocation edge = checkForEdge(Direction.getEast());
+				if(edge != null){
+					Messaging.updateMaxX(edge.x);
+					foundMaxX = true;
+					rc.broadcast(18, 1);
+					//System.out.println("updated max x to " + maxX);
+				}
 			}
 		}
-		if(maxY == 0 && !foundMaxY){
-			MapLocation edge = checkForEdge(Direction.getNorth());
-			if(edge != null){
-				Messaging.updateMaxY(edge.y);
-				maxY = edge.y;
-				updated = true;
+		if(!foundMinY){
+			if (rc.readBroadcast(19) == 1) {
+				foundMinY = true;
+			} 
+			else{
+				MapLocation edge = checkForEdge(Direction.getSouth());
+				if(edge != null){
+					Messaging.updateMinY(edge.y);
+					foundMinY = true;
+					rc.broadcast(19, 1);
+					//System.out.println("updated min y to " + minY);
+				}
+			}
+		}
+		if(!foundMaxY){
+			if (rc.readBroadcast(20) == 1) {
 				foundMaxY = true;
-				//System.out.println("updated max y to " + maxY);
+			} 
+			else{
+				MapLocation edge = checkForEdge(Direction.getNorth());
+				if(edge != null){
+					Messaging.updateMaxY(edge.y);
+					foundMaxY = true;
+					rc.broadcast(20, 1);
+					//System.out.println("updated max y to " + maxY);
+				}
 			}
 		}
-		if(updated){
-			float area = (maxX - minX) * (maxY - minY);
-			Messaging.updateArea(area);
+		if(foundMinX && foundMinY && foundMaxY && foundMaxX){
+			searchingForEdges = false;
+			if(rc.readBroadcast(16) == 0){
+				float area = (Messaging.getMaxX() - Messaging.getMinX()) * (Messaging.getMaxY() - Messaging.getMinY());
+				Messaging.updateArea(area);
+			}
 			//System.out.println("area = " + area);
 		}
 	}
@@ -193,22 +202,25 @@ public class Scout extends Bot {
 		}
 		if (targetGardenerID != -1) {
 			targetG = rc.senseRobot(targetGardenerID);
-				updateTargetLoc(nearbyTrees, targetG);
+			updateTargetLoc(nearbyTrees, targetG);
+			if(targetLoc != null)
+			//System.out.println("my target location is " + targetLoc.toString());
 			if (targetLoc == null) {
-				//System.out.println("can't find a tree, but still trying to kill gardener");
-				if (here.distanceTo(targetG.location) < 2.5) {
+				// System.out.println("can't find a tree, but still trying to
+				// kill gardener");
+				if (here.distanceTo(targetG.location) < 5 ) {
 					RangedCombat.shootSingleShot(targetG);
 				}
 				goToDangerous(targetG.location);
 			} else if (inGoodSpot(targetLoc)) {
 				// rc.setIndicatorLine(here,targetG.location,0,0,255);
 				shiftButtSlightly(targetLoc, targetG);
-				System.out.println("shifting my butt");
+				//System.out.println("shifting my butt");
 				harassFromTree(targetG);
 			} else {
 				// rc.setIndicatorLine(here,targetLoc,0,0,255);
-				//System.out.println("heading toward tree");
-				if (here.distanceTo(targetG.location) < 2.5) {
+				// System.out.println("heading toward tree");
+				if (here.distanceTo(targetG.location) < 5) {
 					RangedCombat.shootSingleShot(targetG);
 				}
 				goToDangerous(targetLoc);
@@ -249,9 +261,8 @@ public class Scout extends Bot {
 		if (bestTree != null) {
 			MapLocation outerEdge = bestTree.location.add(bestTree.location.directionTo(targetG.location),
 					bestTree.radius);
-			targetLoc = outerEdge.add(targetG.location.directionTo(bestTree.location),(float) 1.005);
-			rc.setIndicatorLine(here, targetLoc, 255, 255, 255);
-			rc.setIndicatorLine(here, bestTree.location, 0, 0, 0);
+			targetLoc = outerEdge.add(targetG.location.directionTo(bestTree.location),(float) 1.000);
+			//System.out.println("my just updated target location is " + targetLoc.toString());
 
 		}
 	}
@@ -263,7 +274,7 @@ public class Scout extends Bot {
 		float bestDist = 5;
 		float dist;
 		for (int i = trees.length; i-- > 0;) {
-			dist = toHere.distanceTo(trees[i].location) + here.distanceTo(trees[i].location)/10;
+			dist = toHere.distanceTo(trees[i].location) - trees[i].radius + here.distanceTo(trees[i].location)/10;
 			if (dist < bestDist) {
 					RobotInfo[] enemiesWithinRangeOfTree = rc.senseNearbyRobots(trees[i].location, (float) 2.1, enemy);
 					if (consistsOfOnlyHarmlessUnits(enemiesWithinRangeOfTree)) {
@@ -271,6 +282,9 @@ public class Scout extends Bot {
 						closest = trees[i];
 					}
 			}
+		}
+		if(closest == null){
+			targetLoc = null;
 		}
 		return closest;
 	}

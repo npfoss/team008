@@ -4,10 +4,13 @@ import battlecode.common.*;
 
 public class Gardener extends Bot {
 	public boolean isExploring;
+	public int defendersBuilt;
+	public boolean incrementedSignals;
 
 	public Gardener(RobotController r) throws GameActionException {
 		super(r);
 		isExploring = true;
+		incrementedSignals = false;
 		// anything else gardener specific
 	}
 
@@ -47,12 +50,27 @@ public class Gardener extends Bot {
 		waterLowestHealthTree();
 		if (nearbyEnemyRobots.length > 0) {
 				Messaging.sendDistressSignal(here);
+				//better build orders for defending against rushes
+				int numSignals = rc.readBroadcast(21);
+				if(numSignals < 4 && !incrementedSignals){//not already at max defense
+					numSignals++;
+					incrementedSignals = true;
+					rc.broadcast(21, numSignals);
+					if(numSignals == 5){
+						rc.broadcast(12,4);
+					}
+					else if(numSignals == 1){
+						rc.broadcast(12,2);
+					}
+				}
 		}
 		if (isExploring) {
 			if (dirIAmMoving == null || myRand.nextDouble() < .2) {
 				dirIAmMoving = findOpenSpaces();
 			}
-			goTo(dirIAmMoving);
+			int temp = Clock.getBytecodeNum();
+			tryMoveDirectionDangerous(dirIAmMoving);
+			System.out.println("Used in moving " + (Clock.getBytecodeNum() - temp) );
 			boolean farAway = true;
 			for (RobotInfo r : nearbyAlliedRobots) {
 				if (r.type == RobotType.GARDENER || r.type == RobotType.ARCHON) {
@@ -77,7 +95,7 @@ public class Gardener extends Bot {
 	}
 
 	public void waterLowestHealthTree() throws GameActionException {
-		TreeInfo[] treesToWater = rc.senseNearbyTrees(-1, us);
+		TreeInfo[] treesToWater = nearbyAlliedTrees;
 		TreeInfo treeToHeal = Util.leastHealth(treesToWater, true);
 		if (treeToHeal != null) {
 			rc.water(treeToHeal.getID());
@@ -85,49 +103,25 @@ public class Gardener extends Bot {
 	}
 
 	public void buildSomething() throws GameActionException {
+		int distressLevel = rc.readBroadcast(12);
+		int mapType = rc.readBroadcast(11);
+		int numGardenersBuilt = rc.readBroadcast(22);
 		int typeToBuild = rc.readBroadcast(14);
 		int numToBuild = rc.readBroadcast(15);
-		if (typeToBuild == 3 && numToBuild > 0) {
+		if (typeToBuild == 3 && numToBuild > 0 && nearbyEnemyRobots.length == 0){
 			//System.out.println("I must build Unit Type:" + typeToBuild + ":" + numToBuild);
 			if (buildRobot(RobotType.SCOUT)) {
 				rc.broadcast(15, numToBuild - 1);
 			}
 			return;
 		}
-		if (nearbyEnemyRobots.length > 0) {
-			if (numToBuild > 0) {
-				//System.out.println("I must build Unit Type:" + typeToBuild + ":" + numToBuild);
-				switch (typeToBuild) {
-				case 0:
-					break;
-				case 1:
-					if (buildRobot(RobotType.SOLDIER)) {
-						rc.broadcast(15, numToBuild - 1);
-						return;
-					}
-					break;
-				case 2:
-					if (buildRobot(RobotType.TANK)) {
-						rc.broadcast(15, numToBuild - 1);
-						return;
-					}
-					break;
-				case 3:
-					if (buildRobot(RobotType.SCOUT)) {
-						rc.broadcast(15, numToBuild - 1);
-						return;
-					}
-					break;
-				case 4:
-					if (buildRobot(RobotType.LUMBERJACK)) {
-						rc.broadcast(15, numToBuild - 1);
-						return;
-					}
-					break;
-				case 5:
-					break;
-				}
+		boolean iNeedDefenders = (nearbyEnemyRobots.length > 0 || ((defendersBuilt < 1) && (distressLevel > 2 || distressLevel > 1 && roundNum < 300 || mapType == 2 && roundNum < 100 || rc.getTreeCount() == 2 && numGardenersBuilt == 1)));
+		if(iNeedDefenders){
+			System.out.println("need defenders");
+			if (buildRobot(RobotType.LUMBERJACK)) {
+				defendersBuilt++;
 			}
+			return;
 		}
 		if (plantATree())
 			return;
@@ -138,12 +132,14 @@ public class Gardener extends Bot {
 				break;
 			case 1:
 				if (buildRobot(RobotType.SOLDIER)) {
+					defendersBuilt++;
 					rc.broadcast(15, numToBuild - 1);
 					return;
 				}
 				break;
 			case 2:
 				if (buildRobot(RobotType.TANK)) {
+					defendersBuilt++;
 					rc.broadcast(15, numToBuild - 1);
 					return;
 				}
@@ -156,6 +152,7 @@ public class Gardener extends Bot {
 				break;
 			case 4:
 				if (buildRobot(RobotType.LUMBERJACK)) {
+					defendersBuilt++;
 					rc.broadcast(15, numToBuild - 1);
 					return;
 				}

@@ -19,6 +19,7 @@ public class Archon extends Bot {
 				&& rc.readBroadcast(13) > 0) {
 			hireGardener();
 			unitsBuilt++;
+			rc.broadcast(22, unitsBuilt);
 		}
 		if (nearbyEnemyRobots.length > 0) {
 			Messaging.sendDistressSignal(here);
@@ -70,10 +71,12 @@ public static void runAway() throws GameActionException{
 			bestDir = dir;
 			bestScore = thingsInTheWay;
 		}
-		dir = dir.rotateLeftDegrees((float) 22.5);
-		thingsInTheWay = 0;
-	}
-	tryMoveDirectionDangerous(bestDir);
+			dir = dir.rotateLeftDegrees((float) 22.5);
+			thingsInTheWay = 0;
+		}
+		if (bestScore != 10000) {
+			tryMoveDirectionDangerous(bestDir);
+		}
 }
 //Used too much bytecode, incorporated into runAway
 //	private static double wallModCalc(MapLocation retreatLoc, Direction dir) throws GameActionException {
