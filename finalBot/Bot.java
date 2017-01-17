@@ -32,6 +32,7 @@ public class Bot {
     public static Random myRand;
     public static int strategy = 0;
     public static int bytecode;
+    public static int roundNum;
 
     public Bot(){}
 
@@ -63,15 +64,16 @@ public class Bot {
                 FastMethods.initializeNearbyAlliedTrees();
 				nearbyRobots = rc.senseNearbyRobots(-1);
 				FastMethods.initializeNearbyAlliedRobots();
-				FastMethods.initializeNearbyEnemeyRobots();
+				FastMethods.initializeNearbyEnemyRobots();
                 nearbyBullets = rc.senseNearbyBullets();
-                if (rc.getRoundNum() + 5 > GameConstants.GAME_DEFAULT_ROUNDS
+                roundNum = rc.getRoundNum();
+                if (roundNum + 5 > GameConstants.GAME_DEFAULT_ROUNDS
 						|| rc.getTeamVictoryPoints() + rc.getTeamBullets() / 10 > 1000) {
 					rc.donate(((int) (rc.getTeamBullets() / 10)) * 10);
 				}
 				MapAnalysis.possiblyMakeDecisions();
 				strategy = rc.readBroadcast(11);
-				if (rc.getRoundNum() % 25 == 1) {
+				if (roundNum % 25 == 1) {
 					MapAnalysis.rollCall();
 				}
 				shakeNearbyTrees();

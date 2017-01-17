@@ -19,6 +19,7 @@ public class Archon extends Bot {
 				&& rc.readBroadcast(13) > 0) {
 			hireGardener();
 			unitsBuilt++;
+			rc.broadcast(22, unitsBuilt);
 		}
 		if (nearbyEnemyRobots.length > 0) {
 			Messaging.sendDistressSignal(here);

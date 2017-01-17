@@ -19,6 +19,7 @@ public class MapAnalysis extends Bot {
 	public static float minY;
 	public static float maxX;
 	public static float maxY;
+	public static float area;
 
 	public static MapLocation findCenter() throws GameActionException {
 		int archons = 0;
@@ -94,10 +95,7 @@ public class MapAnalysis extends Bot {
 	}
 
 	public static void updateMapSize() throws GameActionException {
-		minX = Messaging.getMinX();
-		minY = Messaging.getMinY();
-		maxX = Messaging.getMaxX();
-		maxY = Messaging.getMaxY();
+		area = rc.readBroadcast(16);
 	}
 
 	public static void guessMapSize() throws GameActionException {
@@ -157,10 +155,7 @@ public class MapAnalysis extends Bot {
 				// rudimentary genetics strategy
 				startedGame = true;
 				//guessMapSize();
-				float TreesNearMe = 0;
-				for (TreeInfo tree : nearbyNeutralTrees) {
-					TreesNearMe ++;
-				}
+				int TreesNearMe = nearbyNeutralTrees.length;
 				float conflictDist = 999;
 				for (MapLocation ourLoc : initialAlliedArchonLocations) {
 					for (MapLocation theirLoc : initialEnemyArchonLocations) {
@@ -170,36 +165,41 @@ public class MapAnalysis extends Bot {
 						}
 					}
 				}
-				if (conflictDist < 4) {
+				System.out.print(conflictDist);
+				if (conflictDist < 50) {
 					rc.broadcast(11, 2);
-				} else if (TreesNearMe > 20) {
+					rc.broadcast(15, 1);
+					rc.broadcast(14, 3);
+				} else if (TreesNearMe > 10) {
 					rc.broadcast(11, 3);
+					rc.broadcast(14, 5);
 				} else {
 					rc.broadcast(11, 4);
+					rc.broadcast(14, 5);
 				}
-				// rc.broadcast(12, 1);
+				rc.broadcast(12, 1);
 				rc.broadcast(13, 1);
-				rc.broadcast(15, 1);
-				rc.broadcast(14, 3);
 			} else if (rc.getRoundNum() % 25 == 2 && rc.getRoundNum() > 5) {
 				updateUnitCount();
 				updateMapSize();
+				int mapType = rc.readBroadcast(11);
+				//int distressLevel = rc.readBroadcast(12);
+				int numGardenersBuilt = rc.readBroadcast(22);
 				if (numGardener == 0 || rc.getTeamBullets() > 150 && numGardener < 10) {
 					rc.broadcast(13, 1);
 				}
-				if (numScout < 1) {
+				else if (numScout < 1) {
 					rc.broadcast(15, 1);
 					rc.broadcast(14, 3);
-				} else if (numLumberjack < ((rc.getTeamBullets() < 200 && numGardener < 6) ? ((rc.readBroadcast(11) == 3) ? 5:1) : 10)) {
+				} else if (numLumberjack < ((rc.getTeamBullets() < 200 && numGardener < 6) ? ((mapType == 3) ? 5:1) : 10)) {
 					rc.broadcast(14, 4);
-					rc.broadcast(15, ((rc.getTeamBullets() < 200 && numGardener < 6) ? ((rc.readBroadcast(11) == 3) ? 5:1) : 10) - numLumberjack);
-				} else if (numSoldier < ((rc.getTeamBullets() < 200 && numGardener < 6) ? ((rc.readBroadcast(11) == 2) ? 5:1): 10)) {
+					rc.broadcast(15, ((rc.getTeamBullets() < 200 && numGardener < 6) ? ((mapType == 3) ? 5:1) : 10) - numLumberjack);
+				} else if (numSoldier < ((rc.getTeamBullets() < 200 && numGardener < 6) ? ((mapType == 2) ? 5:1): 10)) {
 					rc.broadcast(14, 1);
-					rc.broadcast(15, ((rc.getTeamBullets() < 200 && numGardener < 6) ? ((rc.readBroadcast(11) == 2) ? 5:1) : 10) - numSoldier);
+					rc.broadcast(15, ((rc.getTeamBullets() < 200 && numGardener < 6) ? ((mapType == 2) ? 5:1) : 10) - numSoldier);
 				} else if (numGardener < 10){
-					rc.broadcast(13, 2);
+					rc.broadcast(13, 1);
 					rc.broadcast(14, 5);
-					
 				}
 
 			}
