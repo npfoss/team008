@@ -118,7 +118,8 @@ public class Gardener extends Bot {
 		boolean iNeedDefenders = (nearbyEnemyRobots.length > 0 || ((defendersBuilt < 1) && (distressLevel > 2 || distressLevel > 1 && roundNum < 300 || mapType == 2 && roundNum < 100 || rc.getTreeCount() == 2 && numGardenersBuilt == 1)));
 		if(iNeedDefenders){
 			System.out.println("need defenders");
-			if (buildRobot(RobotType.LUMBERJACK)) {
+			if (buildRobot(RobotType.SOLDIER)) {
+				rc.broadcast(23, 1);
 				defendersBuilt++;
 			}
 			return;

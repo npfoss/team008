@@ -4,11 +4,18 @@ import battlecode.common.*;
 
 public class Soldier extends Bot {
 	private static boolean isDefender;
+	private static MapLocation gardenerLoc;
 
     public Soldier(RobotController r) throws GameActionException{
         super(r);
-        if(rc.readBroadcast(14) != 1 && rc.readBroadcast(15) > 0){
-        	isDefender = true;
+        if(rc.readBroadcast(23) == 1){
+	        RobotInfo gardener = Util.closestSpecificType(rc.senseNearbyRobots(-1, us),rc.getLocation(),RobotType.GARDENER);
+	        //System.out.println("hello");
+	        if(gardener != null){
+		        gardenerLoc = gardener.location;
+	        	isDefender = true;
+	        	rc.broadcast(23, 0);
+	        }
         }
         else{
         	isDefender = false;
@@ -22,11 +29,20 @@ public class Soldier extends Bot {
 //			rc.setIndicatorDot(target, 255, 0, 0);
 //		}
 		if(isDefender){
-			if(nearbyEnemyRobots.length > 0){
-				DefenseMicro.defend();
+			System.out.println("I am a defender");
+			if(rc.canSenseLocation(gardenerLoc) && rc.senseRobotAtLocation(gardenerLoc) == null){
+				isDefender = false;
+			}
+			else if(nearbyEnemyRobots.length > 0){
+				if(rc.canSenseLocation(gardenerLoc)){
+					DefenseMicro.defend(rc.senseRobotAtLocation(gardenerLoc));
+				}
+				else{
+					RangedCombat.execute();
+				}
 			}
 			else{
-				circleGardener();
+				circleGardener(gardenerLoc);
 			}
 		}
 		else{
@@ -56,8 +72,14 @@ public class Soldier extends Bot {
 		}
 	}
 
-	private void circleGardener() {
-		
+	private void circleGardener(MapLocation gLoc) throws GameActionException {
+		if(here.distanceTo(gLoc) > 4.5 || here.distanceTo(gLoc) < 3.5){
+			goTo(gLoc.add(gLoc.directionTo(here), 4));
+		}
+		else{
+			Direction dir = gLoc.directionTo(here);
+			goTo(gLoc.add(dir.rotateLeftDegrees(36), 4));
+		}
 	}
 	
 }
