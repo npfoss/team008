@@ -6,6 +6,7 @@ public class Gardener extends Bot {
 	public boolean isExploring;
 	public int defendersBuilt;
 	public boolean incrementedSignals;
+	public Direction buildDir;
 
 	public Gardener(RobotController r) throws GameActionException {
 		super(r);
@@ -85,11 +86,13 @@ public class Gardener extends Bot {
 				}
 			}
 			isExploring = !farAway;
-			if (rc.getRoundNum() < 10) {
+			if (roundNum < 10) {
 				isExploring = false;
 			}
 		}
 		if (!isExploring) {
+			if(buildDir == null)
+				buildDir = here.directionTo(Util.closestLocation(MapAnalysis.initialEnemyArchonLocations, here));
 			buildSomething();
 		}
 	}
@@ -115,12 +118,22 @@ public class Gardener extends Bot {
 			}
 			return;
 		}
-		boolean iNeedDefenders = (nearbyEnemyRobots.length > 0 || ((defendersBuilt < 1) && (distressLevel > 2 || distressLevel > 1 && roundNum < 300 || mapType == 2 && roundNum < 100 || rc.getTreeCount() == 2 && numGardenersBuilt == 1)));
+		boolean iNeedDefenders = ((nearbyEnemyRobots.length > 0 && nearbyAlliedRobots.length == 0) || ((defendersBuilt < 1) && (distressLevel > 2 || distressLevel > 1 && roundNum < 300 || mapType == 2 && roundNum < 100 || rc.getTreeCount() == 2 && numGardenersBuilt == 1)));
 		if(iNeedDefenders){
-			System.out.println("need defenders");
-			if (buildRobot(RobotType.SOLDIER)) {
-				rc.broadcast(23, 1);
-				defendersBuilt++;
+			//System.out.println("need defenders");
+			if(nearbyNeutralTrees.length > 0){
+				if (buildRobot(RobotType.LUMBERJACK)) {
+					defendersBuilt++;
+					rc.broadcast(23, 1);
+					return;
+				}
+			}
+			else {
+				if (buildRobot(RobotType.SOLDIER)) {
+					rc.broadcast(23, 1);
+					defendersBuilt++;
+					return;
+				}
 			}
 			return;
 		}
@@ -133,14 +146,12 @@ public class Gardener extends Bot {
 				break;
 			case 1:
 				if (buildRobot(RobotType.SOLDIER)) {
-					defendersBuilt++;
 					rc.broadcast(15, numToBuild - 1);
 					return;
 				}
 				break;
 			case 2:
 				if (buildRobot(RobotType.TANK)) {
-					defendersBuilt++;
 					rc.broadcast(15, numToBuild - 1);
 					return;
 				}
@@ -153,7 +164,6 @@ public class Gardener extends Bot {
 				break;
 			case 4:
 				if (buildRobot(RobotType.LUMBERJACK)) {
-					defendersBuilt++;
 					rc.broadcast(15, numToBuild - 1);
 					return;
 				}
@@ -169,7 +179,7 @@ public class Gardener extends Bot {
 	public boolean buildRobot(RobotType type) throws GameActionException {
 		if (rc.getTeamBullets() < type.bulletCost)
 			return false;
-		Direction dir = here.directionTo(MapAnalysis.center);
+		Direction dir = buildDir;
 		for (int i = 36; i-- > 0;) {
 			if (rc.canBuildRobot(type, dir)) {
 				rc.buildRobot(type, dir);
@@ -182,8 +192,7 @@ public class Gardener extends Bot {
 	}
 
 	public boolean plantATree() throws GameActionException {
-
-		Direction dir = here.directionTo(MapAnalysis.center);
+		Direction dir = buildDir.opposite();
 		Boolean skipped = false;
 		for (int i = 35; i-- > 0;) {
 			if (rc.canPlantTree(dir)) {

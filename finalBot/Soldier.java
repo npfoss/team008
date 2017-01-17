@@ -4,10 +4,10 @@ import battlecode.common.*;
 
 public class Soldier extends Bot {
 	private static boolean isDefender;
-	private static MapLocation gardenerLoc;
 
     public Soldier(RobotController r) throws GameActionException{
         super(r);
+        isDefender = false;
         if(rc.readBroadcast(23) == 1){
 	        RobotInfo gardener = Util.closestSpecificType(rc.senseNearbyRobots(-1, us),rc.getLocation(),RobotType.GARDENER);
 	        //System.out.println("hello");
@@ -17,30 +17,47 @@ public class Soldier extends Bot {
 	        	rc.broadcast(23, 0);
 	        }
         }
-        else{
-        	isDefender = false;
-        }
         //anything else soldier specific
     }
     
 	public void takeTurn() throws Exception{
 
-//		if(target != null){
-//			rc.setIndicatorDot(target, 255, 0, 0);
-//		}
+		if(target != null){
+			rc.setIndicatorLine(here,target, 255, 0, 0);
+		}
 		if(isDefender){
-			System.out.println("I am a defender");
+			//System.out.println("I am a defender");
 			if(rc.canSenseLocation(gardenerLoc) && rc.senseRobotAtLocation(gardenerLoc) == null){
 				isDefender = false;
 			}
 			else if(nearbyEnemyRobots.length > 0){
 				if(rc.canSenseLocation(gardenerLoc)){
+					//System.out.println("defending");
 					DefenseMicro.defend(rc.senseRobotAtLocation(gardenerLoc));
 				}
 				else{
 					RangedCombat.execute();
 				}
+			}/*
+			else if (target == null){
+				MapLocation dis = Messaging.getClosestDistressSignal(here);
+				if(dis!= null && here.distanceTo(dis) < 15){
+					//System.out.println("going to distress location");
+					target = dis;
+					goTo(target);
+				}
+				else{
+					circleGardener(gardenerLoc);
+				}
 			}
+			else{
+				if(here.distanceTo(target) > 4)
+					goTo(target);
+				else{
+					Messaging.removeDistressLocation(target);
+					target = null;
+				}
+			}*/
 			else{
 				circleGardener(gardenerLoc);
 			}
@@ -53,12 +70,13 @@ public class Soldier extends Bot {
 				RangedCombat.execute();
 				return;
 			}
-			if(target == null){
+			if(target == null || (rc.getRoundNum() + rc.getID()) % 20 == 0){
 				assignNewTarget();
 			}
-			else if (target != null && rc.getLocation().distanceTo(target) < 3 && nearbyEnemyRobots.length == 0){
+			if (target != null && rc.getLocation().distanceTo(target) < 6 && nearbyEnemyRobots.length == 0){
 				Messaging.removeEnemyArmyLocation(target);
 				Messaging.removeEnemyUnitLocation(target);
+				Messaging.removeDistressLocation(target);
 				target = null;
 				assignNewTarget();
 			}
@@ -69,16 +87,6 @@ public class Soldier extends Bot {
 					goTo(here.directionTo(Util.rc.getInitialArchonLocations(enemy)[0]));
 				}
 			}
-		}
-	}
-
-	private void circleGardener(MapLocation gLoc) throws GameActionException {
-		if(here.distanceTo(gLoc) > 4.5 || here.distanceTo(gLoc) < 3.5){
-			goTo(gLoc.add(gLoc.directionTo(here), 4));
-		}
-		else{
-			Direction dir = gLoc.directionTo(here);
-			goTo(gLoc.add(dir.rotateLeftDegrees(36), 4));
 		}
 	}
 	

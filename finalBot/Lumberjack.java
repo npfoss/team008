@@ -12,9 +12,20 @@ public class Lumberjack extends Bot {
     public float PROXIMITY_MOD;
     public float IMPATIENCE_MOD;
     public int turnsWithoutMovingOrAttacking;
+    private static boolean isDefender;
 
 	public Lumberjack(RobotController r) throws GameActionException{
 		super(r);
+		isDefender = false;
+        if(rc.readBroadcast(23) == 1){
+	        RobotInfo gardener = Util.closestSpecificType(rc.senseNearbyRobots(-1, us),rc.getLocation(),RobotType.GARDENER);
+	        //System.out.println("hello");
+	        if(gardener != null){
+		        gardenerLoc = gardener.location;
+	        	isDefender = true;
+	        	rc.broadcast(23, 0);
+	        }
+        }
 		//anything else lumberjack specific
         WHEN_TO_STOP_MICRO = RobotType.LUMBERJACK.bytecodeLimit - 2000; //TODO: don't just guess
         MOVE_ATTACK_MOD = 1; // TODO: actually optimize
@@ -27,51 +38,96 @@ public class Lumberjack extends Bot {
 	}
 	
 	public void takeTurn() throws Exception{
-        if(nearbyEnemyRobots.length > 0) {
-        	//Let other robots know where you are!
-        	if((rc.getRoundNum() +rc.getID()) % 25 == 0 || target == null){
-				notifyFriendsOfEnemies(nearbyEnemyRobots);
+		if(isDefender){
+			System.out.println("I am a defender");
+			if(rc.canSenseLocation(gardenerLoc) && rc.senseRobotAtLocation(gardenerLoc) == null){
+				isDefender = false;
 			}
-			int start = Clock.getBytecodeNum();
-            doLumberjackMicro();
-            //System.out.println("micro took " + (Clock.getBytecodeNum() - start) + " bytecodes");
-        } else {
-            if(target == null){
-                assignNewTarget();
-            }
-            if (target != null && Util.distanceSquaredTo(here, target) < 15 && nearbyEnemyRobots.length + nearbyEnemyTrees.length == 0){
-                if (debug) { System.out.print("removing distress loc... "); }
-                if( !Messaging.removeDistressLocation(target)) {
-                    if (debug) { System.out.println("failed"); }
-                    Messaging.removeEnemyTreeLocation(target);
-                }
-                target = null;
-                assignNewTarget();
-            }
-            if(target != null){
-                goTo(target);
-            } else{
-                if (nearbyNeutralTrees.length + nearbyEnemyTrees.length > 0) {
-                    // move to best tree-cutting location
-                    optimizeLocForWoodcutting(nearbyNeutralTrees, nearbyEnemyTrees);
-                    // chop best trees
-                    cutDownTrees();
-                } else {
-                    goTo(here.directionTo(Util.rc.getInitialArchonLocations(enemy)[0]));
-                }
-            }
-        }
-        if ( rc.canStrike() ){
-            cutDownTrees();
-        }
-
-        if (rc.canStrike() && !rc.hasMoved()){
-            turnsWithoutMovingOrAttacking += 1;
-        } else {
-            if (debug) { System.out.println("I did something this turn?" + rc.canStrike() + rc.hasMoved()); }
-            turnsWithoutMovingOrAttacking = 0;
-        }
-        if (debug) { System.out.println("turnsWithoutMovingOrAttacking: " + turnsWithoutMovingOrAttacking); }
+			else if(nearbyEnemyRobots.length > 0){
+				if(rc.canSenseLocation(gardenerLoc)){
+					//System.out.println("defending");
+					DefenseMicro.defendL(rc.senseRobotAtLocation(gardenerLoc));
+				}
+				else{
+					doLumberjackMicro();
+				}
+			}
+			/*
+			else if (target == null){
+				MapLocation dis = Messaging.getClosestDistressSignal(here);
+				if(dis!= null && here.distanceTo(dis) < 15){
+					target = dis;
+					goTo(target);
+				}
+				else{
+					circleGardener(gardenerLoc);
+				}
+			}
+			else{
+				if(here.distanceTo(target) > 4)
+					goTo(target);
+				else{
+					Messaging.removeDistressLocation(target);
+					target = null;
+				}
+			}*/
+			else{
+				if ( rc.canStrike() ){
+					optimizeLocForWoodcutting(nearbyNeutralTrees, nearbyEnemyTrees);
+		            cutDownTrees();
+		        }
+				if(rc.getMoveCount() == 0){
+					circleGardener(gardenerLoc);
+				}
+			}
+		}
+		else{
+	        if(nearbyEnemyRobots.length > 0) {
+	        	//Let other robots know where you are!
+	        	if((rc.getRoundNum() +rc.getID()) % 25 == 0 || target == null){
+					notifyFriendsOfEnemies(nearbyEnemyRobots);
+				}
+				int start = Clock.getBytecodeNum();
+	            doLumberjackMicro();
+	            //System.out.println("micro took " + (Clock.getBytecodeNum() - start) + " bytecodes");
+	        } else {
+	            if(target == null){
+	                assignNewTarget();
+	            }
+	            if (target != null && Util.distanceSquaredTo(here, target) < 15 && nearbyEnemyRobots.length + nearbyEnemyTrees.length == 0){
+	                if (debug) { System.out.print("removing distress loc... "); }
+	                if( !Messaging.removeDistressLocation(target)) {
+	                    if (debug) { System.out.println("failed"); }
+	                    Messaging.removeEnemyTreeLocation(target);
+	                }
+	                target = null;
+	                assignNewTarget();
+	            }
+	            if(target != null){
+	                goTo(target);
+	            } else{
+	                if (nearbyNeutralTrees.length + nearbyEnemyTrees.length > 0) {
+	                    // move to best tree-cutting location
+	                    optimizeLocForWoodcutting(nearbyNeutralTrees, nearbyEnemyTrees);
+	                    // chop best trees
+	                    cutDownTrees();
+	                } else {
+	                    goTo(here.directionTo(Util.rc.getInitialArchonLocations(enemy)[0]));
+	                }
+	            }
+	        }
+	        if ( rc.canStrike() ){
+	            cutDownTrees();
+	        }
+	
+	        if (rc.canStrike() && !rc.hasMoved()){
+	            turnsWithoutMovingOrAttacking += 1;
+	        } else {
+	            if (debug) { System.out.println("I did something this turn?" + rc.canStrike() + rc.hasMoved()); }
+	            turnsWithoutMovingOrAttacking = 0;
+	        }
+	        if (debug) { System.out.println("turnsWithoutMovingOrAttacking: " + turnsWithoutMovingOrAttacking); }
+		}
 	}
 
     public void assignNewTarget() throws GameActionException {
@@ -143,7 +199,8 @@ public class Lumberjack extends Bot {
         } else {
             targets = nearbyNeutralTrees;
         }
-        goTo(targets[0].getLocation());
+        if(!isDefender || targets[0].location.distanceTo(gardenerLoc) < 5)
+        	goTo(targets[0].location);
     }
 
 	public void doLumberjackMicro() throws Exception{

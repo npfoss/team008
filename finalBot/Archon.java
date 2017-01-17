@@ -22,7 +22,7 @@ public class Archon extends Bot {
 			rc.broadcast(22, unitsBuilt);
 		}
 		if (nearbyEnemyRobots.length > 0) {
-			Messaging.sendDistressSignal(here);
+			//Messaging.sendDistressSignal(here);
 			runAway();
 	}
 
