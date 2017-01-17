@@ -89,7 +89,7 @@ public class RangedCombat extends Bot {
 	 * @param robot
 	 * @return
 	 */
-	private static int canWeHitHeuristic(RobotInfo robot) {
+	public static int canWeHitHeuristic(RobotInfo robot) {
 		int score = 100;
 		float howFarAwayTheyCanGet = here.distanceTo(robot.location) - type.bulletSpeed - type.bodyRadius
 				- robot.type.bodyRadius + robot.type.strideRadius;
