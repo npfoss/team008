@@ -1,18 +1,11 @@
-package team008.finalBot;
+package team008.oldBot;
 import battlecode.common.*;
 
 
 public class Soldier extends Bot {
-	private static boolean isDefender;
 
     public Soldier(RobotController r) throws GameActionException{
         super(r);
-        if(rc.readBroadcast(14) != 1 && rc.readBroadcast(15) > 0){
-        	isDefender = true;
-        }
-        else{
-        	isDefender = false;
-        }
         //anything else soldier specific
     }
     

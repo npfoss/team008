@@ -1,18 +1,11 @@
-package team008.finalBot;
+package team008.oldBot2;
 import battlecode.common.*;
 
 
 public class Soldier extends Bot {
-	private static boolean isDefender;
 
     public Soldier(RobotController r) throws GameActionException{
         super(r);
-        if(rc.readBroadcast(14) != 1 && rc.readBroadcast(15) > 0){
-        	isDefender = true;
-        }
-        else{
-        	isDefender = false;
-        }
         //anything else soldier specific
     }
     
@@ -29,7 +22,7 @@ public class Soldier extends Bot {
 			RangedCombat.execute();
 			return;
 		}
-		if(target == null){
+		else if(target == null){
 			assignNewTarget();
 		}
 		else if (target != null && rc.getLocation().distanceTo(target) < 3 && nearbyEnemyRobots.length == 0){

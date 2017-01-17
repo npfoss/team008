@@ -1,4 +1,4 @@
-package team008.finalBot;
+package team008.oldBot;
 
 import battlecode.common.*;
 
@@ -193,12 +193,13 @@ public class MapAnalysis extends Bot {
 				} else if (numLumberjack < ((rc.getTeamBullets() < 200 && numGardener < 6) ? ((rc.readBroadcast(11) == 3) ? 5:1) : 10)) {
 					rc.broadcast(14, 4);
 					rc.broadcast(15, ((rc.getTeamBullets() < 200 && numGardener < 6) ? ((rc.readBroadcast(11) == 3) ? 5:1) : 10) - numLumberjack);
-				} else if (numSoldier < ((rc.getTeamBullets() < 200 && numGardener < 6) ? ((rc.readBroadcast(11) == 2) ? 5:1): 20)) {
+				} else if (numSoldier < ((rc.getTeamBullets() < 200 && numGardener < 6) ? ((rc.readBroadcast(11) == 2) ? 5:1): 10)) {
 					rc.broadcast(14, 1);
-					rc.broadcast(15, ((rc.getTeamBullets() < 200 && numGardener < 6) ? ((rc.readBroadcast(11) == 2) ? 5:1) : 20) - numSoldier);
+					rc.broadcast(15, ((rc.getTeamBullets() < 200 && numGardener < 6) ? ((rc.readBroadcast(11) == 2) ? 5:1) : 10) - numSoldier);
 				} else if (numGardener < 10){
 					rc.broadcast(13, 2);
 					rc.broadcast(14, 5);
+					
 				}
 
 			}

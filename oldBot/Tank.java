@@ -1,33 +1,18 @@
-package team008.finalBot;
+package team008.oldBot;
 import battlecode.common.*;
 
+public class Tank extends Bot {
 
-public class Soldier extends Bot {
-	private static boolean isDefender;
+	public Tank(RobotController r) throws GameActionException{
+		super(r);
+	}
 
-    public Soldier(RobotController r) throws GameActionException{
-        super(r);
-        if(rc.readBroadcast(14) != 1 && rc.readBroadcast(15) > 0){
-        	isDefender = true;
-        }
-        else{
-        	isDefender = false;
-        }
-        //anything else soldier specific
-    }
-    
 	public void takeTurn() throws Exception{
-
-//		if(target != null){
-//			rc.setIndicatorDot(target, 255, 0, 0);
-//		}
-
 		if(nearbyEnemyRobots.length > 0){
-			if((rc.getRoundNum() +rc.getID()) % 25 == 0 || target == null){
+			if((rc.getRoundNum() +rc.getID() )% 25 == 0|| target == null){
 				notifyFriendsOfEnemies(nearbyEnemyRobots);
 			}
 			RangedCombat.execute();
-			return;
 		}
 		if(target == null){
 			assignNewTarget();
@@ -46,5 +31,4 @@ public class Soldier extends Bot {
 			}
 		}
 	}
-	
 }
