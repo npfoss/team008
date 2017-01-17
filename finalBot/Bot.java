@@ -75,6 +75,9 @@ public class Bot {
 					MapAnalysis.rollCall();
 				}
 				shakeNearbyTrees();
+				if (nearbyEnemyTrees.length > 0 && (rc.getRoundNum() +rc.getID()) % 25 == 0) {
+					Messaging.updateEnemyTreeLocation(nearbyEnemyTrees[0].location);
+				}
 				takeTurn();
 
 				if (rc.canShake()) {
