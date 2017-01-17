@@ -334,4 +334,8 @@ public class Util extends Bot {
                 return i;
         return -1;
     }
+
+	public static MapLocation midpoint(MapLocation loc, MapLocation loc2) {
+		return new MapLocation((loc.x + loc2.x)/2, (loc.y+loc2.y)/2);
+	}
 }

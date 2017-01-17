@@ -19,6 +19,9 @@ public class Bot {
     public static Direction dirIAmMoving;
     public static MapLocation target;
     public static Direction calculatedMove;
+    
+    //for defenders
+    public static MapLocation gardenerLoc;
 
     //finding these is expensive so lets only do it once
     public static TreeInfo[] nearbyTrees;
@@ -118,9 +121,17 @@ public class Bot {
 	}
 
 	public void assignNewTarget() throws GameActionException {
+		MapLocation targetD = Messaging.getClosestDistressSignal(here);
 		target = Messaging.getClosestEnemyArmyLocation(here);
+		if((targetD != null && target == null) || ((targetD != null && target != null) && here.distanceTo(targetD) < here.distanceTo(target))){
+			target = targetD;
+			return;
+		}
 		if (target == null) {
 			target = Messaging.getClosestEnemyUnitLocation(here);
+			if(target == null){
+				target = targetD;
+			}
 		}
 	}
 
@@ -491,5 +502,18 @@ public class Bot {
 		// parallel distance not completely accurate but fast to calculate
 		return (perpendicularDist <= type.bodyRadius
 				&& (nearbyTrees.length > 3 ? true : (distToRobot - type.bodyRadius < bulletSpeed)));
+	}
+	
+	public void circleGardener(MapLocation gLoc) throws GameActionException {
+		MapLocation targetLoc = gLoc.add(gLoc.directionTo(Util.closestLocation(MapAnalysis.initialEnemyArchonLocations, gLoc)), (float)(3.5));
+		goTo(targetLoc);
+		/* no actual circling for now
+		if(here.distanceTo(gLoc) > 4.5 || here.distanceTo(gLoc) < 3.5){
+			goTo(gLoc.add(gLoc.directionTo(here), 4));
+		}
+		else{
+			Direction dir = gLoc.directionTo(here);
+			goTo(gLoc.add(dir.rotateLeftDegrees(36), 4));
+		}*/
 	}
 }

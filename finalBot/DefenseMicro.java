@@ -15,7 +15,8 @@ private static final int loopLimit = 8;
         RobotInfo enemy = findMostThreateningTarget(friend);
         //if we can damage or fire a scary shoot do so
         if(couldDamage(enemy)){
-            RangedCombat.shootSingleShot(enemy);
+        	String shotType = RangedCombat.calculateShotType(enemy);
+            RangedCombat.parseShotTypeAndShoot(enemy, shotType);
         }
         //move to either scare away or defend
         Direction bestDefensiveSpot = calculateBestDefensiveDirection(enemy,friend);
@@ -25,6 +26,23 @@ private static final int loopLimit = 8;
         else{
         	tryMoveDirection(bestDefensiveSpot, true);
         }
+    }
+    
+    public static void defendL(RobotInfo friend) throws GameActionException{
+    	RobotInfo enemy = findMostThreateningTarget(friend);
+        //if we can damage or fire a scary shoot do so
+        if(couldDamageL(enemy)){
+        	rc.strike();
+        }
+        //move to either scare away or defend
+        Direction bestDefensiveSpot = calculateBestDefensiveDirection(enemy,friend);
+        if(enemy.type == RobotType.SCOUT){
+        	tryMoveDirectionDangerous(bestDefensiveSpot);
+        }
+    }
+    
+    private static boolean couldDamageL(RobotInfo attack){
+    	return here.distanceTo(attack.location) < 2;
     }
 
     private static RobotInfo findMostThreateningTarget(RobotInfo friend) {
@@ -54,7 +72,12 @@ private static final int loopLimit = 8;
     }
 
     private static Direction calculateBestDefensiveDirection(RobotInfo enemy, RobotInfo friend){
-        return here.directionTo(enemy.location);
+    	if(enemy.location.distanceTo(friend.location) < 5){
+    		return here.directionTo(enemy.location);
+    	}
+    	else{
+    		return here.directionTo(friend.location.add(friend.location.directionTo(enemy.location), (float)(3.5)));
+    	}
     	/*Direction bestDir = null;
         float bestScore = -999;
 
