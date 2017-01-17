@@ -193,10 +193,13 @@ public class Scout extends Bot {
 		}
 		if (targetGardenerID != -1) {
 			targetG = rc.senseRobot(targetGardenerID);
-				updateTargetLoc(nearbyTrees, targetG);
+			updateTargetLoc(nearbyTrees, targetG);
+			if(targetLoc != null)
+			System.out.println("my target location is " + targetLoc.toString());
 			if (targetLoc == null) {
-				//System.out.println("can't find a tree, but still trying to kill gardener");
-				if (here.distanceTo(targetG.location) < 2.5) {
+				// System.out.println("can't find a tree, but still trying to
+				// kill gardener");
+				if (here.distanceTo(targetG.location) < 5 ) {
 					RangedCombat.shootSingleShot(targetG);
 				}
 				goToDangerous(targetG.location);
@@ -207,8 +210,8 @@ public class Scout extends Bot {
 				harassFromTree(targetG);
 			} else {
 				// rc.setIndicatorLine(here,targetLoc,0,0,255);
-				//System.out.println("heading toward tree");
-				if (here.distanceTo(targetG.location) < 2.5) {
+				// System.out.println("heading toward tree");
+				if (here.distanceTo(targetG.location) < 5) {
 					RangedCombat.shootSingleShot(targetG);
 				}
 				goToDangerous(targetLoc);
@@ -249,9 +252,8 @@ public class Scout extends Bot {
 		if (bestTree != null) {
 			MapLocation outerEdge = bestTree.location.add(bestTree.location.directionTo(targetG.location),
 					bestTree.radius);
-			targetLoc = outerEdge.add(targetG.location.directionTo(bestTree.location),(float) 1.005);
-			rc.setIndicatorLine(here, targetLoc, 255, 255, 255);
-			rc.setIndicatorLine(here, bestTree.location, 0, 0, 0);
+			targetLoc = outerEdge.add(targetG.location.directionTo(bestTree.location),(float) 1.000);
+			System.out.println("my just updated target location is " + targetLoc.toString());
 
 		}
 	}
@@ -263,7 +265,7 @@ public class Scout extends Bot {
 		float bestDist = 5;
 		float dist;
 		for (int i = trees.length; i-- > 0;) {
-			dist = toHere.distanceTo(trees[i].location) + here.distanceTo(trees[i].location)/10;
+			dist = toHere.distanceTo(trees[i].location) - trees[i].radius + here.distanceTo(trees[i].location)/10;
 			if (dist < bestDist) {
 					RobotInfo[] enemiesWithinRangeOfTree = rc.senseNearbyRobots(trees[i].location, (float) 2.1, enemy);
 					if (consistsOfOnlyHarmlessUnits(enemiesWithinRangeOfTree)) {
@@ -271,6 +273,9 @@ public class Scout extends Bot {
 						closest = trees[i];
 					}
 			}
+		}
+		if(closest == null){
+			targetLoc = null;
 		}
 		return closest;
 	}

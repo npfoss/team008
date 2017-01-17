@@ -70,10 +70,12 @@ public static void runAway() throws GameActionException{
 			bestDir = dir;
 			bestScore = thingsInTheWay;
 		}
-		dir = dir.rotateLeftDegrees((float) 22.5);
-		thingsInTheWay = 0;
-	}
-	tryMoveDirectionDangerous(bestDir);
+			dir = dir.rotateLeftDegrees((float) 22.5);
+			thingsInTheWay = 0;
+		}
+		if (bestScore != 10000) {
+			tryMoveDirectionDangerous(bestDir);
+		}
 }
 //Used too much bytecode, incorporated into runAway
 //	private static double wallModCalc(MapLocation retreatLoc, Direction dir) throws GameActionException {
