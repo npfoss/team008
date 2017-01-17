@@ -68,7 +68,9 @@ public class Gardener extends Bot {
 			if (dirIAmMoving == null || myRand.nextDouble() < .2) {
 				dirIAmMoving = findOpenSpaces();
 			}
-			goTo(dirIAmMoving);
+			int temp = Clock.getBytecodeNum();
+			tryMoveDirectionDangerous(dirIAmMoving);
+			System.out.println("Used in moving " + (Clock.getBytecodeNum() - temp) );
 			boolean farAway = true;
 			for (RobotInfo r : nearbyAlliedRobots) {
 				if (r.type == RobotType.GARDENER || r.type == RobotType.ARCHON) {
@@ -93,7 +95,7 @@ public class Gardener extends Bot {
 	}
 
 	public void waterLowestHealthTree() throws GameActionException {
-		TreeInfo[] treesToWater = rc.senseNearbyTrees(-1, us);
+		TreeInfo[] treesToWater = nearbyAlliedTrees;
 		TreeInfo treeToHeal = Util.leastHealth(treesToWater, true);
 		if (treeToHeal != null) {
 			rc.water(treeToHeal.getID());

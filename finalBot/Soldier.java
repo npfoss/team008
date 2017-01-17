@@ -22,7 +22,7 @@ public class Soldier extends Bot {
 			RangedCombat.execute();
 			return;
 		}
-		if(target == null){
+		else if(target == null){
 			assignNewTarget();
 		}
 		else if (target != null && rc.getLocation().distanceTo(target) < 3 && nearbyEnemyRobots.length == 0){

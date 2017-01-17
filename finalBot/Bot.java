@@ -55,6 +55,7 @@ public class Bot {
 			// Try/catch blocks stop unhandled exceptions, which cause your
 			// robot to explode
 			try {
+				int temp = rc.getRoundNum();
 				here = rc.getLocation();
 				// TODO: have our Util sort a single call rather than calling
 				// multiple times
@@ -86,6 +87,9 @@ public class Bot {
 					// don't need to update nearbyNeutralTrees since
 					// sensorRadius >>> strideRadius
 					shakeNearbyTrees();
+				}
+				if(rc.getRoundNum() != temp){
+					System.out.println("Oh shit we used way too many bytecodes");
 				}
 			} catch (Exception e) {
 				System.out.println(rc.getType().toString() + " Exception :(");

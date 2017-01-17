@@ -86,12 +86,12 @@ public class MapAnalysis extends Bot {
 		numScout = rc.readBroadcast(8);
 		numLumberjack = rc.readBroadcast(9);
 		numTree = rc.getTreeCount();
-		System.out.println("numArchon = " + numArchon);
-		System.out.println("numGardener = " + numGardener);
-		System.out.println("numSoldier = " + numSoldier);
-		System.out.println("numTank = " + numTank);
-		System.out.println("numScout = " + numScout);
-		System.out.println("numLumberjack = " + numLumberjack);
+//		System.out.println("numArchon = " + numArchon);
+//		System.out.println("numGardener = " + numGardener);
+//		System.out.println("numSoldier = " + numSoldier);
+//		System.out.println("numTank = " + numTank);
+//		System.out.println("numScout = " + numScout);
+//		System.out.println("numLumberjack = " + numLumberjack);
 	}
 
 	public static void updateMapSize() throws GameActionException {

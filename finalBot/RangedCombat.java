@@ -14,9 +14,9 @@ public class RangedCombat extends Bot {
 	 */
 	public static void execute() throws GameActionException {
 
-		int temp = Clock.getBytecodeNum();
+		//int temp = Clock.getBytecodeNum();
 		tryMoveDirection(new Direction(here,MapAnalysis.center), false);
-		System.out.println("moving used: " + (Clock.getBytecodeNum() - temp));
+		//System.out.println("moving used: " + (Clock.getBytecodeNum() - temp));
 		potentialAttackStats attack = chooseTargetAndShotType();
 		if (calculatedMove != null) {
 			MapLocation tempLoc = here;
