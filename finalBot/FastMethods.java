@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 public class FastMethods extends Bot {
 
-    public static void initializeNearbyEnemeyRobots(){
+    public static void initializeNearbyEnemyRobots(){
         ArrayList<RobotInfo> holder = new ArrayList<>();
         for(RobotInfo robot: nearbyRobots){
             if(robot.team == enemy){

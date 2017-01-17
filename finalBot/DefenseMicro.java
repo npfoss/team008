@@ -10,9 +10,8 @@ private static final int loopLimit = 8;
     /**
      * This is effectively "domicro"
      */
-    public static void defend() throws GameActionException {
+    public static void defend(RobotInfo friend) throws GameActionException {
         //find the most threatening target to us
-        RobotInfo friend = Util.closestSpecificType(nearbyAlliedRobots,here,RobotType.GARDENER);
         RobotInfo enemy = findMostThreateningTarget(friend);
         //if we can damage or fire a scary shoot do so
         if(couldDamage(enemy)){
@@ -20,7 +19,12 @@ private static final int loopLimit = 8;
         }
         //move to either scare away or defend
         Direction bestDefensiveSpot = calculateBestDefensiveDirection(enemy,friend);
-        tryMoveDirectionDangerous(bestDefensiveSpot);
+        if(enemy.type == RobotType.SCOUT){
+        	tryMoveDirectionDangerous(bestDefensiveSpot);
+        }
+        else{
+        	tryMoveDirection(bestDefensiveSpot, true);
+        }
     }
 
     private static RobotInfo findMostThreateningTarget(RobotInfo friend) {
@@ -50,7 +54,8 @@ private static final int loopLimit = 8;
     }
 
     private static Direction calculateBestDefensiveDirection(RobotInfo enemy, RobotInfo friend){
-        Direction bestDir = null;
+        return here.directionTo(enemy.location);
+    	/*Direction bestDir = null;
         float bestScore = -999;
 
         float score;
@@ -65,6 +70,6 @@ private static final int loopLimit = 8;
             }
             dir.rotateRightDegrees(360/loopLimit);
         }
-        return bestDir;
+        return bestDir;*/
     }
 }
