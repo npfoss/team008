@@ -60,12 +60,9 @@ public class Bot {
 				// TODO: have our Util sort a single call rather than calling
 				// multiple times
                 nearbyTrees = rc.senseNearbyTrees(-1);
-                FastMethods.initializeNearbyNeutralTrees();
-                FastMethods.initializeNearbyEnemyTrees();
-                FastMethods.initializeNearbyAlliedTrees();
+                FastMethods.initializeAllTrees();
 				nearbyRobots = rc.senseNearbyRobots(-1);
-				FastMethods.initializeNearbyAlliedRobots();
-				FastMethods.initializeNearbyEnemyRobots();
+				FastMethods.initializeAllRobots();
                 nearbyBullets = rc.senseNearbyBullets();
                 roundNum = rc.getRoundNum();
                 if (roundNum + 5 > GameConstants.GAME_DEFAULT_ROUNDS
@@ -105,17 +102,19 @@ public class Bot {
 		return;
 	}
 
-	public void shakeNearbyTrees() throws Exception {
-		for (TreeInfo tree : nearbyNeutralTrees) {
-			if (tree.containedBullets > 0 && rc.canShake(tree.ID)) {
-				rc.shake(tree.ID);
-				if (rc.getType() != RobotType.SCOUT) {
-					//System.out.println("***A robot that isn't a scout just shook a tree!!!");
-					return;
-				}
-			}
-		}
-	}
+    public void shakeNearbyTrees() throws Exception {
+        for (TreeInfo tree : nearbyNeutralTrees) {
+            if (tree.containedBullets > 0) {
+                if(rc.canShake(tree.getID())){
+                    rc.shake(tree.ID);
+                } else{return;}
+                if (rc.getType() != RobotType.SCOUT) {
+                    //System.out.println("***A robot that isn't a scout just shook a tree!!!");
+                    return;
+                }
+            }
+        }
+    }
 
 	public void assignNewTarget() throws GameActionException {
 		target = Messaging.getClosestEnemyArmyLocation(here);
