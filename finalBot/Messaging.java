@@ -32,6 +32,9 @@ public class Messaging extends Bot{
 	public static float getMaxY() throws GameActionException{
 		return (float) (rc.readBroadcast(3)/10.0);
 	}
+	public static void updateArea(float area) throws GameActionException{
+		rc.broadcast(16, (int)(area));
+	}
 
 	
 	public static boolean duplicateInRange(MapLocation loc, int start, int end) throws GameActionException{
