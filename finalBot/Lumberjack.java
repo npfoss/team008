@@ -33,7 +33,7 @@ public class Lumberjack extends Bot {
         MOVE_ATTACK_MOD = 1; // TODO: actually optimize
         TREE_DAMAGE_MOD = .2f; // TODO: actually optimize
         KNOWN_DAMAGE_MOD = -1.2f;
-        HYPOTHETICAL_DAMAGE_MOD = -1f; // TODO: actually optimize
+        HYPOTHETICAL_DAMAGE_MOD = -.8f; // TODO: actually optimize
         PROGRESS_MOD = -.2f; // no idea what to make this TODO: don't just guess
         PROXIMITY_MOD = -3; // no idea... TODO: optimize
         IMPATIENCE_MOD = -.12f; // TODO: optimize
@@ -221,13 +221,13 @@ public class Lumberjack extends Bot {
         // if you're defending and you're getting sidetracked just go back and defend
         if(isDefender && here.distanceTo(gardenerLoc) > 8){
             //give up, go back and defend
+            if(debug)System.out.println("give up");
             goTo(gardenerLoc);
         }
 
         // if you're defending and they're on the other side of the circle, don't bother calculating attack stuff
-        if (isDefender && nearbyEnemyRobots[0].getType() == RobotType.SCOUT && here.distanceTo(nearbyEnemyRobots[0].getLocation()) > 4){
+        if (isDefender && gardenerLoc.distanceTo(here) + 1.7f < here.distanceTo(nearbyEnemyRobots[0].getLocation())){
             goTo(nearbyEnemyRobots[0].getLocation());
-            if(debug)System.out.println("give up");
             return;
         }
 
