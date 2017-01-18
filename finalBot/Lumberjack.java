@@ -81,7 +81,7 @@ public class Lumberjack extends Bot {
             }
         } else {
             RobotInfo gardener = Util.firstUnitOfType(nearbyAlliedRobots, RobotType.GARDENER);
-            if( gardener != null ){
+            if( gardener != null && rc.senseNearbyRobots(gardener.location, 5, us).length == 0 ){
                 isDefender = true;
                 gardenerLoc = gardener.getLocation();
             }
@@ -94,9 +94,10 @@ public class Lumberjack extends Bot {
             }
             int start = Clock.getBytecodeNum();
             doLumberjackMicro();
+            System.out.println("did micro");
             //System.out.println("micro took " + (Clock.getBytecodeNum() - start) + " bytecodes");
         } else {
-            if(target == null){
+            if(target == null && !isDefender){
                 assignNewTarget();
             }
             if (!isDefender && target != null && Util.distanceSquaredTo(here, target) < 15 && nearbyEnemyRobots.length + nearbyEnemyTrees.length == 0){
@@ -218,8 +219,9 @@ public class Lumberjack extends Bot {
         // TODO: add kamikaze function: if about to die anyways, just go for best place to attack for final stand
 
         // if you're defending and they're on the other side of the circle, don't bother
-        if (isDefender && nearbyEnemyRobots[0].getType() == RobotType.SCOUT && here.distanceTo(nearbyEnemyRobots[0].getLocation()) > 4){
+        if (isDefender && nearbyEnemyRobots[0].getType() == RobotType.SCOUT && here.distanceTo(nearbyEnemyRobots[0].getLocation()) > 5){
             goTo(nearbyEnemyRobots[0].getLocation());
+            if(debug)System.out.println("give up");
             return;
         }
 

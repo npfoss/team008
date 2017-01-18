@@ -25,6 +25,7 @@ public class Soldier extends Bot {
 		if(target != null){
 			rc.setIndicatorLine(here,target, 255, 0, 0);
 		}
+		RobotInfo gardener = Util.firstUnitOfType(nearbyAlliedRobots, RobotType.GARDENER);
 		if(isDefender){
 			//System.out.println("I am a defender");
 			if(rc.canSenseLocation(gardenerLoc) && rc.senseRobotAtLocation(gardenerLoc) == null){
@@ -38,7 +39,8 @@ public class Soldier extends Bot {
 				else{
 					RangedCombat.execute();
 				}
-			}/*
+			}
+			/*
 			else if (target == null){
 				MapLocation dis = Messaging.getClosestDistressSignal(here);
 				if(dis!= null && here.distanceTo(dis) < 15){
@@ -62,6 +64,10 @@ public class Soldier extends Bot {
 				circleGardener(gardenerLoc);
 			}
 		}
+		else if (gardener != null && rc.senseNearbyRobots(gardener.location, 5, us).length == 0) {
+                isDefender = true;
+                gardenerLoc = gardener.getLocation();
+        }
 		else{
 			if(nearbyEnemyRobots.length > 0){
 				if((rc.getRoundNum() +rc.getID()) % 25 == 0 || target == null){

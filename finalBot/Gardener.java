@@ -70,7 +70,7 @@ public class Gardener extends Bot {
 				dirIAmMoving = findOpenSpaces();
 			}
 			int temp = Clock.getBytecodeNum();
-			tryMoveDirectionDangerous(dirIAmMoving);
+			tryMoveDirectionDangerous(dirIAmMoving, here.add(dirIAmMoving, type.strideRadius));
 			System.out.println("Used in moving " + (Clock.getBytecodeNum() - temp) );
 			boolean farAway = true;
 			for (RobotInfo r : nearbyAlliedRobots) {

@@ -75,7 +75,7 @@ public static void runAway() throws GameActionException{
 			thingsInTheWay = 0;
 		}
 		if (bestScore != 10000) {
-			tryMoveDirectionDangerous(bestDir);
+			tryMoveDirectionDangerous(bestDir, here.add(bestDir, type.strideRadius));
 		}
 }
 //Used too much bytecode, incorporated into runAway
