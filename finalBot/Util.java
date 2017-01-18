@@ -213,6 +213,7 @@ public class Util extends Bot {
     public static Direction randomDirection() {
         return new Direction( myRand.nextFloat() * 2 * (float) Math.PI);
     }
+
     public static boolean isDangerous(RobotType t){
     	return !(t == RobotType.ARCHON || t == RobotType.GARDENER);
     }
@@ -297,6 +298,25 @@ public class Util extends Bot {
             if(ri.type == t)
                 return ri.location;
         return null;
+    }
+
+    public static RobotInfo firstUnitOfType(RobotInfo[] array, RobotType t) {
+        for(int i = array.length; i --> 0; ){
+            if(array[i].type == t){
+                return array[i];
+            }
+        }
+        return null;
+    }
+
+    public static int numUnitsOfType(RobotInfo[] array, RobotType t) {
+        int num = 0;
+        for(int i = array.length; i --> 0; ){
+            if(array[i].type == t){
+                num++;
+            }
+        }
+        return num;
     }
 
     public static RobotInfo[] getUnitsOfType(RobotInfo[] array, RobotType t) {

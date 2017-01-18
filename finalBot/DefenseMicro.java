@@ -15,7 +15,7 @@ private static final int loopLimit = 8;
         RobotInfo enemy = findMostThreateningTarget(friend);
         //if we can damage or fire a scary shoot do so
         if(couldDamage(enemy)){
-        	String shotType = RangedCombat.calculateShotType(enemy);
+            String shotType = "single shot";
             RangedCombat.parseShotTypeAndShoot(enemy, shotType);
         }
         //move to either scare away or defend
