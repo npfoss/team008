@@ -133,10 +133,13 @@ public class RangedCombat extends Bot {
 		switch (shotType) {
 		case SINGLE_SHOT:
 			shootSingleShot(target);
+			break;
 		case TRIAD_SHOT:
 			shootTriadShot(target);
+			break;
 		case PENTAD_SHOT:
 			shootPentadShot(target);
+			break;
 		default: // do nothing, it isn't worth shooting.
 		}
 	}

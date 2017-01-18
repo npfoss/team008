@@ -14,41 +14,64 @@ private static final int loopLimit = 8;
         //find the most threatening target to us
         RobotInfo enemy = findMostThreateningTarget(friend);
         //if we can damage or fire a scary shoot do so
+        if(!couldDamage(enemy)){
+        	Direction bestDefensiveSpot = calculateBestDefensiveDirection(enemy,friend);
+	        if(enemy.type == RobotType.SCOUT){
+	        	if(here.distanceTo(enemy.location) > 4){
+	        		goTo(enemy.location);
+	        	}
+	        	else{
+	        		tryMoveDirectionDangerous(bestDefensiveSpot, enemy.location);
+	        	}
+	        }
+	        else{
+	        	if(here.distanceTo(enemy.location) > 4){
+	        		goTo(enemy.location);
+	        	}
+	        	else{
+	        		tryMoveDirection(bestDefensiveSpot, true);
+	        	}	
+	        }
+        }
         if(couldDamage(enemy)){
+        	System.out.println("pew pew");
             String shotType = "single shot";
             RangedCombat.parseShotTypeAndShoot(enemy, shotType);
         }
         //move to either scare away or defend
-        Direction bestDefensiveSpot = calculateBestDefensiveDirection(enemy,friend);
-        if(enemy.type == RobotType.SCOUT){
-        	tryMoveDirectionDangerous(bestDefensiveSpot);
-        }
-        else{
-        	tryMoveDirection(bestDefensiveSpot, true);
-        }
     }
     
     public static void defendL(RobotInfo friend) throws GameActionException{
     	RobotInfo enemy = findMostThreateningTarget(friend);
         //if we can damage or fire a scary shoot do so
+    	if(!couldDamageL(enemy)){
+    		Direction bestDefensiveSpot = calculateBestDefensiveDirection(enemy,friend);
+	        if(enemy.type == RobotType.SCOUT){
+	        	tryMoveDirectionDangerous(bestDefensiveSpot, enemy.location.add(enemy.location.directionTo(here),(float)(2.0049)));
+	        }
+	        else{
+	        	tryMoveDirection(bestDefensiveSpot, true);
+	        }
+    	}
         if(couldDamageL(enemy)){
         	rc.strike();
         }
         //move to either scare away or defend
-        Direction bestDefensiveSpot = calculateBestDefensiveDirection(enemy,friend);
-        if(enemy.type == RobotType.SCOUT){
-        	tryMoveDirectionDangerous(bestDefensiveSpot);
-        }
     }
     
     private static boolean couldDamageL(RobotInfo attack){
-    	return here.distanceTo(attack.location) < 2;
+    	return here.distanceTo(attack.location) < 3;
     }
 
     private static RobotInfo findMostThreateningTarget(RobotInfo friend) {
         return Util.closestRobot(nearbyEnemyRobots,friend.getLocation());
     }
-    private static  boolean couldDamage(RobotInfo attack){
+    private static  boolean couldDamage(RobotInfo attack) throws GameActionException{
+    	if(attack.type == RobotType.SCOUT && rc.canSenseLocation(attack.location) && rc.isLocationOccupiedByTree(attack.location)){
+    		if(here.distanceTo(attack.location) < 2.005)
+    			return true;
+    		return false;
+    	}
         float bestShotD = (rc.getType().bodyRadius + rc.getType().bulletSpeed + attack.getType().bodyRadius)*(rc.getType().bodyRadius + rc.getType().bulletSpeed + attack.getType().bodyRadius);
         if(Util.distanceSquaredTo(here,attack.getLocation()) > bestShotD){
             return false;
