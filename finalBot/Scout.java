@@ -32,7 +32,6 @@ public class Scout extends Bot {
 		 * if(numHostiles > 0){ System.out.println("Ranged Combat");
 		 * RangedCombat.execute(); }
 		 */
-
 		if (!tryToHarass(nearbyTrees)) {
 			if (!dealWithNearbyTrees()) {
 				moveToHarass();
@@ -157,22 +156,14 @@ public class Scout extends Bot {
 	}
 
 	public static boolean dealWithNearbyTrees() throws GameActionException {
-		TreeInfo[] bulletTrees = new TreeInfo[nearbyNeutralTrees.length];
-		int i = 0;
+		int start = Clock.getBytecodeNum();
 		for (TreeInfo tree : nearbyNeutralTrees) {
 			if (tree.containedBullets > 0) {
-				bulletTrees[i] = tree;
-				i++;
+				goTo(tree.location);
+				return true;
 			}
 		}
-		if (i == 0) {
-			return false;
-		}
-		TreeInfo closestBulletTree = Util.closestTree(bulletTrees, rc.getLocation(), i);
-
-		goTo(closestBulletTree.location);
-
-		return true;
+		return false;
 	}
 
 	/**
