@@ -37,7 +37,7 @@ public class Soldier extends Bot {
 					DefenseMicro.defend(rc.senseRobotAtLocation(gardenerLoc));
 				}
 				else{
-					RangedCombat.execute();
+					goTo(gardenerLoc);
 				}
 			}
 			/*
@@ -64,7 +64,7 @@ public class Soldier extends Bot {
 				circleGardener(gardenerLoc);
 			}
 		}
-		else if (gardener != null && rc.senseNearbyRobots(gardener.location, 5, us).length == 0) {
+		else if (gardener != null && (rc.senseNearbyRobots(gardener.location, 5, us).length < 3 || nearbyEnemyRobots.length > 0)) {
                 isDefender = true;
                 gardenerLoc = gardener.getLocation();
         }

@@ -41,6 +41,9 @@ public class Lumberjack extends Bot {
 	}
 	
 	public void takeTurn() throws Exception{
+		if(target != null){
+			rc.setIndicatorLine(here,target, 255, 0, 0);
+		}
 		/*if(isDefender){
 			System.out.println("I am a defender");
 			if(rc.canSenseLocation(gardenerLoc) && rc.senseRobotAtLocation(gardenerLoc) == null){
@@ -81,7 +84,7 @@ public class Lumberjack extends Bot {
             }
         } else {
             RobotInfo gardener = Util.firstUnitOfType(nearbyAlliedRobots, RobotType.GARDENER);
-            if( gardener != null && rc.senseNearbyRobots(gardener.location, 5, us).length == 0 ){
+            if( gardener != null && rc.senseNearbyRobots(gardener.location, 5, us).length < 3){
                 isDefender = true;
                 gardenerLoc = gardener.getLocation();
             }
@@ -94,13 +97,12 @@ public class Lumberjack extends Bot {
             }
             int start = Clock.getBytecodeNum();
             doLumberjackMicro();
-            System.out.println("did micro");
             //System.out.println("micro took " + (Clock.getBytecodeNum() - start) + " bytecodes");
         } else {
             if(target == null && !isDefender){
                 assignNewTarget();
             }
-            if (!isDefender && target != null && Util.distanceSquaredTo(here, target) < 15 && nearbyEnemyRobots.length + nearbyEnemyTrees.length == 0){
+            if (!isDefender && target != null && Util.distanceSquaredTo(here, target) < 36 && nearbyEnemyRobots.length + nearbyEnemyTrees.length == 0){
                 if (debug) { System.out.print("removing distress loc... "); }
                 if( !Messaging.removeDistressLocation(target)) {
                     if (debug) { System.out.println("failed"); }
@@ -110,17 +112,18 @@ public class Lumberjack extends Bot {
                 assignNewTarget();
             }
             // TODO: try this out
-            /*if( isDefender ) {
-                circleLocAtRadius(gardenerLoc, RobotType.GARDENER.bodyRadius + 2 * GameConstants.BULLET_TREE_RADIUS + RobotType.LUMBERJACK.bodyRadius);
-            } else*/ if(target != null){
+            if( isDefender ) {
+            	circleGardener(gardenerLoc);
+            } else if(target != null){
                 goTo(target);
-            } else{
+            }
+            if(target == null){
                 if (nearbyNeutralTrees.length + nearbyEnemyTrees.length > 0) {
                     // move to best tree-cutting location
                     optimizeLocForWoodcutting(nearbyNeutralTrees, nearbyEnemyTrees);
                     // chop best trees
                     cutDownTrees();
-                } else {
+                } else if(!isDefender){
                     goTo(here.directionTo(Util.rc.getInitialArchonLocations(enemy)[0]));
                 }
             }
@@ -207,7 +210,10 @@ public class Lumberjack extends Bot {
         } else {
             targets = nearbyNeutralTrees;
         }
-        if(!isDefender || targets[0].location.distanceTo(gardenerLoc) < 5)
+        float closestDist = targets[0].location.distanceTo(gardenerLoc);
+        if(rc.canChop(gardenerLoc))//already close enough
+        	return;
+        if(!isDefender || closestDist + targets[0].radius < 5)
         	goTo(targets[0].location);
     }
 

@@ -178,6 +178,12 @@ public class Scout extends Bot {
 		RobotInfo targetG = null;
 		if (inDanger(nearbyEnemyRobots, nearbyBullets)) {
 			//System.out.println("ranged combat");
+			if (targetGardenerID != -1) {
+				targetG = rc.senseRobot(targetGardenerID);
+			}
+			if (targetG != null && here.distanceTo(targetG.location) < 6) {
+				RangedCombat.shootSingleShot(targetG);
+			}
 			goTo(new Direction(here,MapAnalysis.center));
 			return true;
 		}

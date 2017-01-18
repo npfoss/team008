@@ -21,7 +21,7 @@ private static final int loopLimit = 8;
 	        		goTo(enemy.location);
 	        	}
 	        	else{
-	        		tryMoveDirectionDangerous(bestDefensiveSpot, enemy.location);
+	        		tryMoveDirectionDangerous(bestDefensiveSpot, enemy.location.add(enemy.location.directionTo(here),(float)(2.0049)));
 	        	}
 	        }
 	        else{
@@ -47,7 +47,7 @@ private static final int loopLimit = 8;
     	if(!couldDamageL(enemy)){
     		Direction bestDefensiveSpot = calculateBestDefensiveDirection(enemy,friend);
 	        if(enemy.type == RobotType.SCOUT){
-	        	tryMoveDirectionDangerous(bestDefensiveSpot, enemy.location.add(enemy.location.directionTo(here),(float)(2.0049)));
+	        	tryMoveDirectionDangerous(bestDefensiveSpot, enemy.location);
 	        }
 	        else{
 	        	tryMoveDirection(bestDefensiveSpot, true);

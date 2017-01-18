@@ -6,7 +6,7 @@ import battlecode.common.*;
 
 public class Bot {
 	//for debugging
-	public boolean debug = false;
+	public static boolean debug = false;
 
 	//for everyone to use
     public static RobotController rc;
@@ -516,6 +516,7 @@ public class Bot {
 		// TODO Auto-generated method stub
 		if (bugMovesSinceSeenObstacle >= 4)
 			return true;
+		if(debug) {System.out.println("bug rotation count = " + bugRotationCount);}
 		return (bugRotationCount <= 0 || bugRotationCount >= 8) && here.distanceSquaredTo(dest) <= bugStartDistSq;
 	}
 
@@ -686,6 +687,10 @@ public class Bot {
 	
 	public void circleGardener(MapLocation gLoc) throws GameActionException {
 		MapLocation targetLoc = gLoc.add(gLoc.directionTo(Util.closestLocation(MapAnalysis.initialEnemyArchonLocations, gLoc)), (float)(3.5));
+		if(rc.canSenseLocation(targetLoc) && rc.isLocationOccupied(targetLoc) && here.distanceTo(targetLoc) < 3.5){
+			if(debug)System.out.println("close enough");
+			return;
+		}
 		goTo(targetLoc);
 		/* no actual circling for now
 		if(here.distanceTo(gLoc) > 4.5 || here.distanceTo(gLoc) < 3.5){
