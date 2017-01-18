@@ -55,17 +55,21 @@ public class FastMethods extends Bot {
 //    }
 
     public static void initializeAllTrees(){
+        int limit = 10;
+        int count = 0;
         ArrayList<TreeInfo> enemyTrees = new ArrayList<>();
         ArrayList<TreeInfo> friendlyTrees = new ArrayList<>();
         ArrayList<TreeInfo> neutralTrees = new ArrayList<>();
         for(TreeInfo tree: nearbyTrees){
-            if(tree.team == enemy){
-                enemyTrees.add(tree);
-            }else if(tree.team == Team.NEUTRAL){
+            if(tree.team == Team.NEUTRAL) {
                 neutralTrees.add(tree);
+            }else if(tree.team == enemy){
+                enemyTrees.add(tree);
             }else if(tree.team == us){
                 friendlyTrees.add(tree);
             }
+            count++;
+            if(count>=limit){break;}
         }
         nearbyEnemyTrees = enemyTrees.toArray( new TreeInfo[enemyTrees.size()]);
         nearbyNeutralTrees = neutralTrees.toArray( new TreeInfo[neutralTrees.size()]);
@@ -86,6 +90,7 @@ public class FastMethods extends Bot {
         nearbyAlliedRobots = friendlyBots.toArray( new RobotInfo[friendlyBots.size()]);
 
     }
+
 
 
 }

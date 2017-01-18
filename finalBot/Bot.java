@@ -102,17 +102,19 @@ public class Bot {
 		return;
 	}
 
-	public void shakeNearbyTrees() throws Exception {
-		for (TreeInfo tree : nearbyNeutralTrees) {
-			if (tree.containedBullets > 0 && rc.canShake(tree.ID)) {
-				rc.shake(tree.ID);
-				if (rc.getType() != RobotType.SCOUT) {
-					//System.out.println("***A robot that isn't a scout just shook a tree!!!");
-					return;
-				}
-			}
-		}
-	}
+    public void shakeNearbyTrees() throws Exception {
+        for (TreeInfo tree : nearbyNeutralTrees) {
+            if (tree.containedBullets > 0) {
+                if(rc.canShake(tree.getID())){
+                    rc.shake(tree.ID);
+                } else{return;}
+                if (rc.getType() != RobotType.SCOUT) {
+                    //System.out.println("***A robot that isn't a scout just shook a tree!!!");
+                    return;
+                }
+            }
+        }
+    }
 
 	public void assignNewTarget() throws GameActionException {
 		target = Messaging.getClosestEnemyArmyLocation(here);
