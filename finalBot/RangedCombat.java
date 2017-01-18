@@ -89,12 +89,13 @@ public class RangedCombat extends Bot {
 	 * @param robot
 	 * @return
 	 */
-	private static int canWeHitHeuristic(RobotInfo robot) {
+	public static int canWeHitHeuristic(RobotInfo robot) {
 		int score = 100;
 		float howFarAwayTheyCanGet = here.distanceTo(robot.location) - type.bulletSpeed - type.bodyRadius
 				- robot.type.bodyRadius + robot.type.strideRadius;
-		score -= 25 * howFarAwayTheyCanGet / (nearbyTrees.length + 1);
-		score += 10 * nearbyEnemyRobots.length * nearbyEnemyRobots.length;
+		//score -= 25 * howFarAwayTheyCanGet / (nearbyTrees.length + 1);
+		score -= 25 * howFarAwayTheyCanGet;
+		score += 10 * nearbyEnemyRobots.length;
 		return score;
 	}
 
@@ -104,18 +105,18 @@ public class RangedCombat extends Bot {
 	 * @return the shot type
 	 * @throws GameActionException
 	 */
-	private static String calculateShotType(BodyInfo target) throws GameActionException {
+	public static String calculateShotType(BodyInfo target) throws GameActionException {
 		// come up with some sort of formula for choosing the kind of shot
 		float score = nearbyEnemyRobots.length;
 		if (target != null) {
 			if (here.distanceTo(target.getLocation()) - type.bulletSpeed - type.bodyRadius - target.getRadius() < 0) {
-				score = 5;
+				score = 7;
 			}
 		}
-		if (score > 4) {
+		if (score > 6) {
 			return PENTAD_SHOT;
 		}
-		if (score > 2) {
+		if (score > 3) {
 			return TRIAD_SHOT;
 		}
 		return SINGLE_SHOT;
@@ -128,14 +129,17 @@ public class RangedCombat extends Bot {
 	 * @param shotType
 	 * @throws GameActionException
 	 */
-	private static void parseShotTypeAndShoot(BodyInfo target, String shotType) throws GameActionException {
+	public static void parseShotTypeAndShoot(BodyInfo target, String shotType) throws GameActionException {
 		switch (shotType) {
 		case SINGLE_SHOT:
 			shootSingleShot(target);
+			break;
 		case TRIAD_SHOT:
 			shootTriadShot(target);
+			break;
 		case PENTAD_SHOT:
 			shootPentadShot(target);
+			break;
 		default: // do nothing, it isn't worth shooting.
 		}
 	}
