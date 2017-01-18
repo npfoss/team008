@@ -16,7 +16,7 @@ public class Lumberjack extends Bot {
 	public Lumberjack(RobotController r) throws GameActionException{
 		super(r);
 		//anything else lumberjack specific
-        WHEN_TO_STOP_MICRO = RobotType.LUMBERJACK.bytecodeLimit - 2000; //TODO: don't just guess
+        WHEN_TO_STOP_MICRO = RobotType.LUMBERJACK.bytecodeLimit - 1000; //TODO: don't just guess
         MOVE_ATTACK_MOD = 1; // TODO: actually optimize
         TREE_DAMAGE_MOD = .2f; // TODO: actually optimize
         KNOWN_DAMAGE_MOD = -1.2f;
