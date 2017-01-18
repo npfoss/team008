@@ -37,7 +37,7 @@ public class Lumberjack extends Bot {
         PROGRESS_MOD = -.2f; // no idea what to make this TODO: don't just guess
         PROXIMITY_MOD = -3; // no idea... TODO: optimize
         IMPATIENCE_MOD = -.12f; // TODO: optimize
-        GARDENER_PROXIMITY_MOD = -10;
+        GARDENER_PROXIMITY_MOD = -7;
 	}
 	
 	public void takeTurn() throws Exception{
@@ -217,7 +217,7 @@ public class Lumberjack extends Bot {
 
         // TODO: add kamikaze function: if about to die anyways, just go for best place to attack for final stand
 
-        // if you're defending and they're on the other side of the circle, don't bother
+        // if you're defending and they're on the other side of the circle, don't bother calculating attack stuff
         if (isDefender && nearbyEnemyRobots[0].getType() == RobotType.SCOUT && here.distanceTo(nearbyEnemyRobots[0].getLocation()) > 4){
             goTo(nearbyEnemyRobots[0].getLocation());
             return;
@@ -303,7 +303,7 @@ public class Lumberjack extends Bot {
                 + HYPOTHETICAL_DAMAGE_MOD * hypotheticalDamageToSpot(loc)
                 + PROXIMITY_MOD * distToNearestEnemy
                 + (target != null ? PROGRESS_MOD * here.distanceTo(target) - loc.distanceTo(target) : 0)
-                + (gardenerLoc != null ? GARDENER_PROXIMITY_MOD * (loc.distanceTo(gardenerLoc) < 3.6 ? 4f - loc.distanceTo(gardenerLoc) : 0) : 0 )
+                + (gardenerLoc != null ? GARDENER_PROXIMITY_MOD * (loc.distanceTo(gardenerLoc) < 3.6 ? 3.6f - loc.distanceTo(gardenerLoc) : 0) : 0 )
                     // translation: if too close to gardener I'm defending, it's bad. (3.6 isn't random, it's sqrt(3)*3/2)
                 ;
     }
