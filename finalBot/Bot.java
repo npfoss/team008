@@ -60,12 +60,9 @@ public class Bot {
 				// TODO: have our Util sort a single call rather than calling
 				// multiple times
                 nearbyTrees = rc.senseNearbyTrees(-1);
-                FastMethods.initializeNearbyNeutralTrees();
-                FastMethods.initializeNearbyEnemyTrees();
-                FastMethods.initializeNearbyAlliedTrees();
+                FastMethods.initializeAllTrees();
 				nearbyRobots = rc.senseNearbyRobots(-1);
-				FastMethods.initializeNearbyAlliedRobots();
-				FastMethods.initializeNearbyEnemyRobots();
+				FastMethods.initializeAllRobots();
                 nearbyBullets = rc.senseNearbyBullets();
                 roundNum = rc.getRoundNum();
                 if (roundNum + 5 > GameConstants.GAME_DEFAULT_ROUNDS
