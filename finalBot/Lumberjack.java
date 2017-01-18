@@ -11,11 +11,13 @@ public class Lumberjack extends Bot {
     public float PROGRESS_MOD;
     public float PROXIMITY_MOD;
     public float IMPATIENCE_MOD;
+    public float GARDENER_PROXIMITY_MOD;
     public int turnsWithoutMovingOrAttacking;
     private static boolean isDefender;
 
 	public Lumberjack(RobotController r) throws GameActionException{
 		super(r);
+		debug = true;
 		isDefender = false;
         if(rc.readBroadcast(23) == 1){
 	        RobotInfo gardener = Util.closestSpecificType(rc.senseNearbyRobots(-1, us),rc.getLocation(),RobotType.GARDENER);
@@ -33,12 +35,13 @@ public class Lumberjack extends Bot {
         KNOWN_DAMAGE_MOD = -1.2f;
         HYPOTHETICAL_DAMAGE_MOD = -1f; // TODO: actually optimize
         PROGRESS_MOD = -.2f; // no idea what to make this TODO: don't just guess
-        PROXIMITY_MOD = -2; // no idea... TODO: optimize
-        IMPATIENCE_MOD = -.07f; // TODO: optimize
+        PROXIMITY_MOD = -3; // no idea... TODO: optimize
+        IMPATIENCE_MOD = -.12f; // TODO: optimize
+        GARDENER_PROXIMITY_MOD = -10;
 	}
 	
 	public void takeTurn() throws Exception{
-		if(isDefender){
+		/*if(isDefender){
 			System.out.println("I am a defender");
 			if(rc.canSenseLocation(gardenerLoc) && rc.senseRobotAtLocation(gardenerLoc) == null){
 				isDefender = false;
@@ -71,63 +74,67 @@ public class Lumberjack extends Bot {
 					target = null;
 				}
 			}*/
-			else{
-				if ( rc.canStrike() ){
-					optimizeLocForWoodcutting(nearbyNeutralTrees, nearbyEnemyTrees);
-		            cutDownTrees();
-		        }
-				if(rc.getMoveCount() == 0){
-					circleGardener(gardenerLoc);
-				}
-			}
+        if(isDefender) {
+            System.out.println("I am a defender");
+            if (rc.canSenseLocation(gardenerLoc) && rc.senseRobotAtLocation(gardenerLoc) == null) {
+                isDefender = false;
+            }
+        } else {
+            RobotInfo gardener = Util.firstUnitOfType(nearbyAlliedRobots, RobotType.GARDENER);
+            if( gardener != null ){
+                isDefender = true;
+                gardenerLoc = gardener.getLocation();
+            }
 		}
-		else{
-	        if(nearbyEnemyRobots.length > 0) {
-	        	//Let other robots know where you are!
-	        	if((rc.getRoundNum() +rc.getID()) % 25 == 0 || target == null){
-					notifyFriendsOfEnemies(nearbyEnemyRobots);
-				}
-				int start = Clock.getBytecodeNum();
-	            doLumberjackMicro();
-	            //System.out.println("micro took " + (Clock.getBytecodeNum() - start) + " bytecodes");
-	        } else {
-	            if(target == null){
-	                assignNewTarget();
-	            }
-	            if (target != null && Util.distanceSquaredTo(here, target) < 15 && nearbyEnemyRobots.length + nearbyEnemyTrees.length == 0){
-	                if (debug) { System.out.print("removing distress loc... "); }
-	                if( !Messaging.removeDistressLocation(target)) {
-	                    if (debug) { System.out.println("failed"); }
-	                    Messaging.removeEnemyTreeLocation(target);
-	                }
-	                target = null;
-	                assignNewTarget();
-	            }
-	            if(target != null){
-	                goTo(target);
-	            } else{
-	                if (nearbyNeutralTrees.length + nearbyEnemyTrees.length > 0) {
-	                    // move to best tree-cutting location
-	                    optimizeLocForWoodcutting(nearbyNeutralTrees, nearbyEnemyTrees);
-	                    // chop best trees
-	                    cutDownTrees();
-	                } else {
-	                    goTo(here.directionTo(Util.rc.getInitialArchonLocations(enemy)[0]));
-	                }
-	            }
-	        }
-	        if ( rc.canStrike() ){
-	            cutDownTrees();
-	        }
-	
-	        if (rc.canStrike() && !rc.hasMoved()){
-	            turnsWithoutMovingOrAttacking += 1;
-	        } else {
-	            if (debug) { System.out.println("I did something this turn?" + rc.canStrike() + rc.hasMoved()); }
-	            turnsWithoutMovingOrAttacking = 0;
-	        }
-	        if (debug) { System.out.println("turnsWithoutMovingOrAttacking: " + turnsWithoutMovingOrAttacking); }
-		}
+
+        if(nearbyEnemyRobots.length > 0) {
+            //Let other robots know where you are!
+            if((rc.getRoundNum() +rc.getID()) % 25 == 0 || target == null){
+                notifyFriendsOfEnemies(nearbyEnemyRobots);
+            }
+            int start = Clock.getBytecodeNum();
+            doLumberjackMicro();
+            //System.out.println("micro took " + (Clock.getBytecodeNum() - start) + " bytecodes");
+        } else {
+            if(target == null){
+                assignNewTarget();
+            }
+            if (!isDefender && target != null && Util.distanceSquaredTo(here, target) < 15 && nearbyEnemyRobots.length + nearbyEnemyTrees.length == 0){
+                if (debug) { System.out.print("removing distress loc... "); }
+                if( !Messaging.removeDistressLocation(target)) {
+                    if (debug) { System.out.println("failed"); }
+                    Messaging.removeEnemyTreeLocation(target);
+                }
+                target = null;
+                assignNewTarget();
+            }
+            // TODO: try this out
+            /*if( isDefender ) {
+                circleLocAtRadius(gardenerLoc, RobotType.GARDENER.bodyRadius + 2 * GameConstants.BULLET_TREE_RADIUS + RobotType.LUMBERJACK.bodyRadius);
+            } else*/ if(target != null){
+                goTo(target);
+            } else{
+                if (nearbyNeutralTrees.length + nearbyEnemyTrees.length > 0) {
+                    // move to best tree-cutting location
+                    optimizeLocForWoodcutting(nearbyNeutralTrees, nearbyEnemyTrees);
+                    // chop best trees
+                    cutDownTrees();
+                } else {
+                    goTo(here.directionTo(Util.rc.getInitialArchonLocations(enemy)[0]));
+                }
+            }
+        }
+        if ( rc.canStrike() ){
+            cutDownTrees();
+        }
+
+        if (rc.canStrike() && !rc.hasMoved()){
+            turnsWithoutMovingOrAttacking += 1;
+        } else {
+            if (debug) { System.out.println("I did something this turn?" + rc.canStrike() + rc.hasMoved()); }
+            turnsWithoutMovingOrAttacking = 0;
+        }
+        if (debug) { System.out.println("turnsWithoutMovingOrAttacking: " + turnsWithoutMovingOrAttacking); }
 	}
 
     public void assignNewTarget() throws GameActionException {
@@ -210,6 +217,12 @@ public class Lumberjack extends Bot {
 
         // TODO: add kamikaze function: if about to die anyways, just go for best place to attack for final stand
 
+        // if you're defending and they're on the other side of the circle, don't bother
+        if (isDefender && nearbyEnemyRobots[0].getType() == RobotType.SCOUT && here.distanceTo(nearbyEnemyRobots[0].getLocation()) > 4){
+            goTo(nearbyEnemyRobots[0].getLocation());
+            return;
+        }
+
         float attackScoreHere = evalForAttacking(here);
         float bestMoveScore = evaluateLocation(here) + (attackScoreHere < 0 ? 0 : MOVE_ATTACK_MOD * attackScoreHere) + IMPATIENCE_MOD * turnsWithoutMovingOrAttacking;
                         // there should be a way to remove the attack bit here such that
@@ -289,7 +302,10 @@ public class Lumberjack extends Bot {
         return KNOWN_DAMAGE_MOD * knownDamageToLoc(loc)
                 + HYPOTHETICAL_DAMAGE_MOD * hypotheticalDamageToSpot(loc)
                 + PROXIMITY_MOD * distToNearestEnemy
-                + (target != null ? PROGRESS_MOD * here.distanceTo(target) - loc.distanceTo(target) : 0);
+                + (target != null ? PROGRESS_MOD * here.distanceTo(target) - loc.distanceTo(target) : 0)
+                + (gardenerLoc != null ? GARDENER_PROXIMITY_MOD * (loc.distanceTo(gardenerLoc) < 3.6 ? 4f - loc.distanceTo(gardenerLoc) : 0) : 0 )
+                    // translation: if too close to gardener I'm defending, it's bad. (3.6 isn't random, it's sqrt(3)*3/2)
+                ;
     }
 
     public float evalForAttacking(MapLocation loc){
