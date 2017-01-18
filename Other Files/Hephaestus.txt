@@ -1,8 +1,8 @@
-In order to use archonBaby you need python 2.x and Gradle. To run archonBaby simply navigate to the battlecodeScaffold2017 root directory and run the following command. You may need to specify the python version if you havent set 2.x as your default.
+In order to use Hephaestus you need python 2.x and Gradle. To run Hephaestus simply navigate to the battlecodeScaffold2017 root directory and run the following command. You may need to specify the python version if you havent set 2.x as your default.
 
-python archonBaby.py <pkg of team a> <pkg of team b>
+python Hephaestus.py <pkg of team a> <pkg of team b>
 
-archonBaby will then play team a and team b against eachother on all the maps in both positions. It should return a result like the following.
+Hephaestus will then play team a and team b against eachother on all the maps in both positions. It should return a result like the following.
 
 Team A won on shrine
 Team A won on Barrier
