@@ -3,11 +3,9 @@ import battlecode.common.*;
 
 
 public class Soldier extends Bot {
-	private static boolean isDefender;
 
     public Soldier(RobotController r) throws GameActionException{
         super(r);
-        isDefender = false;
         if(rc.readBroadcast(23) == 1){
 	        RobotInfo gardener = Util.closestSpecificType(rc.senseNearbyRobots(-1, us),rc.getLocation(),RobotType.GARDENER);
 	        //System.out.println("hello");
@@ -34,10 +32,10 @@ public class Soldier extends Bot {
 			else if(nearbyEnemyRobots.length > 0){
 				if(rc.canSenseLocation(gardenerLoc)){
 					//System.out.println("defending");
-					DefenseMicro.defend(rc.senseRobotAtLocation(gardenerLoc));
+					RangedCombat.execute();
 				}
 				else{
-					goTo(gardenerLoc);
+					RangedCombat.execute();
 				}
 			}
 			/*

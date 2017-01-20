@@ -6,7 +6,7 @@ import battlecode.common.*;
 
 public class Bot {
 	//for debugging
-	public static boolean debug = false;
+	public static boolean debug = true;
 
 	//for everyone to use
     public static RobotController rc;
@@ -14,6 +14,7 @@ public class Bot {
     public static Team enemy;
     public static Team us;
     public static MapLocation here;
+    public static boolean isDefender;
     
     //most units will need this
     public static Direction dirIAmMoving;
@@ -50,6 +51,7 @@ public class Bot {
 		myRand = new Random(rc.getID());
 		dirIAmMoving = null;
 		bugState = BugState.DIRECT;
+		isDefender = false;
 		MapAnalysis.center = MapAnalysis.findCenter();
 	}
 

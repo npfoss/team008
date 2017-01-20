@@ -13,12 +13,10 @@ public class Lumberjack extends Bot {
     public float IMPATIENCE_MOD;
     public float GARDENER_PROXIMITY_MOD;
     public int turnsWithoutMovingOrAttacking;
-    private static boolean isDefender;
 
 	public Lumberjack(RobotController r) throws GameActionException{
 		super(r);
 		debug = true;
-		isDefender = false;
         if(rc.readBroadcast(23) == 1){
 	        RobotInfo gardener = Util.closestSpecificType(rc.senseNearbyRobots(-1, us),rc.getLocation(),RobotType.GARDENER);
 	        //System.out.println("hello");
