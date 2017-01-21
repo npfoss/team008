@@ -19,7 +19,7 @@ public class RangedCombat extends Bot {
 		potentialAttackStats attack = chooseTargetAndShotType();
 		MapLocation targetLoc = attack.getTarget().getLocation();
 		Direction targetDir = here.directionTo(attack.getTarget().getLocation());
-		Direction moveDir = (isDefender ? here.directionTo(gardenerLoc) : (nearbyAlliedRobots.length > nearbyEnemyRobots.length ? targetDir : targetDir.opposite()));
+		Direction moveDir = (nearbyAlliedRobots.length > nearbyEnemyRobots.length ? targetDir : targetDir.opposite());
 		tryMoveDirection(moveDir, false);
 		if (calculatedMove != null) {
 			MapLocation tempLoc = here;
