@@ -51,7 +51,8 @@ public class RangedCombat extends Bot {
 		Direction targetDir = here.directionTo(targetLoc);
 		float maxDist = -99999;
 		Direction backupDir = null;
-		if(safeDist == -1){//dealing with scout in tree
+		if(Math.abs(safeDist -1) < .01){//dealing with scout in tree
+			System.out.println("hi");
 			MapLocation targetSpot = targetLoc.add(targetDir.opposite(), (float) 2.004);
 			float dist = here.distanceTo(targetSpot);
 			if(dist < type.strideRadius && rc.canMove(targetDir, dist)){
@@ -105,7 +106,7 @@ public class RangedCombat extends Bot {
 				return false;
 			}
 		}
-		if(safeDist == 0){
+		if(Math.abs(safeDist) < .01){
 			if(nearbyEnemyRobots.length == 0 || nearbyEnemyRobots.length == 1 && nearbyEnemyRobots[0].type == RobotType.GARDENER)
 				return true;
 			else{
@@ -170,10 +171,12 @@ public class RangedCombat extends Bot {
 			}
 		}
 		if(bestRobot != null && !attackingGardener){
-			if(bestRobot.type == RobotType.SCOUT && rc.isLocationOccupiedByTree(bestRobot.location))//edge case for scouts in trees
+			if(bestRobot.type == RobotType.SCOUT && rc.isLocationOccupiedByTree(bestRobot.location)){//edge case for scouts in trees
 				safeDist = -1; //signal we are dealing with a scout
-			safeDist = bestRobot.type.bodyRadius + type.bodyRadius + bestRobot.type.strideRadius + (bestRobot.type == RobotType.LUMBERJACK ? GameConstants.LUMBERJACK_STRIKE_RADIUS - bestRobot.type.bodyRadius : bestRobot.type.bulletSpeed);
-			//System.out.println("Safe dist = " + safeDist);
+			}	
+			else{
+				safeDist = bestRobot.type.bodyRadius + type.bodyRadius + bestRobot.type.strideRadius + (bestRobot.type == RobotType.LUMBERJACK ? GameConstants.LUMBERJACK_STRIKE_RADIUS - bestRobot.type.bodyRadius : bestRobot.type.bulletSpeed);
+			}//System.out.println("Safe dist = " + safeDist);
 		}
 		return new potentialAttackStats(bestRobot, calculateShotType(bestRobot, shotValue), shotValue);
 	}
