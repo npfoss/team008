@@ -43,9 +43,9 @@ public class RobotPlayer {
          */
 
         while (true) {
-            while(rc.getTeamBullets() >= rc.getVictoryPointCost()){
-                rc.donate(rc.getVictoryPointCost());
-            }
+           // while(rc.getTeamBullets() >= rc.getVictoryPointCost()){
+           //     rc.donate(rc.getVictoryPointCost());
+           // }
             Clock.yield();
         }
     }

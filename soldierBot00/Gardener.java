@@ -1,5 +1,4 @@
 package team008.soldierBot00;
-
 import battlecode.common.*;
 
 public class Gardener extends Bot {
