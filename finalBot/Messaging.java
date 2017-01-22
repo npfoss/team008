@@ -35,7 +35,6 @@ public class Messaging extends Bot{
 	public static void updateArea(float area) throws GameActionException{
 		rc.broadcast(16, (int)(area));
 	}
-
 	
 	public static boolean duplicateInRange(MapLocation loc, int start, int end) throws GameActionException{
 		for(int i = start; i <= end; i++){
@@ -251,22 +250,22 @@ public class Messaging extends Bot{
 	}
 
 	public static boolean sendDistressSignal(MapLocation loc) throws GameActionException {
-		int index = rc.readBroadcast(850);
+		int index = rc.readBroadcast(1000);
 		if (index > 49)return false;
-		if(duplicateInRange(loc,851,850+index))
+		if(duplicateInRange(loc,1001,1000+index))
 			return false;
 		int x = (int) (loc.x * 10);
 		int y = (int) (loc.y * 10);
-		rc.broadcast(850 + index + 1, (x*6000 + y));
-		rc.broadcast(850, index+1);
+		rc.broadcast(1000 + index + 1, (x*6000 + y));
+		rc.broadcast(1000, index+1);
 		return true;
 	}
 
 	public static MapLocation getClosestDistressSignal(MapLocation toHere) throws GameActionException{
 		MapLocation ret = null;
 		float dist = 999999;
-		for(int i = 1; i <= rc.readBroadcast(850); i++){
-			int code = rc.readBroadcast(850 + i);
+		for(int i = 1; i <= rc.readBroadcast(1000); i++){
+			int code = rc.readBroadcast(1000 + i);
 			if(code == 0){
 				continue;
 			}
@@ -281,11 +280,11 @@ public class Messaging extends Bot{
 
 	public static boolean removeDistressLocation(MapLocation loc) throws GameActionException{
 		int code = (int)(loc.x*10)*6000 + (int)(loc.y*10);
-		int size = rc.readBroadcast(850);
+		int size = rc.readBroadcast(1000);
 		for(int i = 1; i <= size; i++){
-			if(rc.readBroadcast(850 + i) == code){
-				rc.broadcast(850 + i, rc.readBroadcast(850+size));
-				rc.broadcast(850, size-1);
+			if(rc.readBroadcast(1000 + i) == code){
+				rc.broadcast(1000 + i, rc.readBroadcast(1000+size));
+				rc.broadcast(1000, size-1);
 				return true;
 			}
 		}
