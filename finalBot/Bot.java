@@ -64,12 +64,23 @@ public class Bot {
             try {
                 here = rc.getLocation();
                 nearbyTrees = rc.senseNearbyTrees(-1);
-                FastMethods.initializeNearbyNeutralTrees();
-                FastMethods.initializeNearbyEnemyTrees();
-                FastMethods.initializeNearbyAlliedTrees();
+                if(nearbyTrees.length<15) {
+                    FastMethods.initializeNearbyNeutralTrees();
+                    FastMethods.initializeNearbyEnemyTrees();
+                    FastMethods.initializeNearbyAlliedTrees();
+                } else {
+                    nearbyNeutralTrees = rc.senseNearbyTrees(-1,Team.NEUTRAL);
+                    nearbyEnemyTrees = rc.senseNearbyTrees(-1,enemy);
+                    nearbyAlliedTrees = rc.senseNearbyTrees(-1,us);
+                }
                 nearbyRobots = rc.senseNearbyRobots(-1);
-                FastMethods.initializeNearbyAlliedRobots();
-                FastMethods.initializeNearbyEnemyRobots();
+               if(nearbyRobots.length<15) {
+                   FastMethods.initializeNearbyAlliedRobots();
+                   FastMethods.initializeNearbyEnemyRobots();
+               } else {
+                   nearbyEnemyRobots = rc.senseNearbyRobots(-1,enemy);
+                   nearbyAlliedRobots = rc.senseNearbyRobots(-1,us);
+               }
                 nearbyBullets = rc.senseNearbyBullets();
                 roundNum = rc.getRoundNum();
                 if(rc.readBroadcast(10) == 0 && rc.getHealth() > 20){
