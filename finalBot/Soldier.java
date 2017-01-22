@@ -6,7 +6,6 @@ public class Soldier extends Bot {
 
     public Soldier(RobotController r) throws GameActionException{
         super(r);
-        //anything else soldier specific
     }
     
 	public void takeTurn() throws Exception{
@@ -23,9 +22,9 @@ public class Soldier extends Bot {
 
 		if (rc.getMoveCount() == 0) {
 			if (target != null && rc.getLocation().distanceTo(target) < 6 && (nearbyEnemyRobots.length == 0 || (nearbyEnemyRobots.length == 1 && nearbyEnemyRobots[0].type == RobotType.ARCHON))) {
-				Messaging.removeEnemyArmyLocation(target);
-				Messaging.removeEnemyUnitLocation(target);
-				Messaging.removeDistressLocation(target);
+				Message.ENEMY_ARMIES.removeLocation(target);
+				Message.ISOLATED_ENEMIES.removeLocation(target);
+				Message.DISTRESS_SIGNALS.removeLocation(target);
 				target = null;
 				assignNewTarget();
 			}

@@ -18,7 +18,7 @@ public class Lumberjack extends Bot {
             myRandomDirection = Util.randomDirection();
         }
 
-        scanForGardenerInDistress(); //This needs to be looked over
+        updateTarget(); 
         
         if(nearbyEnemyRobots.length > 0) {
             tryMoveDirection(here.directionTo(nearbyEnemyRobots[0].location), true, true);
@@ -73,14 +73,22 @@ public class Lumberjack extends Bot {
     }
 
 
-    public void scanForGardenerInDistress()throws GameActionException {
-        MapLocation targetD = Messaging.getClosestDistressSignal(here);
+    public void updateTarget()throws GameActionException {
+        MapLocation targetD = Message.DISTRESS_SIGNALS.getClosestLocation(here);
         if (targetD != null && target == null && here.distanceTo(targetD) < 25) {
+        	if(debug)System.out.println("targetD = " + targetD);
             target = targetD;
         }
-
+        if(target ==  null){
+            MapLocation targetA = Message.ENEMY_ARCHONS.getClosestLocation(here);
+            if(targetA != null && here.distanceTo(targetA) < 25){
+            	if(debug)System.out.println("targetA = " + targetA);
+            	target = targetA;
+            }
+        }
         if (target != null && rc.getLocation().distanceTo(target) < 6 && nearbyEnemyRobots.length == 0){
-            Messaging.removeDistressLocation(target);
+            Message.ENEMY_ARCHONS.removeLocation(target);
+            Message.DISTRESS_SIGNALS.removeLocation(target);
             target = null;
         }
     }

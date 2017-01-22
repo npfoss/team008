@@ -189,22 +189,21 @@ public class Bot {
 	}
 
 	/******** Messaging Notifications *********/
-	//TODO: Make this use Message.java
 	public void assignNewTarget() throws GameActionException {
-		MapLocation targetD = Messaging.getClosestDistressSignal(here);
+		MapLocation targetD = Message.DISTRESS_SIGNALS.getClosestLocation(here);
 		if (targetD != null) {
 			if (debug) {
 				System.out.println("got target D");
 			}
 		}
-		target = Messaging.getClosestEnemyArmyLocation(here);
+		target = Message.DISTRESS_SIGNALS.getClosestLocation(here);
 		if ((targetD != null && target == null)
 				|| ((targetD != null && target != null) && here.distanceTo(targetD) < here.distanceTo(target))) {
 			target = targetD;
 			return;
 		}
 		if (target == null) {
-			target = Messaging.getClosestEnemyUnitLocation(here);
+			target = Message.ISOLATED_ENEMIES.getClosestLocation(here);
 			if (target == null) {
 				target = targetD;
 			}
@@ -212,18 +211,20 @@ public class Bot {
 	}
 
 	public static void notifyFriendsOfEnemies(RobotInfo[] enemies) throws GameActionException {
-		if (Util.closestSpecificType(nearbyAlliedRobots, here, RobotType.GARDENER) != null) {
-			Messaging.sendDistressSignal(enemies[0].location);
+		if (Util.closestSpecificType(nearbyAlliedRobots, here, RobotType.GARDENER).location.distanceTo(enemies[0].location) < 7) {
+			Message.DISTRESS_SIGNALS.addLocation(enemies[0].location);
 		}
-		else if(enemies.length == 1 && enemies[0].type != RobotType.SCOUT && enemies[0].type != RobotType.ARCHON){
-			Messaging.updateEnemyUnitLocation(enemies[0].location);
+		if(Util.closestSpecificType(nearbyEnemyRobots, here, RobotType.ARCHON) != null){
+			Message.ENEMY_ARCHONS.addLocation(Util.closestSpecificType(nearbyEnemyRobots, here, RobotType.ARCHON).location);
+		}
+		if(enemies.length == 1 && enemies[0].type != RobotType.SCOUT && enemies[0].type != RobotType.ARCHON){
+			Message.ISOLATED_ENEMIES.addLocation(enemies[0].location);
 		} else if (enemies.length > 1) {
-			Messaging.updateEnemyArmyLocation(Util.centroidOfUnits(enemies));
+			Message.ENEMY_ARMIES.addLocation(Util.centroidOfUnits(enemies));
 		}
 	}
 
 	/******* ALL NAVIGATION METHODS BELOW *******/
-	// TODO: navigate/implement bugging
 	private static MapLocation dest = null;
 	private static boolean isBugging = false;
 	private static int bugRotationCount;
@@ -500,7 +501,6 @@ public class Bot {
 	}
 
 	private static boolean canEndBug() {
-		// TODO Auto-generated method stub
 		if (bugMovesSinceSeenObstacle >= 4)
 			return true;
 		if (debug) {

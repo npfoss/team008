@@ -22,7 +22,7 @@ public enum Message {
     GARDENER_BUILD_ORDERS(14, 0),
     GARDENER_BUILD_NUM(15, 0),
     MAP_SIZE(16, 0),
-    // TODO: wtf does "scout stuff for map size" mean in the gdoc?
+    //don't need to use this doc for scout edge stuff
     ARCHON_DISTRESS_NUM(21,0),
     TREES_WITH_UNITS(50, 49),
     NEUTRAL_TREES(100, 99),
@@ -30,6 +30,7 @@ public enum Message {
     ENEMY_ARMIES(300, 399),
     ISOLATED_ENEMIES(700, 299),
     DISTRESS_SIGNALS(1000, 199),
+    ENEMY_ARCHONS(1200, 50)
     ;
 
     /** Ok great, but how tf do I use this?
