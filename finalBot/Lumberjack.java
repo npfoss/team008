@@ -75,7 +75,7 @@ public class Lumberjack extends Bot {
 
     public void scanForGardenerInDistress()throws GameActionException {
         MapLocation targetD = Messaging.getClosestDistressSignal(here);
-        if (targetD != null && target == null && here.distanceTo(targetD) < 50) {
+        if (targetD != null && target == null && here.distanceTo(targetD) < 25) {
             target = targetD;
         }
 

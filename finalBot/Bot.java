@@ -178,7 +178,7 @@ public class Bot {
 		if(Util.closestSpecificType(nearbyAlliedRobots, here, RobotType.GARDENER) != null){
 			Messaging.sendDistressSignal(enemies[0].location);
 		}
-		else if(enemies.length == 1 && enemies[0].type != RobotType.SCOUT){
+		else if(enemies.length == 1 && enemies[0].type != RobotType.SCOUT && enemies[0].type != RobotType.ARCHON){
 			Messaging.updateEnemyUnitLocation(enemies[0].location);
 		}
 		else if (enemies.length > 1){
