@@ -43,8 +43,10 @@ public class Bot {
 		enemy = rc.getTeam().opponent();
 		us = rc.getTeam();
 		here = rc.getLocation();
+		dirIAmMoving = null;
 		myRand = new Random(rc.getID());
 		MapAnalysis.center = MapAnalysis.findCenter();
+		bugState = BugState.DIRECT;
 	}
 	
 	private enum BugState {
@@ -291,7 +293,7 @@ public class Bot {
 		if (theDest == null) {
 			tryMoveDirection(here.directionTo(MapAnalysis.center), true, true);
 		}
-		if (type != RobotType.SCOUT && dest != null && dest.distanceTo(theDest) < .001) {
+		else if (type != RobotType.SCOUT && dest != null && dest.distanceTo(theDest) < .001) {
 			bugMove();
 			// continue bugging
 		} else {
@@ -303,10 +305,11 @@ public class Bot {
 			return;
 		}
 		if (!isBugging) {
-			if (tryMoveDirection(here.directionTo(dest), true, true)) {
+			if (tryMoveDirection(here.directionTo(dest), true, false)) {
 				return;
 			} else {
 				isBugging = true;
+				bugMove();
 				// for now we give up
 				return;
 			}
@@ -314,6 +317,7 @@ public class Bot {
 	}
 	
 	private static void bugMove() throws GameActionException {
+		if(debug)System.out.println("bugging");
 		if (bugState == BugState.BUG) {
 			if (canEndBug()) {
 				bugState = BugState.DIRECT;
@@ -412,14 +416,14 @@ public class Bot {
 		if (bugWallSide == null) {
 			// try to intelligently choose on which side we will keep the wall
 			Direction leftTryDir = bugLastMoveDir.rotateLeftDegrees(20);
-			for (int i = 0; i < 18; i++) {
+			for (int i = 0; i < 9; i++) {
 				if (!canMove(leftTryDir))
 					leftTryDir = leftTryDir.rotateLeftDegrees(20);
 				else
 					break;
 			}
 			Direction rightTryDir = bugLastMoveDir.rotateRightDegrees(20);
-			for (int i = 0; i < 18; i++) {
+			for (int i = 0; i < 9; i++) {
 				if (!canMove(rightTryDir))
 					rightTryDir = rightTryDir.rotateRightDegrees(20);
 				else
