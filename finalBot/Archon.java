@@ -12,14 +12,30 @@ public class Archon extends Bot {
 	
 
 	public static int unitsBuilt = 0;
-
+	public static boolean inDistress = false;
 	public void takeTurn() throws Exception {
-		if (rc.getTeamBullets() > 100 + unitsBuilt *2 && rc.readBroadcast(13)> 0) {
-			hireGardener();
-			unitsBuilt++;
-		}
+		
 		if(nearbyEnemyRobots.length>0){
+			if(!inDistress){
+			Message.ARCHON_DISTRESS_NUM.setValue(Message.ARCHON_DISTRESS_NUM.getValue()+1);
+			inDistress = true;
+			}
 			runAway();
+		}
+		else{
+			if(inDistress){
+
+				Message.ARCHON_DISTRESS_NUM.setValue(Message.ARCHON_DISTRESS_NUM.getValue()-1);
+				inDistress = false;
+			}
+		}
+		if (Message.ARCHON_BUILD_NUM.getValue() > 0 && rc.getTeamBullets() > (100 + 
+				(inDistress ? 
+						((Message.ARCHON_DISTRESS_NUM.getValue() < MapAnalysis.initialAlliedArchonLocations.length) ? 
+								10:nearbyEnemyRobots.length)
+						:(MapAnalysis.initialAlliedArchonLocations.length == 1 ? 0 : unitsBuilt*2)))){
+				hireGardener();
+			unitsBuilt++;
 		}
 
 	}
@@ -28,8 +44,7 @@ public class Archon extends Bot {
 		Direction dir = here.directionTo(MapAnalysis.center);
 		if (rc.canHireGardener(dir)) {
 			rc.hireGardener(dir);
-			rc.broadcast(13, rc.readBroadcast(13) - 1);
-			rc.broadcast(5, rc.readBroadcast(5)+1);
+			Message.ARCHON_BUILD_NUM.setValue(Message.ARCHON_BUILD_NUM.getValue()-1);
 			return;
 		}
 		Direction left = dir.rotateLeftDegrees(10);
@@ -37,15 +52,13 @@ public class Archon extends Bot {
 		for (int i = 18; i-- > 0;) {
 			if (rc.canHireGardener(left)) {
 				rc.hireGardener(left);
-				rc.broadcast(13, rc.readBroadcast(13) - 1);
-				rc.broadcast(5, rc.readBroadcast(5)+1);
+				Message.ARCHON_BUILD_NUM.setValue(Message.ARCHON_BUILD_NUM.getValue()-1);
 
 				return;
 			}
 			if (rc.canHireGardener(right)) {
 				rc.hireGardener(right);
-				rc.broadcast(13, rc.readBroadcast(13) - 1);
-				rc.broadcast(5, rc.readBroadcast(5)+1);
+				Message.ARCHON_BUILD_NUM.setValue(Message.ARCHON_BUILD_NUM.getValue()-1);
 				return;
 			}
 			left = left.rotateLeftDegrees(10);

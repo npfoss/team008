@@ -4,21 +4,21 @@ import java.util.Random;
 import battlecode.common.*;
 
 public class Bot {
-	//for debugging
+	// for debugging
 	public static boolean debug = true;
 
-	//for everyone to use
+	// for everyone to use
 	public static RobotController rc;
 	public static RobotType type;
 	public static Team enemy;
 	public static Team us;
 	public static MapLocation here;
 
-	//Most units need this
+	// Most units need this
 	public static Direction dirIAmMoving;
 	public static MapLocation target;
 
-	//finding these is expensive so lets only do it once
+	// finding these is expensive so lets only do it once
 	public static TreeInfo[] nearbyTrees;
 	public static TreeInfo[] nearbyNeutralTrees;
 	public static TreeInfo[] nearbyAlliedTrees;
@@ -34,8 +34,9 @@ public class Bot {
 	public static boolean isDead = false;
 	private static BugState bugState;
 	private static WallSide bugWallSide = null;
-	
-	public Bot(){}
+
+	public Bot() {
+	}
 
 	public Bot(RobotController r) throws GameActionException {
 		rc = r;
@@ -47,8 +48,40 @@ public class Bot {
 		myRand = new Random(rc.getID());
 		MapAnalysis.center = MapAnalysis.findCenter();
 		bugState = BugState.DIRECT;
+		nearbyAlliedRobots = rc.senseNearbyRobots(-1, us);
+		switch (type) {
+		case ARCHON:
+			Message.NUM_ARCHONS.setValue(Message.NUM_ARCHONS.getValue() + 1);
+			break;
+		case GARDENER:
+			Message.NUM_GARDENERS.setValue(Message.NUM_GARDENERS.getValue() + 1);
+			break;
+		case SOLDIER:
+			if (!here.isWithinDistance(nearbyAlliedRobots[0].location, (float) 2.1)) {
+				Message.NUM_SOLDIERS.setValue(Message.NUM_SOLDIERS.getValue() + 1);
+			}
+			break;
+		case TANK:
+			if (!here.isWithinDistance(nearbyAlliedRobots[0].location, (float) 3.1)) {
+				Message.NUM_TANKS.setValue(Message.NUM_TANKS.getValue() + 1);
+			}
+			break;
+		case SCOUT:
+			if (!here.isWithinDistance(nearbyAlliedRobots[0].location, (float) 2.1)) {
+				Message.NUM_SCOUTS.setValue(Message.NUM_SCOUTS.getValue() + 1);
+			}
+			break;
+		case LUMBERJACK:
+			if (!here.isWithinDistance(nearbyAlliedRobots[0].location, (float) 2.1)) {
+				Message.NUM_LUMBERJACKS.setValue(Message.NUM_LUMBERJACKS.getValue() + 1);
+			}
+			break;
+		default:
+			break;
+
+		}
 	}
-	
+
 	private enum BugState {
 		DIRECT, BUG
 	}
@@ -61,84 +94,84 @@ public class Bot {
 		// The code you want your robot to perform every round should be in this
 		// loop
 		while (true) {
-// Try/catch blocks stop unhandled exceptions, which cause your
-            // robot to explode
-            try {
-                here = rc.getLocation();
-                nearbyTrees = rc.senseNearbyTrees(-1);
-                if(nearbyTrees.length<15) {
-                    FastMethods.initializeNearbyNeutralTrees();
-                    FastMethods.initializeNearbyEnemyTrees();
-                    FastMethods.initializeNearbyAlliedTrees();
-                } else {
-                    nearbyNeutralTrees = rc.senseNearbyTrees(-1,Team.NEUTRAL);
-                    nearbyEnemyTrees = rc.senseNearbyTrees(-1,enemy);
-                    nearbyAlliedTrees = rc.senseNearbyTrees(-1,us);
-                }
-                nearbyRobots = rc.senseNearbyRobots(-1);
-               if(nearbyRobots.length<15) {
-                   FastMethods.initializeNearbyAlliedRobots();
-                   FastMethods.initializeNearbyEnemyRobots();
-               } else {
-                   nearbyEnemyRobots = rc.senseNearbyRobots(-1,enemy);
-                   nearbyAlliedRobots = rc.senseNearbyRobots(-1,us);
-               }
-                nearbyBullets = rc.senseNearbyBullets();
-                roundNum = rc.getRoundNum();
-                if(rc.readBroadcast(10) == 0 && rc.getHealth() > 20){
-                    isLeader = true;
-                    rc.broadcast(10, 1);
-                }
-                if(isLeader){
-                    MapAnalysis.makeDecisions();
-                }
-                if(!isDead && rc.getHealth() < 20){
-                    if (isLeader){
-                        isLeader = false;
-                        rc.broadcast(10, 0);
-                    }
-                    switch(type){
-                        case ARCHON:
-                            rc.broadcast(4,rc.readBroadcast(4)-1);
-                            break;
-                        case GARDENER:
-                            rc.broadcast(5,rc.readBroadcast(5)-1);
-                            break;
-                        case SOLDIER:
-                            rc.broadcast(6,rc.readBroadcast(6)-1);
-                            break;
-                        case TANK:
-                            rc.broadcast(7,rc.readBroadcast(7)-1);
-                            break;
-                        case SCOUT:
-                            rc.broadcast(8,rc.readBroadcast(8)-1);
-                            break;
-                        case LUMBERJACK:
-                            rc.broadcast(9,rc.readBroadcast(9)-1);
-                            break;
-                        default:
-                            break;
+			// Try/catch blocks stop unhandled exceptions, which cause your
+			// robot to explode
+			try {
+				here = rc.getLocation();
+				nearbyTrees = rc.senseNearbyTrees(-1);
+				if (nearbyTrees.length < 15) {
+					FastMethods.initializeNearbyNeutralTrees();
+					FastMethods.initializeNearbyEnemyTrees();
+					FastMethods.initializeNearbyAlliedTrees();
+				} else {
+					nearbyNeutralTrees = rc.senseNearbyTrees(-1, Team.NEUTRAL);
+					nearbyEnemyTrees = rc.senseNearbyTrees(-1, enemy);
+					nearbyAlliedTrees = rc.senseNearbyTrees(-1, us);
+				}
+				nearbyRobots = rc.senseNearbyRobots(-1);
+				if (nearbyRobots.length < 15) {
+					FastMethods.initializeNearbyAlliedRobots();
+					FastMethods.initializeNearbyEnemyRobots();
+				} else {
+					nearbyEnemyRobots = rc.senseNearbyRobots(-1, enemy);
+					nearbyAlliedRobots = rc.senseNearbyRobots(-1, us);
+				}
+				nearbyBullets = rc.senseNearbyBullets();
+				roundNum = rc.getRoundNum();
+				if (rc.readBroadcast(10) == 0 && rc.getHealth() > 20) {
+					isLeader = true;
+					rc.broadcast(10, 1);
+				}
+				if (isLeader) {
+					MapAnalysis.makeDecisions();
+				}
+				if (!isDead && rc.getHealth() < 10) {
+					if (isLeader) {
+						isLeader = false;
+						rc.broadcast(10, 0);
+					}
+					switch (type) {
+					case ARCHON:
+						rc.broadcast(4, rc.readBroadcast(4) - 1);
+						break;
+					case GARDENER:
+						rc.broadcast(5, rc.readBroadcast(5) - 1);
+						break;
+					case SOLDIER:
+						rc.broadcast(6, rc.readBroadcast(6) - 1);
+						break;
+					case TANK:
+						rc.broadcast(7, rc.readBroadcast(7) - 1);
+						break;
+					case SCOUT:
+						rc.broadcast(8, rc.readBroadcast(8) - 1);
+						break;
+					case LUMBERJACK:
+						rc.broadcast(9, rc.readBroadcast(9) - 1);
+						break;
+					default:
+						break;
 
-                    }
-                    isDead = true;
-                }
-                //test this
-                if (roundNum == GameConstants.GAME_DEFAULT_ROUNDS
-                        || rc.getTeamVictoryPoints() + rc.getTeamBullets() / 10 >= 1000) {
-                    rc.donate(((int) (rc.getTeamBullets() / 10)) * 10);
-                }
-                shakeNearbyTrees();
-                takeTurn();
-                if (rc.canShake()) {
-                    shakeNearbyTrees();
-                }
-            } catch (Exception e) {
-                System.out.println(rc.getType().toString() + " Exception :(");
-                e.printStackTrace();
-            }
-            // Clock.yield() makes the robot wait until the next turn, then it
-            // will perform this loop again
-            Clock.yield();
+					}
+					isDead = true;
+				}
+				// test this
+				if (roundNum+1 == GameConstants.GAME_DEFAULT_ROUNDS
+						|| rc.getTeamVictoryPoints() + rc.getTeamBullets() /rc.getVictoryPointCost() >= 1000) {
+					rc.donate(((int) (rc.getTeamBullets() / rc.getVictoryPointCost())) * rc.getVictoryPointCost());
+				}
+				shakeNearbyTrees();
+				takeTurn();
+				if (rc.canShake()) {
+					shakeNearbyTrees();
+				}
+			} catch (Exception e) {
+				System.out.println(rc.getType().toString() + " Exception :(");
+				e.printStackTrace();
+			}
+			// Clock.yield() makes the robot wait until the next turn, then it
+			// will perform this loop again
+			Clock.yield();
 		}
 	}
 
@@ -155,37 +188,39 @@ public class Bot {
 		}
 	}
 
-	/********Messaging Notifications *********/
+	/******** Messaging Notifications *********/
+	//TODO: Make this use Message.java
 	public void assignNewTarget() throws GameActionException {
 		MapLocation targetD = Messaging.getClosestDistressSignal(here);
-		if(targetD != null){
-			if(debug){System.out.println("got target D");}
+		if (targetD != null) {
+			if (debug) {
+				System.out.println("got target D");
+			}
 		}
 		target = Messaging.getClosestEnemyArmyLocation(here);
-		if((targetD != null && target == null) || ((targetD != null && target != null) && here.distanceTo(targetD) < here.distanceTo(target))){
+		if ((targetD != null && target == null)
+				|| ((targetD != null && target != null) && here.distanceTo(targetD) < here.distanceTo(target))) {
 			target = targetD;
 			return;
 		}
 		if (target == null) {
 			target = Messaging.getClosestEnemyUnitLocation(here);
-			if(target == null){
+			if (target == null) {
 				target = targetD;
 			}
 		}
 	}
 
-	public static void notifyFriendsOfEnemies(RobotInfo[] enemies) throws GameActionException{
-		if(Util.closestSpecificType(nearbyAlliedRobots, here, RobotType.GARDENER) != null){
+	public static void notifyFriendsOfEnemies(RobotInfo[] enemies) throws GameActionException {
+		if (Util.closestSpecificType(nearbyAlliedRobots, here, RobotType.GARDENER) != null) {
 			Messaging.sendDistressSignal(enemies[0].location);
 		}
 		else if(enemies.length == 1 && enemies[0].type != RobotType.SCOUT && enemies[0].type != RobotType.ARCHON){
 			Messaging.updateEnemyUnitLocation(enemies[0].location);
-		}
-		else if (enemies.length > 1){
+		} else if (enemies.length > 1) {
 			Messaging.updateEnemyArmyLocation(Util.centroidOfUnits(enemies));
 		}
 	}
-
 
 	/******* ALL NAVIGATION METHODS BELOW *******/
 	// TODO: navigate/implement bugging
@@ -219,7 +254,7 @@ public class Bot {
 			} else if (l.team == us && enemiesNearby) {
 				if (l.type == RobotType.LUMBERJACK) {
 					if (loc.distanceTo(l.location) < 2.1 + type.bodyRadius) {
-						danger += (10.0 - loc.distanceTo(l.location)) ;
+						danger += (10.0 - loc.distanceTo(l.location));
 					}
 				}
 
@@ -244,7 +279,8 @@ public class Bot {
 
 	}
 
-	public static boolean tryMoveDirection(Direction dir, boolean makeMove, boolean goBackwards) throws GameActionException {
+	public static boolean tryMoveDirection(Direction dir, boolean makeMove, boolean goBackwards)
+			throws GameActionException {
 		Direction bestDir = dir;
 		int bestDanger = 9999;
 		int tempDanger = 0;
@@ -258,7 +294,7 @@ public class Bot {
 		}
 		Direction left = dir.rotateLeftDegrees(30);
 		Direction right = dir.rotateRightDegrees(30);
-		for (int i = 0; i < (goBackwards ? 6:3); i++) {
+		for (int i = 0; i < (goBackwards ? 6 : 3); i++) {
 
 			tempDanger = tryMove(left, type.strideRadius, makeMove);
 			if (tempDanger == 0) {
@@ -297,38 +333,26 @@ public class Bot {
 	}
 
 	public static void goTo(MapLocation theDest) throws GameActionException {
-		if(rc.getMoveCount() == 1 || here.distanceTo(theDest) < .00001){
+		if (rc.getMoveCount() == 1 || here.distanceTo(theDest) < .1) {
+			bugState = BugState.DIRECT;
 			return;
 		}
-		// for now
 		if (theDest == null) {
 			tryMoveDirection(here.directionTo(MapAnalysis.center), true, true);
-		}
-		else if (type != RobotType.SCOUT && dest != null && dest.distanceTo(theDest) < .001) {
-			bugMove();
-			// continue bugging
-		} else {
-			// no more bugging
-			dest = theDest;
-			isBugging = false;
-		}
-		if(rc.getMoveCount() == 1){
 			return;
 		}
-		if (!isBugging) {
-			if (tryMoveDirection(here.directionTo(dest), true, false)) {
-				return;
-			} else {
-				isBugging = true;
-				bugMove();
-				// for now we give up
-				return;
-			}
+		
+		if(dest == null || !theDest.isWithinDistance(dest, (float) .1)){
+			dest = theDest;
+			bugState = BugState.DIRECT;
+			bugMovesSinceMadeProgress = 0;
 		}
+		bugMove();
 	}
-	
+
 	private static void bugMove() throws GameActionException {
-		if(debug)System.out.println("bugging");
+		if (debug)
+			System.out.println("bugging");
 		if (bugState == BugState.BUG) {
 			if (canEndBug()) {
 				bugState = BugState.DIRECT;
@@ -337,8 +361,8 @@ public class Bot {
 		}
 		if (bugState == BugState.DIRECT) {
 			if (!tryMoveDirect()) {
-					bugState = BugState.BUG;
-					startBug();
+				bugState = BugState.BUG;
+				startBug();
 			}
 		}
 		if (bugState == BugState.BUG) {
@@ -356,7 +380,7 @@ public class Bot {
 			bugMove(dir);
 		}
 	}
-	
+
 	private static Direction findBugMoveDir() throws GameActionException {
 		bugMovesSinceSeenObstacle++;
 		Direction dir = bugLookStartDir;
@@ -368,7 +392,7 @@ public class Bot {
 		}
 		return null;
 	}
-	
+
 	private static void bugMove(Direction dir) throws GameActionException {
 		if (move(dir)) {
 			bugRotationCount += calculateBugRotation(dir);
@@ -379,7 +403,7 @@ public class Bot {
 				bugLookStartDir = dir.rotateRightDegrees(90);
 		}
 	}
-	
+
 	private static int calculateBugRotation(Direction moveDir) {
 		if (bugWallSide == WallSide.LEFT) {
 			return numRightRotations(bugLookStartDir, moveDir) - numRightRotations(bugLookStartDir, bugLastMoveDir);
@@ -387,15 +411,15 @@ public class Bot {
 			return numLeftRotations(bugLookStartDir, moveDir) - numLeftRotations(bugLookStartDir, bugLastMoveDir);
 		}
 	}
-	
+
 	private static int numRightRotations(Direction start, Direction end) {
-		return ((int)(end.getAngleDegrees() - start.getAngleDegrees())) / 45;
+		return ((int) (end.getAngleDegrees() - start.getAngleDegrees())) / 45;
 	}
-	
+
 	private static int numLeftRotations(Direction start, Direction end) {
-		return ((int)(start.getAngleDegrees() - end.getAngleDegrees())) / 45;
+		return ((int) (start.getAngleDegrees() - end.getAngleDegrees())) / 45;
 	}
-	
+
 	private static boolean move(Direction dir) throws GameActionException {
 		if (rc.canMove(dir, type.strideRadius)) {
 			rc.move(dir);
@@ -403,7 +427,7 @@ public class Bot {
 		}
 		return false;
 	}
-	
+
 	private static boolean detectBugIntoEdge() throws GameActionException {
 		if (bugWallSide == WallSide.LEFT) {
 			return !rc.onTheMap(here.add(bugLastMoveDir.rotateLeftDegrees(45)));
@@ -450,26 +474,27 @@ public class Bot {
 	}
 
 	private static boolean canMove(Direction leftTryDir) {
-		//TODO: add safety
+		// TODO: add safety
 		return rc.canMove(leftTryDir, type.strideRadius);
 	}
 
 	private static boolean tryMoveDirect() throws GameActionException {
 		Direction dir = here.directionTo(dest);
-		if (tryMoveDangerous(dir, here.distanceTo(dest))) {
+		System.out.println(dest.toString() + here.toString() + dir.toString());
+		if (tryMove(dir, here.distanceTo(dest),true) == 0) {
 			return true;
 		}
-		Direction left = dir.rotateLeftDegrees(10);
-		Direction right = dir.rotateRightDegrees(10);
+		Direction left = dir.rotateLeftDegrees(15);
+		Direction right = dir.rotateRightDegrees(15);
 		for (int i = 0; i < 3; i++) {
-			if (tryMoveDangerous(left, type.strideRadius)) {
+			if (tryMove(left, here.distanceTo(dest),true) == 0) {
 				return true;
 			}
-			if (tryMoveDangerous(right, type.strideRadius)) {
+			if (tryMove(right, here.distanceTo(dest),true) == 0) {
 				return true;
 			}
-			left = left.rotateLeftDegrees(10);
-			right = right.rotateRightDegrees(10);
+			left = left.rotateLeftDegrees(15);
+			right = right.rotateRightDegrees(15);
 		}
 		return false;
 	}
@@ -478,10 +503,11 @@ public class Bot {
 		// TODO Auto-generated method stub
 		if (bugMovesSinceSeenObstacle >= 4)
 			return true;
-		if(debug) {System.out.println("bug rotation count = " + bugRotationCount);}
+		if (debug) {
+			System.out.println("bug rotation count = " + bugRotationCount);
+		}
 		return (bugRotationCount <= 0 || bugRotationCount >= 8) && here.distanceSquaredTo(dest) <= bugStartDistSq;
 	}
-
 
 	public static void explore() throws GameActionException {
 		if (dirIAmMoving == null) {
@@ -502,52 +528,53 @@ public class Bot {
 		goTo(dirIAmMoving);
 	}
 
-    /////////////////////////////// Dangerous Nav///////////////////////////////
-    public static void goToDangerous(MapLocation loc) throws GameActionException{
-        if (here.distanceTo(loc) < type.strideRadius
-                && rc.canMove(loc)) {
-            rc.move(loc);
-            here = rc.getLocation();
-            return;
-        }
-        tryMoveDirectionDangerous(here.directionTo(loc));
-    }
-    public static boolean tryMoveDirectionDangerous(Direction dir) throws GameActionException {
-        if (tryMoveDangerous(dir, type.strideRadius)) {
-            return true;
-        }
-        Direction left = dir.rotateLeftDegrees(10);
-        Direction right = dir.rotateRightDegrees(10);
-        for (int i = 0; i < 17; i++) {
-            if (tryMoveDangerous(left, type.strideRadius)) {
-                return true;
-            }
-            if (tryMoveDangerous(right, type.strideRadius)) {
-                return true;
-            }
-            left = left.rotateLeftDegrees(10);
-            right = right.rotateRightDegrees(10);
-        }
-        return false;
-    }
-    private static boolean tryMoveDangerous(Direction dir, float dist) throws GameActionException {
-        if (rc.canMove(dir, dist)) {
-            rc.move(dir, dist);
-            here = rc.getLocation();
-            return true;
-        } else {
-            return false;
-        }
-    }
+	/////////////////////////////// Dangerous Nav///////////////////////////////
+	public static void goToDangerous(MapLocation loc) throws GameActionException {
+		if (here.distanceTo(loc) < type.strideRadius && rc.canMove(loc)) {
+			rc.move(loc);
+			here = rc.getLocation();
+			return;
+		}
+		tryMoveDirectionDangerous(here.directionTo(loc));
+	}
 
-    public static boolean willCollide(BulletInfo bullet, MapLocation loc) {
-        Direction directionToRobot = bullet.location.directionTo(loc);
-        float theta = Math.abs(bullet.dir.radiansBetween(directionToRobot));
-        if (theta > Math.PI / 2) {
-            return false;
-        }
-        float distToRobot = bullet.location.distanceTo(loc);
-        float perpendicularDist = (float) (distToRobot * Math.sin(theta));
-        return (perpendicularDist < type.bodyRadius+.01 && (distToRobot - type.bodyRadius < bullet.speed+.01));
-    }
+	public static boolean tryMoveDirectionDangerous(Direction dir) throws GameActionException {
+		if (tryMoveDangerous(dir, type.strideRadius)) {
+			return true;
+		}
+		Direction left = dir.rotateLeftDegrees(10);
+		Direction right = dir.rotateRightDegrees(10);
+		for (int i = 0; i < 17; i++) {
+			if (tryMoveDangerous(left, type.strideRadius)) {
+				return true;
+			}
+			if (tryMoveDangerous(right, type.strideRadius)) {
+				return true;
+			}
+			left = left.rotateLeftDegrees(10);
+			right = right.rotateRightDegrees(10);
+		}
+		return false;
+	}
+
+	private static boolean tryMoveDangerous(Direction dir, float dist) throws GameActionException {
+		if (rc.canMove(dir, dist)) {
+			rc.move(dir, dist);
+			here = rc.getLocation();
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public static boolean willCollide(BulletInfo bullet, MapLocation loc) {
+		Direction directionToRobot = bullet.location.directionTo(loc);
+		float theta = Math.abs(bullet.dir.radiansBetween(directionToRobot));
+		if (theta > Math.PI / 2) {
+			return false;
+		}
+		float distToRobot = bullet.location.distanceTo(loc);
+		float perpendicularDist = (float) (distToRobot * Math.sin(theta));
+		return (perpendicularDist < type.bodyRadius + .01 && (distToRobot - type.bodyRadius < bullet.speed + .01));
+	}
 }
