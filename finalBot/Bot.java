@@ -527,11 +527,11 @@ public class Bot {
 
     public static boolean willCollide(BulletInfo bullet, MapLocation loc) {
         Direction directionToRobot = bullet.location.directionTo(loc);
-        float distToRobot = bullet.location.distanceTo(loc);
         float theta = Math.abs(bullet.dir.radiansBetween(directionToRobot));
         if (theta > Math.PI / 2) {
             return false;
         }
+        float distToRobot = bullet.location.distanceTo(loc);
         float perpendicularDist = (float) (distToRobot * Math.sin(theta));
         return (perpendicularDist < type.bodyRadius+.01 && (distToRobot - type.bodyRadius < bullet.speed+.01));
     }
