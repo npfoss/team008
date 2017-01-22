@@ -5,11 +5,13 @@ import battlecode.common.*;
 public class Gardener extends Bot {
 	public boolean isExploring;
 	public static Direction dirIAmMoving;
+	public static int built;
 
 
 	public Gardener(RobotController r) throws GameActionException {
 		super(r);
 		isExploring = true;
+		built = 0;
 		// anything else gardener specific
 	}
 
@@ -84,12 +86,17 @@ public class Gardener extends Bot {
     public void buildSomething() throws GameActionException {
         if ( rc.getRoundNum() > 100 && nearbyEnemyRobots.length == 0 && plantATree() )
             return;
-        if (rc.getBuildCooldownTurns() == 0 && (rc.readBroadcast(15) > 0 || nearbyEnemyRobots.length != 0)) {
+        if (built == 0){
+        	 if(buildRobot(RobotType.SCOUT))
+             	built++;
+        }
+        else if (rc.getBuildCooldownTurns() == 0 && (rc.readBroadcast(15) > 0 || nearbyEnemyRobots.length != 0)) {
             if(Math.random()>.5){
-                buildRobot(RobotType.SOLDIER);
+                if(buildRobot(RobotType.SOLDIER))
+                	built++;
             } else{
-                buildRobot(RobotType.LUMBERJACK);
-
+                if(buildRobot(RobotType.LUMBERJACK))
+                	built++;
             }
         }
     }

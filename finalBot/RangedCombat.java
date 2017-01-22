@@ -23,14 +23,20 @@ public class RangedCombat extends Bot {
 	 * to call execute, number of enemies must be > 0
 	 */
 	public static void execute() throws GameActionException {
-	    System.out.println("Instantiation:"+Clock.getBytecodeNum());
+	    if(debug)System.out.println("Instantiation:"+Clock.getBytecodeNum());
 
 		//int temp = Clock.getBytecodeNum();
 		//System.out.println("moving used: " + (Clock.getBytecodeNum() - temp));
 		potentialAttackStats attack = chooseTargetAndShotType();
-        System.out.println("Shot Calc:"+Clock.getBytecodeNum());
-
+        if(debug)System.out.println("Shot Calc:"+Clock.getBytecodeNum());
         if(attack == null){
+        	RobotInfo bestRobot = nearbyEnemyRobots[0];
+			safeDist = bestRobot.type.bodyRadius + type.bodyRadius + bestRobot.type.strideRadius + (bestRobot.type == RobotType.LUMBERJACK ? GameConstants.LUMBERJACK_STRIKE_RADIUS - bestRobot.type.bodyRadius : bestRobot.type.bulletSpeed);
+        	if(bestRobot.type == RobotType.GARDENER)
+        		safeDist = 0;
+			Direction moveDir = calcMoveDir(bestRobot);
+			if(moveDir != null)
+				rc.move(moveDir, MOVE_DIST);
 			return;
 		}
 		BodyInfo target = attack.getTarget();
@@ -39,12 +45,12 @@ public class RangedCombat extends Bot {
 			tryMoveDirection(here.directionTo(MapAnalysis.center), true, false);
 			return;
 		}
-		System.out.println("My Target is"+attack.getTarget().getID());
+		if(debug)System.out.println("My Target is"+attack.getTarget().getID());
 		MapLocation targetLoc = target.getLocation();
 		//Direction targetDir = here.directionTo(attack.getTarget().getLocation());
 		//Direction moveDir = (targetDir);
 		Direction moveDir = calcMoveDir(attack.getTarget());
-        System.out.println("Move Calc:"+Clock.getBytecodeNum());
+        if(debug)System.out.println("Move Calc:"+Clock.getBytecodeNum());
 
         if (moveDir != null) {
 			MapLocation nextLoc = here.add(moveDir, type.strideRadius);;
@@ -58,11 +64,11 @@ public class RangedCombat extends Bot {
 		if(rc.hasMoved()) {
 			attack.setShotType(calculateShotType(attack.getTarget(),attack.getShotValue()));
 		}
-        System.out.println("Shot recalc:"+Clock.getBytecodeNum());
+        if(debug)System.out.println("Shot recalc:"+Clock.getBytecodeNum());
 
         parseShotTypeAndShoot(attack.getTarget(), attack.getShotType());
 
-		System.out.println("I tried to shoot a "+ attack.getShotType());
+		if(debug)System.out.println("I tried to shoot a "+ attack.getShotType());
 		if(rc.getMoveCount()  == 0 && moveDir != null){
 			//System.out.println("shot before moving");
 			rc.move(moveDir, MOVE_DIST);
@@ -75,14 +81,16 @@ public class RangedCombat extends Bot {
 	 * Picks the best direction to move in;
 	 * @param target our eventual target
 	 * @return the direction we want to move in
+	 * @throws GameActionException 
 	 */
-	private static Direction calcMoveDir(BodyInfo target) {
+	private static Direction calcMoveDir(BodyInfo target) throws GameActionException {
 		MapLocation targetLoc = target.getLocation();
+		if(debug)rc.setIndicatorLine(here, targetLoc, 255, 0, 0);
 		Direction targetDir = here.directionTo(targetLoc);
 		float maxDist = -99999;
 		Direction backupDir = null;
 		if(Math.abs(safeDist -1) < .01){//dealing with scout in tree
-			System.out.println("Scout Hunting");
+			if(debug)System.out.println("Scout Hunting");
 			MapLocation targetSpot = targetLoc.add(targetDir.opposite(), (float) 2.004);
 			float dist = here.distanceTo(targetSpot);
 			if(dist < type.strideRadius && rc.canMove(targetDir, dist)){
@@ -101,13 +109,13 @@ public class RangedCombat extends Bot {
 				backupDir = dir;
 			}
 		}
-        System.out.println("Checking for an easy move:"+Clock.getBytecodeNum());
+        if(debug)System.out.println("Checking for an easy move:"+Clock.getBytecodeNum());
 
         //check the other directions
 		Direction left = dir.rotateLeftDegrees(10);
 		Direction right = dir.rotateRightDegrees(10);
 		for(int i = 0; i < 18; i++){
-            System.out.println("Going through directions:"+Clock.getBytecodeNum());
+            if(debug)System.out.println("Going through directions:"+Clock.getBytecodeNum());
 
             if(rc.canMove(left, type.strideRadius)){
 				MapLocation moveTo = here.add(left, type.strideRadius);
@@ -143,7 +151,7 @@ public class RangedCombat extends Bot {
 		//System.out.println("safe dist = " + safeDist);
 		float safeDistLocal = 0;
 
-        System.out.println("Pre Bullet:"+Clock.getBytecodeNum());
+        if(debug)System.out.println("Pre Bullet:"+Clock.getBytecodeNum());
 
         //check that now bullets will hit the location
 		bulletSafe = true;
@@ -157,7 +165,7 @@ public class RangedCombat extends Bot {
 			}
 		}
 
-		System.out.println("Post Bullet:"+Clock.getBytecodeNum());
+		if(debug)System.out.println("Post Bullet:"+Clock.getBytecodeNum());
 
         //check if the spot can be immediately damaged next turn
 		if(Math.abs(safeDist) < .01){

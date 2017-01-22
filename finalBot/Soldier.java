@@ -10,13 +10,12 @@ public class Soldier extends Bot {
     }
     
 	public void takeTurn() throws Exception{
-        System.out.println("In instantiation:"+Clock.getBytecodeNum());
+        if(debug)System.out.println("In instantiation:"+Clock.getBytecodeNum());
         if(nearbyEnemyRobots.length > 0){
             if((rc.getRoundNum() +rc.getID()) % 25 == 0 || target == null){
                 notifyFriendsOfEnemies(nearbyEnemyRobots);
             }
             RangedCombat.execute();
-            return;
         }
         if(target == null || (rc.getRoundNum() + rc.getID()) % 20 == 0){
             assignNewTarget();
