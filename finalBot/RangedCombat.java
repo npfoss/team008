@@ -374,6 +374,7 @@ public class RangedCombat extends Bot {
 					- target.type.bodyRadius) {
 
 				if (intendedAttackDir.radiansBetween(here.directionTo(friend.location)) < Math.PI / 12) {
+					System.out.println("Direction is not safe");
 					return false;
 				}
 			} else {
