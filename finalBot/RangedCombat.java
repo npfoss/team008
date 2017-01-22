@@ -18,6 +18,7 @@ public class RangedCombat extends Bot {
 	private static float MOVE_DIST = type.strideRadius;
 	private static float safeDist = 0;
 	private static boolean bulletSafe;
+    private static int aggresivness = strategy * 5;
 
 	/**
 	 * to call execute, number of enemies must be > 0
@@ -270,7 +271,11 @@ public class RangedCombat extends Bot {
 		}
 		// come up with some sort of formula for choosing the kind of shot
         singleValue+=nearbyAlliedRobots.length;
-		int pentadValue = singleValue;
+
+        //Change micro based on macr
+        //singleValue+= aggresivness;
+
+        int pentadValue = singleValue;
 		int triadValue = singleValue;
 		if(target == null)
 			return NO_SHOT;
