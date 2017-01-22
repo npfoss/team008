@@ -20,7 +20,22 @@ public class MapAnalysis extends Bot {
 	public static float maxX;
 	public static float maxY;
 	public static float area;
-
+	public static final int RUSH_VP = 1;
+	public static final int RUSH_ENEMY = 2;
+	public static final int CLEAR_TREES = 3;
+	public static final int BUILD_TREES = 4;
+	public static final int DEFEND_NOTHING = 1;
+	public static final int DEFEND_SCOUT = 2;
+	public static final int DEFEND_SOLDIER = 3;
+	public static final int DEFEND_LUMBERJACK =4;
+	public static final int SOLDIER = 1;
+	public static final int TANK = 2;
+	public static final int SCOUT = 3;
+	public static final int LUMBERJACK = 4;
+	public static final int TREE = 5;
+	public static int adaptation =0;
+	public static int genetics = 0;
+	
 	public static MapLocation findCenter() throws GameActionException {
 		int archons = 0;
 		float xavg = 0;
@@ -48,29 +63,137 @@ public class MapAnalysis extends Bot {
 		numScout = rc.readBroadcast(8);
 		numLumberjack = rc.readBroadcast(9);
 		numTree = rc.getTreeCount();
+		adaptation = Message.ADAPTATION.getValue();
+		genetics = Message.GENETICS.getValue();
+		System.out.println("numArchon = " + numArchon);
+		System.out.println("numGardener = " + numGardener);
+		System.out.println("numSoldier = " + numSoldier);
+		System.out.println("numTank = " + numTank);
+		System.out.println("numScout = " + numScout);
+		System.out.println("numLumberjack = " + numLumberjack);
+
+		System.out.println("Archon BuildNum = " + rc.readBroadcast(13));
+		System.out.println("Gardener BuildType = " + rc.readBroadcast(14));
+		System.out.println("Gardener BuildNum = " + rc.readBroadcast(15));
 	}
 
 	public static void updateMapSize() throws GameActionException {
 		area = rc.readBroadcast(16);
 	}
-
+	public static void determineInitialStrategy() throws GameActionException{
+		startedGame = true;
+		float TreesNearMe = nearbyNeutralTrees.length;
+		float conflictDist = 999;
+		for (MapLocation ourLoc : initialAlliedArchonLocations) {
+			for (MapLocation theirLoc : initialEnemyArchonLocations) {
+				float temp = ourLoc.distanceTo(theirLoc);
+				if (temp < conflictDist) {
+					conflictDist = temp;
+				}
+			}
+		}
+		if (conflictDist < 20) {
+			Message.GENETICS.setValue(RUSH_ENEMY);
+		} else if (TreesNearMe > 10 || true) {
+			Message.GENETICS.setValue(CLEAR_TREES);
+		} else {
+			Message.GENETICS.setValue(BUILD_TREES);
+		}
+		
+	}
 	public static void makeDecisions() throws GameActionException {
 		updateUnitCount();
-		if (numGardener == 0 || rc.getTeamBullets() > 110 && rc.getRoundNum() > 50 && numGardener < 10) {
-			rc.broadcast(13, 1);
-		} else if (numScout < 0) {
-			rc.broadcast(15, 1);
-			rc.broadcast(14, 3);
-		} else if (numLumberjack < 5) {
-			rc.broadcast(14, 4);
-			rc.broadcast(15, 5 - numLumberjack);
-		} else if (numGardener * numGardener < numLumberjack) {
-			rc.broadcast(13, numLumberjack - numGardener * numGardener);
-			rc.broadcast(14, 4);
-		} else if (numLumberjack < 20) {
-			rc.broadcast(14, 4);
-			rc.broadcast(15, 20 - numLumberjack);
-
+		if(!startedGame && rc.getRoundNum() ==1){
+			determineInitialStrategy();
+		}
+		switch(genetics){
+		case RUSH_VP:
+			break;
+		case RUSH_ENEMY:
+			if (numGardener == 0 || rc.getRoundNum() > 200 && numGardener < 10
+					&& (numGardener == 1 || numGardener * 4 < numTree || rc.getTeamBullets() > 150)) {
+				rc.broadcast(13, 1);
+			}
+			switch (adaptation) {
+			case 0:
+			case DEFEND_NOTHING:
+			case DEFEND_SCOUT:
+			case DEFEND_SOLDIER:
+			case DEFEND_LUMBERJACK:
+				if (numSoldier < 1) {
+					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
+					Message.GARDENER_BUILD_NUM.setValue(1);
+				} else if (numScout < 1) {
+					Message.GARDENER_BUILD_ORDERS.setValue(SCOUT);
+					Message.GARDENER_BUILD_NUM.setValue(1);
+				} else if (numLumberjack < 1) {
+					Message.GARDENER_BUILD_ORDERS.setValue(LUMBERJACK);
+					Message.GARDENER_BUILD_NUM.setValue(5 - numLumberjack);
+				} else if (numSoldier < 3) {
+					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
+					Message.GARDENER_BUILD_NUM.setValue(3 - numSoldier);
+				} else if (numLumberjack < numSoldier && numLumberjack < 10) {
+					Message.GARDENER_BUILD_ORDERS.setValue(LUMBERJACK);
+					Message.GARDENER_BUILD_NUM.setValue(numGardener);
+				} else if (numSoldier < 10) {
+					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
+					Message.GARDENER_BUILD_NUM.setValue(numGardener);
+				}
+				break;
+			}
+			break;
+		case CLEAR_TREES:
+			if (numGardener == 0 || rc.getRoundNum() > 200 && numGardener < 10
+					&& (numGardener == 1 || numGardener * 4 < numTree || rc.getTeamBullets() > 150)) {
+				rc.broadcast(13, 1);
+			}
+			switch (adaptation) {
+			case 0:
+			case DEFEND_NOTHING:
+			case DEFEND_SCOUT:
+				if (numScout < 1) {
+					Message.GARDENER_BUILD_ORDERS.setValue(SCOUT);
+					Message.GARDENER_BUILD_NUM.setValue(1);
+				} else if (numLumberjack < 5) {
+					Message.GARDENER_BUILD_ORDERS.setValue(LUMBERJACK);
+					Message.GARDENER_BUILD_NUM.setValue(5 - numLumberjack);
+				} else if (numSoldier < 3) {
+					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
+					Message.GARDENER_BUILD_NUM.setValue(3 - numSoldier);
+				} else if (numLumberjack < numSoldier && numLumberjack < 10) {
+					Message.GARDENER_BUILD_ORDERS.setValue(LUMBERJACK);
+					Message.GARDENER_BUILD_NUM.setValue(numGardener);
+				} else if (numSoldier < 10) {
+					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
+					Message.GARDENER_BUILD_NUM.setValue(numGardener);
+				}
+				break;
+			case DEFEND_SOLDIER:
+			case DEFEND_LUMBERJACK:
+				if (numSoldier < 1) {
+					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
+					Message.GARDENER_BUILD_NUM.setValue(1);
+				} else if (numScout < 1) {
+					Message.GARDENER_BUILD_ORDERS.setValue(SCOUT);
+					Message.GARDENER_BUILD_NUM.setValue(1);
+				} else if (numLumberjack < 1) {
+					Message.GARDENER_BUILD_ORDERS.setValue(LUMBERJACK);
+					Message.GARDENER_BUILD_NUM.setValue(5 - numLumberjack);
+				} else if (numSoldier < 3) {
+					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
+					Message.GARDENER_BUILD_NUM.setValue(3 - numSoldier);
+				} else if (numLumberjack < numSoldier && numLumberjack < 10) {
+					Message.GARDENER_BUILD_ORDERS.setValue(LUMBERJACK);
+					Message.GARDENER_BUILD_NUM.setValue(numGardener);
+				} else if (numSoldier < 10) {
+					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
+					Message.GARDENER_BUILD_NUM.setValue(numGardener);
+				}
+				break;
+			}
+			break;
+		case BUILD_TREES:			
+			break;
 		}
 
 	}
