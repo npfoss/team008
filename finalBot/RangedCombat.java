@@ -27,6 +27,9 @@ public class RangedCombat extends Bot {
 		//int temp = Clock.getBytecodeNum();
 		//System.out.println("moving used: " + (Clock.getBytecodeNum() - temp));
 		potentialAttackStats attack = chooseTargetAndShotType();
+		if(attack == null){
+			return;
+		}
 		BodyInfo target = attack.getTarget();
 		if(target == null){
 			//System.out.println("rip target");
@@ -178,6 +181,8 @@ public class RangedCombat extends Bot {
 		int robotsToCalculate = 5;
 		int calculated = 0;
 		for (RobotInfo robot : nearbyEnemyRobots) {
+			if(robot.type == RobotType.ARCHON)
+				continue;
 			canWeHitThemValue = canWeHitHeuristic(robot);
 			score = (int) (canWeHitThemValue);
 
@@ -204,7 +209,9 @@ public class RangedCombat extends Bot {
 				safeDist = bestRobot.type.bodyRadius + type.bodyRadius + bestRobot.type.strideRadius + (bestRobot.type == RobotType.LUMBERJACK ? GameConstants.LUMBERJACK_STRIKE_RADIUS - bestRobot.type.bodyRadius : bestRobot.type.bulletSpeed);
 			}//System.out.println("Safe dist = " + safeDist);
 		}
-		return new potentialAttackStats(bestRobot, calculateShotType(bestRobot, shotValue), shotValue);
+		if(bestRobot != null)
+			return new potentialAttackStats(bestRobot, calculateShotType(bestRobot, shotValue), shotValue);
+		return null;
 	}
 
 	/**

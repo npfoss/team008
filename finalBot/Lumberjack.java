@@ -19,7 +19,7 @@ public class Lumberjack extends Bot {
         }
 
         scanForGardenerInDistress(); //This needs to be looked over
-
+        
         if(nearbyEnemyRobots.length > 0) {
             tryMoveDirection(here.directionTo(nearbyEnemyRobots[0].location), true, true);
 
@@ -33,6 +33,11 @@ public class Lumberjack extends Bot {
                 attacked = true;
             }
         }
+        if(target != null){
+        	rc.setIndicatorLine(here, target, 255, 0, 0);
+            goTo(target);
+            moved = true;
+        } 
         if(nearbyEnemyTrees.length > 0){
             if(!moved){
                 tryMoveDirection(here.directionTo(nearbyEnemyTrees[0].location), true, false);
@@ -70,7 +75,7 @@ public class Lumberjack extends Bot {
 
     public void scanForGardenerInDistress()throws GameActionException {
         MapLocation targetD = Messaging.getClosestDistressSignal(here);
-        if (targetD!= null && target == null && here.distanceTo(targetD) < MapAnalysis.maxX-MapAnalysis.minX) {
+        if (targetD != null && target == null && here.distanceTo(targetD) < 50) {
             target = targetD;
         }
 

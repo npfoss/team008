@@ -63,6 +63,18 @@ public class Util extends Bot {
     }
 
     ////////////------ misc/unsorted --------/////////////
+    
+    public static RobotInfo closestSpecificType(RobotInfo[] robots, MapLocation toHere, RobotType type) {
+        RobotInfo closest = null;
+        for (int i = robots.length; i-- > 0;) {
+            if (robots[i].type == type) {
+            	closest = robots[i];
+                break;
+            }
+        }
+        return closest;
+    }
+    
     public static Direction randomDirection() {
         return new Direction(myRand.nextFloat() * 2 * (float) Math.PI);
     }

@@ -47,6 +47,10 @@ public class Gardener extends Bot {
 
     public void takeTurn() throws GameActionException {
         waterLowestHealthTree();
+        if (nearbyEnemyRobots.length > 0) {
+        	System.out.println("sent target d");
+			Messaging.sendDistressSignal(nearbyEnemyRobots[0].location);
+        }
         if (isExploring) {
             if (dirIAmMoving == null || myRand.nextDouble() < .1 + (double)(-rc.getRoundNum())/(double)(10*rc.getRoundLimit())) {
                 dirIAmMoving = findOpenSpaces();
