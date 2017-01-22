@@ -34,7 +34,7 @@ public class Lumberjack extends Bot {
             }
         }
         if(target != null){
-        	rc.setIndicatorLine(here, target, 255, 0, 0);
+        	if(debug) { rc.setIndicatorLine(here, target, 255, 0, 0); };
             goTo(target);
             moved = true;
         } 

@@ -148,7 +148,7 @@ public class Bot {
 	public void assignNewTarget() throws GameActionException {
 		MapLocation targetD = Messaging.getClosestDistressSignal(here);
 		if(targetD != null){
-			System.out.println("got target D");
+			if(debug){System.out.println("got target D");}
 		}
 		target = Messaging.getClosestEnemyArmyLocation(here);
 		if((targetD != null && target == null) || ((targetD != null && target != null) && here.distanceTo(targetD) < here.distanceTo(target))){

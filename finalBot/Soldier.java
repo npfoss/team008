@@ -30,7 +30,7 @@ public class Soldier extends Bot {
                 assignNewTarget();
             }
                 if (target != null) {
-                	rc.setIndicatorLine(here, target, 255, 0, 0);
+                	if(debug){rc.setIndicatorLine(here, target, 255, 0, 0);}
                     goTo(target);
                 } else {
                     goTo(here.directionTo(Util.rc.getInitialArchonLocations(enemy)[0]));
