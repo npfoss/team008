@@ -43,9 +43,9 @@ public class RobotPlayer {
          */
 
         while (true) {
-            while(rc.getTeamBullets() >= GameConstants.BULLET_EXCHANGE_RATE){
-                rc.donate(GameConstants.BULLET_EXCHANGE_RATE);
-            }
+           // while(rc.getTeamBullets() >= rc.getVictoryPointCost()){
+           //     rc.donate(rc.getVictoryPointCost());
+           // }
             Clock.yield();
         }
     }
