@@ -390,12 +390,13 @@ public class Bot {
 
 	private static Direction findBugMoveDir() throws GameActionException {
 		bugMovesSinceSeenObstacle++;
-		Direction dir = bugLookStartDir;
-		for (int i = 8; i-- > 0;) {
+		Direction dir = bugLastMoveDir;
+		for (int i = 18; i-- > 0;) {
 			if (canMove(dir))
 				return dir;
-			dir = (bugWallSide == WallSide.LEFT ? dir.rotateRightDegrees(45) : dir.rotateLeftDegrees(45));
-			bugMovesSinceSeenObstacle = 0;
+			dir = (bugWallSide == WallSide.LEFT ? dir.rotateRightDegrees(20) : dir.rotateLeftDegrees(20));
+			if(i < 17)
+				bugMovesSinceSeenObstacle = 0;
 		}
 		return null;
 	}
@@ -420,11 +421,11 @@ public class Bot {
 	}
 
 	private static int numRightRotations(Direction start, Direction end) {
-		return ((int) ((end.getAngleDegrees() - start.getAngleDegrees()) + 360) % 360) / 45;
+		return ((int) ((end.getAngleDegrees() - start.getAngleDegrees()) + 360) % 360) / 20;
 	}
 
 	private static int numLeftRotations(Direction start, Direction end) {
-		return ((int) ((start.getAngleDegrees() - end.getAngleDegrees()) + 360) % 360) / 45;
+		return ((int) ((start.getAngleDegrees() - end.getAngleDegrees()) + 360) % 360) / 20;
 	}
 
 	private static boolean move(Direction dir) throws GameActionException {
@@ -437,9 +438,9 @@ public class Bot {
 
 	private static boolean detectBugIntoEdge() throws GameActionException {
 		if (bugWallSide == WallSide.LEFT) {
-			return !rc.onTheMap(here.add(bugLastMoveDir.rotateLeftDegrees(45)), type.strideRadius);
+			return !rc.onTheMap(here.add(bugLastMoveDir.rotateLeftDegrees(90)), type.strideRadius);
 		} else {
-			return !rc.onTheMap(here.add(bugLastMoveDir.rotateRightDegrees(45)), type.strideRadius);
+			return !rc.onTheMap(here.add(bugLastMoveDir.rotateRightDegrees(90)), type.strideRadius);
 		}
 	}
 
@@ -513,7 +514,7 @@ public class Bot {
 			System.out.println("bug rotation count = " + bugRotationCount);
 			System.out.println("bugMovesSinceSeenObstacle = " + bugMovesSinceSeenObstacle);
 		}
-		return (bugRotationCount <= 0 || bugRotationCount >= 8) && here.distanceSquaredTo(dest) <= bugStartDistSq;
+		return (bugRotationCount <= 0 || bugRotationCount >= 18) && here.distanceSquaredTo(dest) <= bugStartDistSq;
 	}
 
 	public static void explore() throws GameActionException {
