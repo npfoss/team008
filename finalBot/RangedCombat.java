@@ -19,6 +19,7 @@ public class RangedCombat extends Bot {
 	private static float MOVE_DIST = type.strideRadius;
 	private static float safeDist = 0;
 	private static boolean bulletSafe;
+    private static int aggresivness = strategy * 5;
 
 	/**
 	 * to call execute, number of enemies must be > 0
@@ -32,17 +33,17 @@ public class RangedCombat extends Bot {
 		boolean onlyHarmlessUnitsAround = onlyHarmlessUnitsNearby();
         //if(debug)System.out.println("Shot Calc:"+Clock.getBytecodeNum());
         if(attack == null){
-        	RobotInfo bestRobot = nearbyEnemyRobots[0];
-			safeDist = bestRobot.type.bodyRadius + type.bodyRadius + bestRobot.type.strideRadius + (bestRobot.type == RobotType.LUMBERJACK ? GameConstants.LUMBERJACK_STRIKE_RADIUS - bestRobot.type.bodyRadius : bestRobot.type.bulletSpeed);
-        	if(bestRobot.type == RobotType.GARDENER)
+        	RobotInfo closestEnemyRobot = nearbyEnemyRobots[0];
+			safeDist = closestEnemyRobot.type.bodyRadius + type.bodyRadius + closestEnemyRobot.type.strideRadius + (closestEnemyRobot.type == RobotType.LUMBERJACK ? GameConstants.LUMBERJACK_STRIKE_RADIUS - closestEnemyRobot.type.bodyRadius : closestEnemyRobot.type.bulletSpeed);
+        	if(closestEnemyRobot.type == RobotType.GARDENER)
         		safeDist = 0;
         	if(!onlyHarmlessUnitsAround){
-			Direction moveDir = calcMoveDir(bestRobot);
+			Direction moveDir = calcMoveDir(closestEnemyRobot);
 			if(moveDir != null)
 				rc.move(moveDir, MOVE_DIST);
         	}
         	else{
-        		goTo(bestRobot.location);
+        		goTo(closestEnemyRobot.location);
         	}
 			return;
 		}
@@ -298,6 +299,7 @@ public class RangedCombat extends Bot {
 		}
 		int tempSV = singleValue;
 		// come up with some sort of formula for choosing the kind of shot
+
 		for(RobotInfo a: nearbyAlliedRobots){
 			if(a.type == RobotType.LUMBERJACK){
 				singleValue = tempSV;
