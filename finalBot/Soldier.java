@@ -21,11 +21,10 @@ public class Soldier extends Bot {
         }
 
 		if (rc.getMoveCount() == 0) {
-			if (target != null && rc.getLocation().distanceTo(target) < 6 && nearbyEnemyRobots.length == 0) {
+			if (target != null && (rc.getLocation().distanceTo(target) < 6 && nearbyEnemyRobots.length == 0 || (nearbyEnemyRobots.length == 1 && nearbyEnemyRobots[0].type == RobotType.ARCHON))) {
 				Message.ENEMY_ARMIES.removeLocation(target);
 				Message.ISOLATED_ENEMIES.removeLocation(target);
 				Message.DISTRESS_SIGNALS.removeLocation(target);
-				Message.ENEMY_ARCHONS.removeLocation(target);
 				assignNewTarget();
 			}
 			else if (target != null) {

@@ -5,7 +5,7 @@ import battlecode.common.*;
 
 public class Bot {
 	// for debugging
-	public static boolean debug = true;
+	public static boolean debug = false;
 
 	// for everyone to use
 	public static RobotController rc;
@@ -206,12 +206,6 @@ public class Bot {
 		}
 		if (target == null) {
 			target = Message.ISOLATED_ENEMIES.getClosestLocation(here);
-			if (target == null) {
-				target = targetD;
-			}
-		}
-		if (target == null) {
-			target = Message.ENEMY_ARCHONS.getClosestLocation(here);
 			if (target == null) {
 				target = targetD;
 			}
