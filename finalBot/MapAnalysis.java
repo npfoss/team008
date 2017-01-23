@@ -92,7 +92,7 @@ public class MapAnalysis extends Bot {
 				}
 			}
 		}
-		if (conflictDist < 20) {
+		if (conflictDist < 40) {
 			Message.GENETICS.setValue(RUSH_ENEMY);
 		} else if (TreesNearMe > 10 || true) {
 			Message.GENETICS.setValue(CLEAR_TREES);

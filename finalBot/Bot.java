@@ -74,7 +74,7 @@ public class Bot {
 			}
 			break;
 		case LUMBERJACK:
-			if (!here.isWithinDistance(nearbyAlliedRobots[0].location, (float) 2.1)) {
+			if (!(nearbyAlliedRobots[0].type == RobotType.GARDENER)) {
 				Message.NUM_LUMBERJACKS.setValue(Message.NUM_LUMBERJACKS.getValue() + 1);
 			}
 			break;
@@ -195,6 +195,7 @@ public class Bot {
 			if (debug) {
 				System.out.println("got target D");
 			}
+			
 		}
 		target = Message.DISTRESS_SIGNALS.getClosestLocation(here);
 		if ((targetD != null && target == null)
@@ -249,7 +250,7 @@ public class Bot {
 		boolean enemiesNearby = nearbyEnemyRobots.length > 0;
 		for (RobotInfo l : nearbyRobots) {
 			if (l.team == enemy && type != RobotType.LUMBERJACK && l.type == RobotType.LUMBERJACK) {
-				if (loc.distanceTo(l.location) < 3.51 + type.bodyRadius) {
+				if (loc.distanceTo(l.location) < 3.51 + type.bodyRadius + (type == RobotType.SCOUT?2:0)) {
 					danger += (10.0 - loc.distanceTo(l.location));
 				}
 			} else if (l.team == us && enemiesNearby) {
