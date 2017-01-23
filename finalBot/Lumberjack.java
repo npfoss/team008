@@ -83,18 +83,19 @@ public class Lumberjack extends Bot {
 
 
     public void updateTarget() throws GameActionException {
-    	if(target != null && roundNum + rc.getID() % 10 == 0 && !Message.DISTRESS_SIGNALS.containsLocation(target) && !Message.ENEMY_ARCHONS.containsLocation(target) ){
+    	/*if(target != null && roundNum + rc.getID() % 10 == 0 && !Message.DISTRESS_SIGNALS.containsLocation(target) && !Message.ENEMY_ARCHONS.containsLocation(target) ){
     		//if(debug)System.out.println("changing");
     		target = null;
-    	}
+    	}*/
+    	target = null;
         MapLocation targetD = Message.DISTRESS_SIGNALS.getClosestLocation(here);
-        if (targetD != null && target == null && here.distanceTo(targetD) < 25) {
+        if (targetD != null && target == null && here.distanceTo(targetD) < 50) {
         	//if(debug)System.out.println("targetD = " + targetD);
             target = targetD;
         }
         if(target ==  null){
             MapLocation targetA = Message.ENEMY_ARCHONS.getClosestLocation(here);
-            if(targetA != null && here.distanceTo(targetA) < 25){
+            if(targetA != null && here.distanceTo(targetA) < 20){
             	//if(debug)System.out.println("targetA = " + targetA);
             	target = targetA;
             }

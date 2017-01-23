@@ -191,14 +191,14 @@ public class Bot {
 
 	/******** Messaging Notifications *********/
 	public void assignNewTarget() throws GameActionException {
+		target = null;
 		MapLocation targetD = Message.DISTRESS_SIGNALS.getClosestLocation(here);
 		if (targetD != null) {
 			if (debug) {
 				//System.out.println("got target D");
-			}
-			
+			}		
 		}
-		target = Message.DISTRESS_SIGNALS.getClosestLocation(here);
+		target = Message.ENEMY_ARMIES.getClosestLocation(here);
 		if ((targetD != null && target == null)
 				|| ((targetD != null && target != null) && here.distanceTo(targetD) < here.distanceTo(target))) {
 			target = targetD;
@@ -206,6 +206,12 @@ public class Bot {
 		}
 		if (target == null) {
 			target = Message.ISOLATED_ENEMIES.getClosestLocation(here);
+			if (target == null) {
+				target = targetD;
+			}
+		}
+		if (target == null) {
+			target = Message.ENEMY_ARCHONS.getClosestLocation(here);
 			if (target == null) {
 				target = targetD;
 			}

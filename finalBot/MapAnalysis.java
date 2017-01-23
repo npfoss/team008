@@ -125,10 +125,10 @@ public class MapAnalysis extends Bot {
 				if (numSoldier < 1) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
 					Message.GARDENER_BUILD_NUM.setValue(1);
-				} else if (numScout < 1) {
+				} /*else if (numScout < 1) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SCOUT);
 					Message.GARDENER_BUILD_NUM.setValue(1);
-				} else if (numLumberjack < 1) {
+				} */else if (numLumberjack < 1) {
 					Message.GARDENER_BUILD_ORDERS.setValue(LUMBERJACK);
 					Message.GARDENER_BUILD_NUM.setValue(5 - numLumberjack);
 				} else if (numSoldier < 3) {

@@ -448,10 +448,11 @@ public class RangedCombat extends Bot {
 		Direction intendedAttackDir = here.directionTo(target.location);
 		for (RobotInfo friend : nearbyAlliedRobots) {
 			if (friend.location.distanceTo(here) < here.distanceTo(target.location) - type.bodyRadius
-					- target.type.bodyRadius) {
-
-				if (intendedAttackDir.radiansBetween(here.directionTo(friend.location)) < Math.PI / 6) {
-					//if(debug)System.out.println("Direction is not safe");
+					- target.type.bodyRadius){ 
+				MapLocation leftSide = friend.location.add(here.directionTo(friend.location).rotateLeftDegrees(90), friend.getRadius());
+				MapLocation rightSide = friend.location.add(here.directionTo(friend.location).rotateRightDegrees(90), friend.getRadius());
+				if (here.directionTo(leftSide).radians + Math.PI < intendedAttackDir.radians + Math.PI && intendedAttackDir.radians < here.directionTo(rightSide).radians + Math.PI) {
+					if(debug)System.out.println("Direction is not safe");
 					return false;
 				}
 			} else {
@@ -460,10 +461,12 @@ public class RangedCombat extends Bot {
 
 		}
 		for (TreeInfo friend : nearbyTrees) {
-			if (friend.location.distanceTo(here) < here.distanceTo(target.location) - type.bodyRadius
-					- target.type.bodyRadius) {
-				if (intendedAttackDir.radiansBetween(here.directionTo(friend.location)) < Math.PI / 6) {
-					//if(debug)System.out.println("Direction is not safe");
+			if (friend.location.distanceTo(here) < here.distanceTo(target.location)) {
+				MapLocation leftSide = friend.location.add(here.directionTo(friend.location).rotateLeftDegrees(90), friend.radius);
+				MapLocation rightSide = friend.location.add(here.directionTo(friend.location).rotateRightDegrees(90), friend.radius);
+				if(debug)System.out.println("left = " + leftSide + "left dir = " + here.directionTo(leftSide).radians + "right = " + rightSide + "right dir = " + here.directionTo(rightSide).radians + "intended = " + intendedAttackDir.radians);
+				if (here.directionTo(leftSide).radians + Math.PI < intendedAttackDir.radians + Math.PI && intendedAttackDir.radians + Math.PI < here.directionTo(rightSide).radians + Math.PI) {
+					if(debug)System.out.println("Direction is not safe");
 					return false;
 				}
 			} else {
