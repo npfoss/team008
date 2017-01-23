@@ -56,12 +56,12 @@ public class MapAnalysis extends Bot {
 	}
 
 	public static void updateUnitCount() throws GameActionException {
-		numArchon = rc.readBroadcast(4);
-		numGardener = rc.readBroadcast(5);
-		numSoldier = rc.readBroadcast(6);
-		numTank = rc.readBroadcast(7);
-		numScout = rc.readBroadcast(8);
-		numLumberjack = rc.readBroadcast(9);
+		numArchon = Message.NUM_ARCHONS.getValue();
+		numGardener = Message.NUM_GARDENERS.getValue();
+		numSoldier = Message.NUM_SOLDIERS.getValue();
+		numTank = Message.NUM_TANKS.getValue();
+		numScout = Message.NUM_SCOUTS.getValue();
+		numLumberjack = Message.NUM_LUMBERJACKS.getValue();
 		numTree = rc.getTreeCount();
 		adaptation = Message.ADAPTATION.getValue();
 		genetics = Message.GENETICS.getValue();
@@ -80,7 +80,7 @@ public class MapAnalysis extends Bot {
 	}
 
 	public static void updateMapSize() throws GameActionException {
-		area = rc.readBroadcast(16);
+		area = Message.MAP_SIZE.getValue();
 	}
 	public static void determineInitialStrategy() throws GameActionException{
 		startedGame = true;
@@ -114,7 +114,7 @@ public class MapAnalysis extends Bot {
 		case RUSH_ENEMY:
 			if (numGardener == 0 || rc.getRoundNum() > 200 && numGardener < 10
 					&& (numGardener == 1 || numGardener * 4 < numTree || rc.getTeamBullets() > 150)) {
-				rc.broadcast(13, 1);
+				Message.ARCHON_BUILD_NUM.setValue(1);
 			}
 			switch (adaptation) {
 			case 0:
@@ -147,7 +147,7 @@ public class MapAnalysis extends Bot {
 		case CLEAR_TREES:
 			if (numGardener == 0 || rc.getRoundNum() > 200 && numGardener < 10
 					&& (numGardener == 1 || numGardener * 4 < numTree || rc.getTeamBullets() > 150)) {
-				rc.broadcast(13, 1);
+				Message.ARCHON_BUILD_NUM.setValue(1);
 			}
 			switch (adaptation) {
 			case 0:

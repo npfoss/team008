@@ -65,7 +65,7 @@ public class Scout extends Bot {
 			} else {
 				MapLocation edge = checkForEdge(Direction.getWest());
 				if (edge != null) {
-					Messaging.updateMinX(edge.x);
+					Message.MIN_X.setValue(edge.x);
 					foundMinX = true;
 					rc.broadcast(17, 1);
 					// System.out.println("updated min x to " + minX);
@@ -79,7 +79,7 @@ public class Scout extends Bot {
 			else{
 				MapLocation edge = checkForEdge(Direction.getEast());
 				if(edge != null){
-					Messaging.updateMaxX(edge.x);
+					Message.MAX_X.setValue(edge.x);
 					foundMaxX = true;
 					rc.broadcast(18, 1);
 					//System.out.println("updated max x to " + maxX);
@@ -93,7 +93,7 @@ public class Scout extends Bot {
 			else{
 				MapLocation edge = checkForEdge(Direction.getSouth());
 				if(edge != null){
-					Messaging.updateMinY(edge.y);
+					Message.MIN_Y.setValue(edge.y);
 					foundMinY = true;
 					rc.broadcast(19, 1);
 					//System.out.println("updated min y to " + minY);
@@ -107,7 +107,7 @@ public class Scout extends Bot {
 			else{
 				MapLocation edge = checkForEdge(Direction.getNorth());
 				if(edge != null){
-					Messaging.updateMaxY(edge.y);
+					Message.MAX_Y.setValue(edge.y);
 					foundMaxY = true;
 					rc.broadcast(20, 1);
 					//System.out.println("updated max y to " + maxY);
@@ -116,9 +116,9 @@ public class Scout extends Bot {
 		}
 		if(foundMinX && foundMinY && foundMaxY && foundMaxX){
 			searchingForEdges = false;
-			if(rc.readBroadcast(16) == 0){
-				float area = (Messaging.getMaxX() - Messaging.getMinX()) * (Messaging.getMaxY() - Messaging.getMinY());
-				Messaging.updateArea(area);
+			if(Message.MAP_SIZE.getValue() == 0){
+				float area = (Message.MAX_X.getFloatValue() - Message.MIN_X.getFloatValue()) * (Message.MAX_Y.getFloatValue() - Message.MIN_Y.getFloatValue());
+				Message.MAP_SIZE.setValue((int)area);
 			}
 			//System.out.println("area = " + area);
 		}
@@ -319,7 +319,7 @@ public class Scout extends Bot {
 	/**
 	 * Checks if the loc is in danger and if it is in a safe spot relative to the target
 	 * @param loc the location to check for safety
-	 * @param target the eventual target whos location we want to check against
+	 //* @param target the eventual target whos location we want to check against
 	 * @return whether that location is safe
 	 * @throws GameActionException 
 	 */

@@ -78,9 +78,7 @@ public class Lumberjack extends Bot {
             }
             moved = true;
         }
-
     }
-
 
     public void updateTarget() throws GameActionException {
     	/*if(target != null && roundNum + rc.getID() % 10 == 0 && !Message.DISTRESS_SIGNALS.containsLocation(target) && !Message.ENEMY_ARCHONS.containsLocation(target) ){

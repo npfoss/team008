@@ -1,6 +1,6 @@
 package team008.finalBot;
-import battlecode.common.*;
 
+import battlecode.common.*;
 
 public strictfp class RobotPlayer {
 

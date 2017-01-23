@@ -119,9 +119,9 @@ public class Bot {
 				}
 				nearbyBullets = rc.senseNearbyBullets();
 				roundNum = rc.getRoundNum();
-				if (rc.readBroadcast(10) == 0 && rc.getHealth() > 20) {
+				if (Message.DECISION_MAKER.getValue() == 0 && rc.getHealth() > 20) {
 					isLeader = true;
-					rc.broadcast(10, 1);
+					Message.DECISION_MAKER.setValue(1);
 				}
 				if (isLeader) {
 					MapAnalysis.makeDecisions();
@@ -129,26 +129,26 @@ public class Bot {
 				if (!isDead && rc.getHealth() < 9) {
 					if (isLeader) {
 						isLeader = false;
-						rc.broadcast(10, 0);
+						Message.DECISION_MAKER.setValue(0);
 					}
 					switch (type) {
 					case ARCHON:
-						rc.broadcast(4, rc.readBroadcast(4) - 1);
+						Message.NUM_ARCHONS.setValue(Message.NUM_ARCHONS.getValue() - 1);
 						break;
 					case GARDENER:
-						rc.broadcast(5, rc.readBroadcast(5) - 1);
+						Message.NUM_GARDENERS.setValue(Message.NUM_GARDENERS.getValue() - 1);
 						break;
 					case SOLDIER:
-						rc.broadcast(6, rc.readBroadcast(6) - 1);
+						Message.NUM_SOLDIERS.setValue(Message.NUM_SOLDIERS.getValue() - 1);
 						break;
 					case TANK:
-						rc.broadcast(7, rc.readBroadcast(7) - 1);
+						Message.NUM_TANKS.setValue(Message.NUM_TANKS.getValue() - 1);
 						break;
 					case SCOUT:
-						rc.broadcast(8, rc.readBroadcast(8) - 1);
+						Message.NUM_SCOUTS.setValue(Message.NUM_SCOUTS.getValue() - 1);
 						break;
 					case LUMBERJACK:
-						rc.broadcast(9, rc.readBroadcast(9) - 1);
+						Message.NUM_LUMBERJACKS.setValue(Message.NUM_LUMBERJACKS.getValue() - 1);
 						break;
 					default:
 						break;
