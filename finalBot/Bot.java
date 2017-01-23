@@ -54,20 +54,22 @@ public class Bot {
 			Message.NUM_ARCHONS.setValue(Message.NUM_ARCHONS.getValue() + 1);
 			break;
 		case GARDENER:
-			Message.NUM_GARDENERS.setValue(Message.NUM_GARDENERS.getValue() + 1);
+			if (!(nearbyAlliedRobots[0].type == RobotType.ARCHON)) {
+				Message.NUM_GARDENERS.setValue(Message.NUM_GARDENERS.getValue() + 1);
+			}
 			break;
 		case SOLDIER:
-			if (!here.isWithinDistance(nearbyAlliedRobots[0].location, (float) 2.1)) {
+			if (!(nearbyAlliedRobots[0].type == RobotType.GARDENER)) {
 				Message.NUM_SOLDIERS.setValue(Message.NUM_SOLDIERS.getValue() + 1);
 			}
 			break;
 		case TANK:
-			if (!here.isWithinDistance(nearbyAlliedRobots[0].location, (float) 3.1)) {
+			if (!(nearbyAlliedRobots[0].type == RobotType.GARDENER)) {
 				Message.NUM_TANKS.setValue(Message.NUM_TANKS.getValue() + 1);
 			}
 			break;
 		case SCOUT:
-			if (!here.isWithinDistance(nearbyAlliedRobots[0].location, (float) 2.1)) {
+			if (!(nearbyAlliedRobots[0].type == RobotType.GARDENER)) {
 				Message.NUM_SCOUTS.setValue(Message.NUM_SCOUTS.getValue() + 1);
 			}
 			break;
@@ -123,7 +125,7 @@ public class Bot {
 				if (isLeader) {
 					MapAnalysis.makeDecisions();
 				}
-				if (!isDead && rc.getHealth() < 10) {
+				if (!isDead && rc.getHealth() < 9) {
 					if (isLeader) {
 						isLeader = false;
 						rc.broadcast(10, 0);
@@ -499,7 +501,7 @@ public class Bot {
 
 	private static boolean canEndBug() {
 		// TODO Auto-generated method stub
-		if (bugMovesSinceSeenObstacle >= 4)
+		if (bugMovesSinceSeenObstacle >= 2)
 			return true;
 		if (debug) {
 			System.out.println("bug rotation count = " + bugRotationCount);
@@ -511,15 +513,15 @@ public class Bot {
 		if (dirIAmMoving == null) {
 			dirIAmMoving = here.directionTo(MapAnalysis.center);
 		}
-		if (nearbyAlliedRobots != null) {
-			for (RobotInfo r : nearbyAlliedRobots) {
-				if (r.type == RobotType.SCOUT && dirIAmMoving.degreesBetween(here.directionTo(r.location)) < 45) {
-					dirIAmMoving = dirIAmMoving.opposite();
-					break;
-				}
-			}
-		}
-		if (myRand.nextFloat() < 0.1) {
+//		if (nearbyAlliedRobots != null) {
+//			for (RobotInfo r : nearbyAlliedRobots) {
+//				if (r.type == RobotType.SCOUT && dirIAmMoving.degreesBetween(here.directionTo(r.location)) < 45) {
+//					dirIAmMoving = dirIAmMoving.opposite();
+//					break;
+//				}
+//			}
+//		}
+		if (myRand.nextFloat() < 0.1 || !rc.onTheMap(here.add(dirIAmMoving, (float) (type.sensorRadius-.1)))) {
 			// System.out.println(dirIAmMoving);
 			dirIAmMoving = dirIAmMoving.rotateLeftDegrees(100);
 		}
