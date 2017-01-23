@@ -21,6 +21,7 @@ public class RangedCombat extends Bot {
 	private static boolean bulletSafe;
 	private static boolean onlyHarmlessUnitsAround;
 	
+
 	/**
 	 * to call execute, number of enemies must be > 0
 	 */
@@ -48,6 +49,7 @@ public class RangedCombat extends Bot {
 			} else {
 				goTo(bestRobot.location);
 			}
+
 			return;
 		}
 		BodyInfo target = attack.getTarget();
@@ -325,6 +327,7 @@ public class RangedCombat extends Bot {
 		}
 		int tempSV = singleValue;
 		// come up with some sort of formula for choosing the kind of shot
+
 		for(RobotInfo a: nearbyAlliedRobots){
 			if(a.type == RobotType.LUMBERJACK){
 				singleValue = tempSV;
