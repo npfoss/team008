@@ -3,332 +3,111 @@ package team008.finalBot;
 import battlecode.common.*;
 
 public class Lumberjack extends Bot {
-    public int WHEN_TO_STOP_MICRO;
-    public float MOVE_ATTACK_MOD;
-    public float TREE_DAMAGE_MOD;
-    public float KNOWN_DAMAGE_MOD;
-    public float HYPOTHETICAL_DAMAGE_MOD;
-    public float PROGRESS_MOD;
-    public float PROXIMITY_MOD;
-    public float IMPATIENCE_MOD;
-    public float GARDENER_PROXIMITY_MOD;
-    public int turnsWithoutMovingOrAttacking;
-    private static boolean isDefender;
 
-	public Lumberjack(RobotController r) throws GameActionException{
-		super(r);
-		debug = true;
-		isDefender = false;
-        if(rc.readBroadcast(23) == 1){
-	        RobotInfo gardener = Util.closestSpecificType(rc.senseNearbyRobots(-1, us),rc.getLocation(),RobotType.GARDENER);
-	        //System.out.println("hello");
-	        if(gardener != null){
-		        gardenerLoc = gardener.location;
-	        	isDefender = true;
-	        	rc.broadcast(23, 0);
-	        }
+    public Lumberjack(RobotController r) throws GameActionException{
+        super(r);
+        myRandomDirection = Util.randomDirection();
+    }
+    public static boolean attacked = false;
+    public static boolean moved = false;
+    public static Direction myRandomDirection;
+    public void takeTurn() throws Exception{
+        attacked = false;
+        moved = false;
+        if(rc.getRoundNum() % 23 == 0){
+            myRandomDirection = Util.randomDirection();
         }
-		//anything else lumberjack specific
-        WHEN_TO_STOP_MICRO = RobotType.LUMBERJACK.bytecodeLimit - 1000; //TODO: don't just guess
-        MOVE_ATTACK_MOD = 1; // TODO: actually optimize
-        TREE_DAMAGE_MOD = .2f; // TODO: actually optimize
-        KNOWN_DAMAGE_MOD = -1.2f;
-        HYPOTHETICAL_DAMAGE_MOD = -.8f; // TODO: actually optimize
-        PROGRESS_MOD = -.2f; // no idea what to make this TODO: don't just guess
-        PROXIMITY_MOD = -3; // no idea... TODO: optimize
-        IMPATIENCE_MOD = -.12f; // TODO: optimize
-        GARDENER_PROXIMITY_MOD = -7;
-	}
-	
-	public void takeTurn() throws Exception{
-		if(target != null){
-			rc.setIndicatorLine(here,target, 255, 0, 0);
-		}
-		/*if(isDefender){
-			System.out.println("I am a defender");
-			if(rc.canSenseLocation(gardenerLoc) && rc.senseRobotAtLocation(gardenerLoc) == null){
-				isDefender = false;
-			}
-			else if(nearbyEnemyRobots.length > 0){
-				if(rc.canSenseLocation(gardenerLoc)){
-					//System.out.println("defending");
-					DefenseMicro.defendL(rc.senseRobotAtLocation(gardenerLoc));
-				}
-				else{
-					doLumberjackMicro();
-				}
-			}
-			/*
-			else if (target == null){
-				MapLocation dis = Messaging.getClosestDistressSignal(here);
-				if(dis!= null && here.distanceTo(dis) < 15){
-					target = dis;
-					goTo(target);
-				}
-				else{
-					circleGardener(gardenerLoc);
-				}
-			}
-			else{
-				if(here.distanceTo(target) > 4)
-					goTo(target);
-				else{
-					Messaging.removeDistressLocation(target);
-					target = null;
-				}
-			}*/
-        if(isDefender) {
-            System.out.println("I am a defender");
-            if (rc.canSenseLocation(gardenerLoc) && rc.senseRobotAtLocation(gardenerLoc) == null) {
-                isDefender = false;
-            }
-        } else {
-            RobotInfo gardener = Util.firstUnitOfType(nearbyAlliedRobots, RobotType.GARDENER);
-            if( gardener != null && rc.senseNearbyRobots(gardener.location, 5, us).length < 3){
-                isDefender = true;
-                gardenerLoc = gardener.getLocation();
-            }
-		}
 
+        
         if(nearbyEnemyRobots.length > 0) {
-            //Let other robots know where you are!
+        	calculatedMove = null;
+            tryMoveDirection(here.directionTo(nearbyEnemyRobots[0].location), false, true);
+            if(calculatedMove != null && here.add(calculatedMove, type.strideRadius).distanceTo(nearbyEnemyRobots[0].location) < here.distanceTo(nearbyEnemyRobots[0].location)){
+            	rc.move(calculatedMove, type.strideRadius);
+            	moved = true;
+            }
+            //Notify allies of enemies
             if((rc.getRoundNum() +rc.getID()) % 25 == 0 || target == null){
                 notifyFriendsOfEnemies(nearbyEnemyRobots);
             }
-            int start = Clock.getBytecodeNum();
-            doLumberjackMicro();
-            //System.out.println("micro took " + (Clock.getBytecodeNum() - start) + " bytecodes");
-        } else {
-            if(target == null && !isDefender){
-                assignNewTarget();
-            }
-            if (!isDefender && target != null && Util.distanceSquaredTo(here, target) < 36 && nearbyEnemyRobots.length + nearbyEnemyTrees.length == 0){
-                if (debug) { System.out.print("removing distress loc... "); }
-                if( !Messaging.removeDistressLocation(target)) {
-                    if (debug) { System.out.println("failed"); }
-                    Messaging.removeEnemyTreeLocation(target);
-                }
-                target = null;
-                assignNewTarget();
-            }
-            // TODO: try this out
-            if( isDefender ) {
-            	circleGardener(gardenerLoc);
-            } else if(target != null){
-                goTo(target);
-            }
-            if(target == null){
-                if (nearbyNeutralTrees.length + nearbyEnemyTrees.length > 0) {
-                    // move to best tree-cutting location
-                    optimizeLocForWoodcutting(nearbyNeutralTrees, nearbyEnemyTrees);
-                    // chop best trees
-                    cutDownTrees();
-                } else if(!isDefender){
-                    goTo(here.directionTo(Util.rc.getInitialArchonLocations(enemy)[0]));
-                }
-            }
-        }
-        if ( rc.canStrike() ){
-            cutDownTrees();
-        }
-
-        if (rc.canStrike() && !rc.hasMoved()){
-            turnsWithoutMovingOrAttacking += 1;
-        } else {
-            if (debug) { System.out.println("I did something this turn?" + rc.canStrike() + rc.hasMoved()); }
-            turnsWithoutMovingOrAttacking = 0;
-        }
-        if (debug) { System.out.println("turnsWithoutMovingOrAttacking: " + turnsWithoutMovingOrAttacking); }
-	}
-
-    public void assignNewTarget() throws GameActionException {
-        target = Messaging.getClosestEnemyTreeLocation(here);
-        MapLocation alt = Messaging.getClosestDistressSignal(here);
-        if (target == null || (alt != null && Util.distanceSquaredTo(here, alt) < Util.distanceSquaredTo(here, target))) {
-            target = alt;
-        }
-        if (debug && target != null) { System.out.println("new target: " + target.x + " " + target.y); }
-    }
-
-	public void cutDownTrees() throws Exception{
-        TreeInfo lowestStrengthNeutral = Util.leastHealthTouchingRadius(nearbyNeutralTrees, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS);
-        if (lowestStrengthNeutral != null && lowestStrengthNeutral.getHealth() <= GameConstants.LUMBERJACK_CHOP_DAMAGE) {
-            // definitely prioritize, might have goodies
-            if (debug) { rc.setIndicatorLine(rc.getLocation(), lowestStrengthNeutral.getLocation(),0, 255, 0); }
-            rc.chop(lowestStrengthNeutral.getID());
-            return;
-        }
-        // otherwise, consider other options...
-        TreeInfo lowestStrengthEnemy = Util.leastHealthTouchingRadius(nearbyEnemyTrees, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS);
-        //just in case...
-        if (lowestStrengthNeutral == null && lowestStrengthEnemy == null){
-            //System.out.println("phew, just saved us from an error");
-            return;
-        }
-
-        if (lowestStrengthEnemy != null && lowestStrengthEnemy.getHealth() <= GameConstants.LUMBERJACK_CHOP_DAMAGE && lowestStrengthEnemy.getHealth() > RobotType.LUMBERJACK.attackPower) {
-            // seems optimal to take out enemy trees when possible, but if low enough to strike then maybe do that
-            if (debug) { rc.setIndicatorLine(rc.getLocation(), lowestStrengthEnemy.getLocation(),0, 255, 0); }
-            rc.chop(lowestStrengthEnemy.getID());
-        } else if (Util.containsBodiesTouchingRadius(nearbyAlliedRobots, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS)){
-            // not safe to strike, would hit friends
-            if (lowestStrengthEnemy != null) {
-                if (debug) { rc.setIndicatorLine(rc.getLocation(), lowestStrengthEnemy.getLocation(),0, 255, 0); }
-                rc.chop(lowestStrengthEnemy.getID());
-            } else if(lowestStrengthNeutral!=null){
-                if (debug) { rc.setIndicatorLine(rc.getLocation(), lowestStrengthNeutral.getLocation(),0, 255, 0); }
-                rc.chop(lowestStrengthNeutral.getID());
-            }
-        } else {
-            // could strike, is it a good idea?
-            // if striking does more total damage
-            if ((Util.numBodiesTouchingRadius(nearbyNeutralTrees, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS) +
-                    Util.numBodiesTouchingRadius(nearbyEnemyTrees, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS))
-                    * RobotType.LUMBERJACK.attackPower > GameConstants.LUMBERJACK_CHOP_DAMAGE) {
+            if(here.distanceTo(nearbyEnemyRobots[0].location) <= GameConstants.LUMBERJACK_STRIKE_RADIUS + nearbyEnemyRobots[0].type.bodyRadius){
                 rc.strike();
-                if (debug) { rc.setIndicatorDot(rc.getLocation(), 0, 255, 0); }
-            } else { // chopping does more total damage
-                if (lowestStrengthEnemy != null) {
-                    if (debug) { rc.setIndicatorLine(rc.getLocation(), lowestStrengthEnemy.getLocation(),0, 255, 0); }
-                    rc.chop(lowestStrengthEnemy.getID());
-                } else if(lowestStrengthNeutral != null){
-                    if (debug) { rc.setIndicatorLine(rc.getLocation(), lowestStrengthNeutral.getLocation(),0, 255, 0); }
-                    rc.chop(lowestStrengthNeutral.getID());
-                }
+                attacked = true;
+            }
+            if(calculatedMove != null && !moved){
+            	rc.move(calculatedMove, type.strideRadius);
+            	moved = true;
             }
         }
-    }
-
-    public void optimizeLocForWoodcutting(TreeInfo[] nearbyNeutralTrees, TreeInfo[] nearbyEnemyTrees) throws Exception{
-	    // ONLY CALL WHEN there are actually tress nearby
-
-        // TODO: actually optimize
-        // for now just move towards the closest tree
-        TreeInfo[] targets;
-        if (nearbyEnemyTrees.length > 0) {
-            targets = nearbyEnemyTrees;
-        } else {
-            targets = nearbyNeutralTrees;
+        else{
+        	updateTarget(); 
         }
-        float closestDist = targets[0].location.distanceTo(gardenerLoc);
-        if(rc.canChop(gardenerLoc))//already close enough
-        	return;
-        if(!isDefender || closestDist + targets[0].radius < 5)
-        	goTo(targets[0].location);
-    }
-
-	public void doLumberjackMicro() throws Exception{
-	    // gets called when there are enemies that can be seen
-        // don't worry about chopping trees here, that's checked for after. only enemies
-        if (debug) { System.out.println("whee micro"); }
-
-        // TODO: add kamikaze function: if about to die anyways, just go for best place to attack for final stand
-
-        // if you're defending and you're getting sidetracked just go back and defend
-        if(isDefender && here.distanceTo(gardenerLoc) > 8){
-            //give up, go back and defend
-            if(debug)System.out.println("give up");
-            goTo(gardenerLoc);
-        }
-
-        // if you're defending and they're on the other side of the circle, don't bother calculating attack stuff
-        if (isDefender && gardenerLoc.distanceTo(here) + 1.7f < here.distanceTo(nearbyEnemyRobots[0].getLocation())){
-            goTo(nearbyEnemyRobots[0].getLocation());
-            return;
-        }
-
-        float attackScoreHere = evalForAttacking(here);
-        float bestMoveScore = evaluateLocation(here) + (attackScoreHere < 0 ? 0 : MOVE_ATTACK_MOD * attackScoreHere) + IMPATIENCE_MOD * turnsWithoutMovingOrAttacking;
-                        // there should be a way to remove the attack bit here such that
-                        //     a better location won't be disregarded since we can attack
-                        //     here and then move there
-        if (debug) { System.out.println("here score " + bestMoveScore); }
-        MapLocation bestLoc = here;
-        float bestLocAttackScore = -999;
-        MapLocation currLoc;
-        float score, attackScore;
-        int startTheta = 0; // if we want to start at something nonzero then change the hardcoded zeroes below
-        int currentTheta = 0;
-        int dtheta = 36;
-        int numLocsEvaled = 0;
-        float stridedist = RobotType.LUMBERJACK.strideRadius;
-
-        int startBytecode = Clock.getBytecodeNum();
-        while (Clock.getBytecodeNum() + (Clock.getBytecodeNum() - startBytecode)/((numLocsEvaled < 2 ? 1 : numLocsEvaled)) < WHEN_TO_STOP_MICRO){
-            // stop when the average time it takes to eval puts us over the WHEN_TO_STOP_MICRO threshold
-            currLoc = here.add(Util.radians(currentTheta), stridedist);
-            if (rc.canMove(currLoc)) {
-                if (debug) { rc.setIndicatorDot(currLoc, 0, 0, (int)(1.0*currentTheta / 360 * 255)); }
-                attackScore = evalForAttacking(currLoc);
-                score = evaluateLocation(currLoc) + (attackScoreHere < 0 ? 0 : MOVE_ATTACK_MOD * attackScoreHere);
-                //                                  if you're not going to attack anyways, it doesn't matter how bad it is
-                if (debug) { System.out.println(currentTheta + " " + currLoc.x + " " + currLoc.y + " score " + score); }
-                if (score > bestMoveScore) {
-                    bestLoc = currLoc;
-                    bestLocAttackScore = attackScore;
-                    bestMoveScore = score;
-                }
-                numLocsEvaled += 1;
+        if(target != null){
+        	if(debug) { rc.setIndicatorLine(here, target, (us == Team.A ? 255: 0), (us == Team.A ? 0: 255), 0); };
+            goTo(target);
+            moved = true;
+        } 
+        if(nearbyEnemyTrees.length > 0){
+            if(!moved){
+                tryMoveDirection(here.directionTo(nearbyEnemyTrees[0].location), true, false);
+                moved = true;
             }
-
-            currentTheta += dtheta;
-            if (currentTheta >= 360){
-                // tried every point around a circle, now try closer
-                // TODO: make the test points more evenly distributed inside (see circle-packing on wikipedia)
-                stridedist /= 2;
-                currentTheta = 0;
-                dtheta = dtheta * 5 / 3; // it'll get more dense as it gets closer so adjust a little for that
-                if (stridedist < .187) { // probably silly to keep checking
-                    if (debug) { System.out.print("I've tried everything dammit"); }
-                    break;
-                }
+            if(!attacked && rc.canChop(nearbyEnemyTrees[0].location)){
+                rc.chop(nearbyEnemyTrees[0].ID);
+                attacked = true;
+            }
+        } if(nearbyNeutralTrees.length > 0){
+            if(!moved){
+                tryMoveDirection(here.directionTo(nearbyNeutralTrees[0].location), true, false);
+                moved = true;
+            }
+            if(!attacked && rc.canChop(nearbyNeutralTrees[0].location)){
+                rc.chop(nearbyNeutralTrees[0].ID);
+                attacked = true;
             }
         }
-        if (debug) { System.out.println("tried " + numLocsEvaled + " locs and finished at theta " + currentTheta + " and radius " + stridedist); }
+        if (!moved) {
+            MapLocation[] enemyArchonLocs = rc.getInitialArchonLocations(enemy);
+            if ((((roundNum + rc.getID()) / 20) % (enemyArchonLocs.length + 1)) == 0) {
+                tryMoveDirection(myRandomDirection, true, true);
+            } else {
+                tryMoveDirection(
+                        here.directionTo(
+                                enemyArchonLocs[(((roundNum + rc.getID()) / 20) % (enemyArchonLocs.length + 1)) -1]),
+                        true, true);
+            }
+            moved = true;
+        }
 
-        if ( attackScoreHere > bestLocAttackScore && attackScoreHere > 0){
-            // attack first, then move
-            if (debug) {rc.setIndicatorDot(here, 255,0,0); }//red dot == SMASH
-            rc.strike();
-            rc.move(bestLoc);
+    }
 
-        } else if (bestLocAttackScore > 0){
-            // move first, then attack
-            rc.move(bestLoc);
-            if (debug) { rc.setIndicatorDot(bestLoc, 255, 0, 0); }//red dot == SMASH
-            rc.strike();
-        } else if (bestLoc != here){
-            // just move
-            rc.move(bestLoc);
+
+    public void updateTarget() throws GameActionException {
+    	if(target != null && roundNum + rc.getID() % 10 == 0 && !Message.DISTRESS_SIGNALS.containsLocation(target) && !Message.ENEMY_ARCHONS.containsLocation(target) ){
+    		//if(debug)System.out.println("changing");
+    		target = null;
+    	}
+        MapLocation targetD = Message.DISTRESS_SIGNALS.getClosestLocation(here);
+        if (targetD != null && target == null && here.distanceTo(targetD) < 25) {
+        	//if(debug)System.out.println("targetD = " + targetD);
+            target = targetD;
+        }
+        if(target ==  null){
+            MapLocation targetA = Message.ENEMY_ARCHONS.getClosestLocation(here);
+            if(targetA != null && here.distanceTo(targetA) < 25){
+            	//if(debug)System.out.println("targetA = " + targetA);
+            	target = targetA;
+            }
+        }
+        if (target != null && rc.getLocation().distanceTo(target) < 6 && nearbyEnemyRobots.length == 0){
+        	if(debug)System.out.println("removing");
+            Message.ENEMY_ARCHONS.removeLocation(target);
+            Message.DISTRESS_SIGNALS.removeLocation(target);
+            target = null;
         }
     }
 
-    public float evaluateLocation(MapLocation loc){
-	    // 'scores' the location in terms of possible damage accrued (bullets and otherwise) and forward progress,
-        //     but NOT attacking damage
-        // TODO: take into account other strategery like defending our trees/units, swarming or not, etc
 
-        float distToNearestEnemy = (loc == here ? here.distanceTo(nearbyEnemyRobots[0].getLocation()) : Util.distToClosestBody(nearbyEnemyRobots, loc));
-        /*if (distToNearestEnemy < GameConstants.LUMBERJACK_STRIKE_RADIUS + RobotType.LUMBERJACK.strideRadius + 1){
-            distToNearestEnemy = 0; // close enough to hit already
-        }*/
 
-        return KNOWN_DAMAGE_MOD * knownDamageToLoc(loc)
-                + HYPOTHETICAL_DAMAGE_MOD * hypotheticalDamageToSpot(loc)
-                + PROXIMITY_MOD * distToNearestEnemy
-                + (target != null ? PROGRESS_MOD * here.distanceTo(target) - loc.distanceTo(target) : 0)
-                + (gardenerLoc != null ? GARDENER_PROXIMITY_MOD * (loc.distanceTo(gardenerLoc) < 3.6 ? 3.6f - loc.distanceTo(gardenerLoc) : 0) : 0 )
-                    // translation: if too close to gardener I'm defending, it's bad. (3.6 isn't random, it's sqrt(3)*3/2)
-                ;
-    }
 
-    public float evalForAttacking(MapLocation loc){
-        // how good it is to attack from this spot
-        // score <= 0 means it's better not to attack
-        float damageToThem = RobotType.LUMBERJACK.attackPower * Util.numBodiesTouchingRadius(nearbyEnemyRobots, loc, GameConstants.LUMBERJACK_STRIKE_RADIUS);
-        float damageToUs = RobotType.LUMBERJACK.attackPower * Util.numBodiesTouchingRadius(nearbyAlliedRobots, loc, GameConstants.LUMBERJACK_STRIKE_RADIUS);
-        float damageToEnemyTrees = RobotType.LUMBERJACK.attackPower * Util.numBodiesTouchingRadius(nearbyEnemyTrees, loc, GameConstants.LUMBERJACK_STRIKE_RADIUS);
-        float damageToAlliedTrees = RobotType.LUMBERJACK.attackPower * Util.numBodiesTouchingRadius(nearbyAlliedTrees, loc, GameConstants.LUMBERJACK_STRIKE_RADIUS);
-        return damageToThem - damageToUs + TREE_DAMAGE_MOD * (damageToEnemyTrees - damageToAlliedTrees);
-    }
 }

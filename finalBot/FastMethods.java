@@ -2,6 +2,7 @@ package team008.finalBot;
 
 import battlecode.common.*;
 import java.util.ArrayList;
+import java.util.TreeMap;
 
 public class FastMethods extends Bot {
 
@@ -53,10 +54,8 @@ public class FastMethods extends Bot {
 //        }
 //        nearbyAlliedTrees = holder.toArray( new TreeInfo[holder.size()]);
 //    }
-
     public static void initializeAllTrees(){
-        int limit = 10;
-        int count = 0;
+
         ArrayList<TreeInfo> enemyTrees = new ArrayList<>();
         ArrayList<TreeInfo> friendlyTrees = new ArrayList<>();
         ArrayList<TreeInfo> neutralTrees = new ArrayList<>();
@@ -68,8 +67,6 @@ public class FastMethods extends Bot {
             }else if(tree.team == us){
                 friendlyTrees.add(tree);
             }
-            count++;
-            if(count>=limit){break;}
         }
         nearbyEnemyTrees = enemyTrees.toArray( new TreeInfo[enemyTrees.size()]);
         nearbyNeutralTrees = neutralTrees.toArray( new TreeInfo[neutralTrees.size()]);
@@ -90,7 +87,6 @@ public class FastMethods extends Bot {
         nearbyAlliedRobots = friendlyBots.toArray( new RobotInfo[friendlyBots.size()]);
 
     }
-
 
 
 }
