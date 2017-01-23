@@ -429,18 +429,7 @@ public class RangedCombat extends Bot {
 			}
 
 		}
-		for (TreeInfo friend : nearbyAlliedTrees) {
-			if (friend.location.distanceTo(here) < here.distanceTo(target.location) - type.bodyRadius
-					- target.type.bodyRadius) {
-				if (intendedAttackDir.radiansBetween(here.directionTo(friend.location)) < Math.PI / 12) {
-					if(debug)System.out.println("Direction is not safe");
-					return false;
-				}
-			} else {
-				break;
-			}
-		}
-		for (TreeInfo friend : nearbyEnemyTrees) {
+		for (TreeInfo friend : nearbyTrees) {
 			if (friend.location.distanceTo(here) < here.distanceTo(target.location) - type.bodyRadius
 					- target.type.bodyRadius) {
 				if (intendedAttackDir.radiansBetween(here.directionTo(friend.location)) < Math.PI / 12) {

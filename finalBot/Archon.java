@@ -32,9 +32,9 @@ public class Archon extends Bot {
 		if (Message.ARCHON_BUILD_NUM.getValue() > 0 && rc.getTeamBullets() > (100 + 
 				(inDistress ? 
 						((Message.ARCHON_DISTRESS_NUM.getValue() < MapAnalysis.initialAlliedArchonLocations.length) ? 
-								10:nearbyEnemyRobots.length)
-						:(MapAnalysis.initialAlliedArchonLocations.length == 1 ? 0 : unitsBuilt*2)))){
-				hireGardener();
+								10 : nearbyEnemyRobots.length)
+						: (MapAnalysis.initialAlliedArchonLocations.length == 1 ? 0 : unitsBuilt * 2)))) {
+			hireGardener();
 			unitsBuilt++;
 		}
 
@@ -45,6 +45,7 @@ public class Archon extends Bot {
 		if (rc.canHireGardener(dir)) {
 			rc.hireGardener(dir);
 			Message.ARCHON_BUILD_NUM.setValue(Message.ARCHON_BUILD_NUM.getValue()-1);
+			Message.NUM_GARDENERS.setValue(Message.NUM_GARDENERS.getValue() + 1);
 			return;
 		}
 		Direction left = dir.rotateLeftDegrees(10);
@@ -53,12 +54,14 @@ public class Archon extends Bot {
 			if (rc.canHireGardener(left)) {
 				rc.hireGardener(left);
 				Message.ARCHON_BUILD_NUM.setValue(Message.ARCHON_BUILD_NUM.getValue()-1);
+				Message.NUM_GARDENERS.setValue(Message.NUM_GARDENERS.getValue() + 1);
 
 				return;
 			}
 			if (rc.canHireGardener(right)) {
 				rc.hireGardener(right);
 				Message.ARCHON_BUILD_NUM.setValue(Message.ARCHON_BUILD_NUM.getValue()-1);
+				Message.NUM_GARDENERS.setValue(Message.NUM_GARDENERS.getValue() + 1);
 				return;
 			}
 			left = left.rotateLeftDegrees(10);

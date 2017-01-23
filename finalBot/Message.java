@@ -98,6 +98,10 @@ public enum Message {
         return Bot.rc.readBroadcastFloat(channel);
     }
 
+    public boolean containsLocation(MapLocation loc) throws GameActionException{
+    	return duplicateLocInRange(loc,bandStart+1,bandStart + getValue());
+    }
+    
     public void addLocation(MapLocation loc) throws GameActionException {
         int size = getValue(); // for ranges, the number of elements is stored in the first spot, so the list is 1-indexed (sorry)
         if (size > bandWidth || duplicateLocInRange(loc,bandStart+1,bandStart+size)) return;

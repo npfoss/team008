@@ -16,7 +16,7 @@ public class Soldier extends Bot {
             }
             RangedCombat.execute();
         }
-        if(target == null || (rc.getRoundNum() + rc.getID()) % 20 == 0){
+        if(target == null || (rc.getRoundNum() + rc.getID()) % 10 == 0){
             assignNewTarget();
         }
 
@@ -30,7 +30,7 @@ public class Soldier extends Bot {
 			}
 			else if (target != null) {
 				if (debug) {
-					rc.setIndicatorLine(here, target, 255, 0, 0);
+		        	if(debug) { rc.setIndicatorLine(here, target, (us == Team.A ? 255: 0), (us == Team.A ? 0: 255), 0); };
 				}
 				goTo(target);
 			} 
