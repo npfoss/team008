@@ -1,6 +1,6 @@
-package team008.finalBot;
-
+package team008.soldierBot00;
 import battlecode.common.*;
+
 
 public strictfp class RobotPlayer {
 
