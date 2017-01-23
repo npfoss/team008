@@ -19,7 +19,8 @@ public class RangedCombat extends Bot {
 	private static float MOVE_DIST = type.strideRadius;
 	private static float safeDist = 0;
 	private static boolean bulletSafe;
-
+	private static boolean onlyHarmlessUnitsAround;
+	
 	/**
 	 * to call execute, number of enemies must be > 0
 	 */
@@ -27,28 +28,31 @@ public class RangedCombat extends Bot {
 	    //if(debug)System.out.println("Instantiation:"+Clock.getBytecodeNum());
 
 		//int temp = Clock.getBytecodeNum();
-		//System.out.println("moving used: " + (Clock.getBytecodeNum() - temp));
+		// System.out.println("moving used: " + (Clock.getBytecodeNum() -
+		// temp));
 		potentialAttackStats attack = chooseTargetAndShotType();
-		boolean onlyHarmlessUnitsAround = onlyHarmlessUnitsNearby();
-        //if(debug)System.out.println("Shot Calc:"+Clock.getBytecodeNum());
-        if(attack == null){
-        	RobotInfo bestRobot = nearbyEnemyRobots[0];
-			safeDist = bestRobot.type.bodyRadius + type.bodyRadius + bestRobot.type.strideRadius + (bestRobot.type == RobotType.LUMBERJACK ? GameConstants.LUMBERJACK_STRIKE_RADIUS - bestRobot.type.bodyRadius : bestRobot.type.bulletSpeed);
-        	if(bestRobot.type == RobotType.GARDENER)
-        		safeDist = 0;
-        	if(!onlyHarmlessUnitsAround){
-			Direction moveDir = calcMoveDir(bestRobot);
-			if(moveDir != null)
-				rc.move(moveDir, MOVE_DIST);
-        	}
-        	else{
-        		goTo(bestRobot.location);
-        	}
+		onlyHarmlessUnitsAround = onlyHarmlessUnitsNearby();
+		// if(debug)System.out.println("Shot Calc:"+Clock.getBytecodeNum());
+		if (attack == null) {
+			RobotInfo bestRobot = nearbyEnemyRobots[0];
+			safeDist = bestRobot.type.bodyRadius + type.bodyRadius + bestRobot.type.strideRadius
+					+ (bestRobot.type == RobotType.LUMBERJACK
+							? GameConstants.LUMBERJACK_STRIKE_RADIUS - bestRobot.type.bodyRadius
+							: bestRobot.type.bulletSpeed);
+			if (bestRobot.type == RobotType.GARDENER)
+				safeDist = 0;
+			if (!onlyHarmlessUnitsAround || here.distanceTo(bestRobot.location) < 3.5) {
+				Direction moveDir = calcMoveDir(bestRobot);
+				if (moveDir != null)
+					rc.move(moveDir, MOVE_DIST);
+			} else {
+				goTo(bestRobot.location);
+			}
 			return;
 		}
 		BodyInfo target = attack.getTarget();
-		if(target == null){
-			//System.out.println("rip target");
+		if (target == null) {
+			// System.out.println("rip target");
 			tryMoveDirection(here.directionTo(MapAnalysis.center), true, false);
 			return;
 		}
@@ -62,16 +66,19 @@ public class RangedCombat extends Bot {
 		}
         //if(debug)System.out.println("Move Calc:"+Clock.getBytecodeNum());
 
-        if (moveDir != null || (onlyHarmlessUnitsAround && here.distanceTo(targetLoc) > 2.5)) {
-        	if(onlyHarmlessUnitsAround && here.distanceTo(targetLoc) > 2.5){
+        if (moveDir != null || onlyHarmlessUnitsAround) {
+        	if(onlyHarmlessUnitsAround && here.distanceTo(targetLoc) > 3.5){
         		goTo(targetLoc);
         	}
-        	else{
-				MapLocation nextLoc = here.add(moveDir, type.strideRadius);;
+        	else if (moveDir != null){
+				MapLocation nextLoc = here.add(moveDir, type.strideRadius);
 				if (nextLoc.distanceTo(targetLoc) < here.distanceTo(targetLoc)) {
 					//if(debug){System.out.println("moved before shooting");}
 					rc.move(moveDir, MOVE_DIST);
-				}
+	        	}
+        	}
+        	else{
+        		moveToBinary(targetLoc);
         	}
 		}
 
@@ -84,12 +91,29 @@ public class RangedCombat extends Bot {
         parseShotTypeAndShoot(attack.getTarget(), attack.getShotType());
 
 		if(debug)System.out.println("I tried to shoot a "+ attack.getShotType());
-		if(rc.getMoveCount()  == 0 && moveDir != null && !onlyHarmlessUnitsAround){
+		if(rc.getMoveCount()  == 0 && moveDir != null){
 			//System.out.println("shot before moving");
 			rc.move(moveDir, MOVE_DIST);
 		}
 	}
 
+	private static void moveToBinary(MapLocation t) throws GameActionException {
+		Direction dir = here.directionTo(t);
+		float highDist = type.strideRadius;
+		float lowDist = 0;
+		float midDist = (float)(0.01);
+		while(highDist - lowDist > .01){
+			midDist = (highDist + lowDist) / 2;
+			if(rc.canMove(dir, midDist)){
+				lowDist = midDist;
+			}
+			else{
+				highDist = midDist;
+			}	
+		}
+		rc.move(dir, (float) (midDist - .01));
+	}
+	
 	//////////////////////////Movement Micro////////////////////////
 
 	private static boolean onlyHarmlessUnitsNearby() {
@@ -107,6 +131,8 @@ public class RangedCombat extends Bot {
 	 * @throws GameActionException 
 	 */
 	private static Direction calcMoveDir(BodyInfo target) throws GameActionException {
+		if(onlyHarmlessUnitsAround && here.distanceTo(target.getLocation()) < 3.5)
+			return null;
 		MapLocation targetLoc = target.getLocation();
 		if(debug)rc.setIndicatorLine(here, targetLoc, 255, 0, 0);
 		Direction targetDir = here.directionTo(targetLoc);
@@ -208,6 +234,7 @@ public class RangedCombat extends Bot {
 						if(loc.distanceTo(e.location) < safeDistLocal){
 							return false;
 						}
+						break;
 					}
 				}
 			}

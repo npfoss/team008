@@ -396,7 +396,7 @@ public class Bot {
 	}
 
 	private static void bugMove(Direction dir) throws GameActionException {
-		if (move(dir)) {
+		if (tryMove(dir,type.strideRadius,true) == 0) {
 			bugRotationCount += calculateBugRotation(dir);
 			bugLastMoveDir = dir;
 			if (bugWallSide == WallSide.LEFT)
