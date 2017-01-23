@@ -12,6 +12,7 @@ public class Scout extends Bot {
 	private static boolean foundMaxY;
 	private static boolean foundMinX;
 	private static boolean foundMinY;
+	private static boolean bulletSafe;
 
 	public Scout(RobotController r) throws GameActionException {
 		super(r);
@@ -32,10 +33,15 @@ public class Scout extends Bot {
 		 * if(numHostiles > 0){ System.out.println("Ranged Combat");
 		 * RangedCombat.execute(); }
 		 */
+		/*
 		if (!tryToHarass(nearbyTrees)) {
 			if (!dealWithNearbyTrees()) {
 				moveToHarass();
 			}
+		}*/
+		
+		if (!dealWithNearbyTrees()){
+			explore();
 		}
 
 		// rc.setIndicatorDot(here,0,255,0);
@@ -119,7 +125,7 @@ public class Scout extends Bot {
 	}
 
 	private MapLocation checkForEdge(Direction dir) throws GameActionException {
-		float highDist = type.sensorRadius;
+		float highDist = type.sensorRadius - type.bodyRadius * 2;
 		if(rc.onTheMap(here.add(dir,highDist - (float)(0.01))))
 			return null;
 		float lowDist = type.bodyRadius;
@@ -156,7 +162,7 @@ public class Scout extends Bot {
 	}
 
 	public static boolean dealWithNearbyTrees() throws GameActionException {
-		int start = Clock.getBytecodeNum();
+		//int start = Clock.getBytecodeNum();
 		for (TreeInfo tree : nearbyNeutralTrees) {
 			if (tree.containedBullets > 0) {
 				goTo(tree.location);
@@ -175,123 +181,264 @@ public class Scout extends Bot {
 	 * @throws GameActionException
 	 */
 	private boolean tryToHarass(TreeInfo[] nearbyTrees) throws GameActionException {
+		/*
+		update target gardener
+		harass
+		*/
 		RobotInfo targetG = null;
-		if (inDanger(nearbyEnemyRobots, nearbyBullets)) {
-			//System.out.println("ranged combat");
-			if (targetGardenerID != -1) {
-				targetG = rc.senseRobot(targetGardenerID);
-			}
-			if (targetG != null && here.distanceTo(targetG.location) < 6) {
-				RangedCombat.shootSingleShot(targetG);
-			}
-			goTo(new Direction(here,MapAnalysis.center));
-			return true;
-		}
-		if (targetGardenerID == -1 || !rc.canSenseRobot(targetGardenerID) || (rc.getRoundNum() % 25 == 3 && (targetLoc == null || !inGoodSpot(targetLoc)))) {
+		RobotInfo closestEnemy = closestHarmfulEnemy();
+		if (targetGardenerID == -1 || !rc.canSenseRobot(targetGardenerID) || (rc.getRoundNum() % 35 == 3 && (targetLoc == null || !inGoodSpot(targetLoc)))) {
 			targetGardenerID = -1;
 			targetLoc = null;
-			updateTargetGardener();
+			updateTargetGardener(closestEnemy);
 			if (targetGardenerID != -1) {
-				//System.out.println("new target gardener: id = " + targetGardenerID);
+				if(debug)System.out.println("new target gardener: id = " + targetGardenerID);
 				targetG = rc.senseRobot(targetGardenerID);
 				//updateTargetLoc(nearbyTrees, targetG);
 			}
 		}
 		if (targetGardenerID != -1) {
 			targetG = rc.senseRobot(targetGardenerID);
-			updateTargetLoc(nearbyTrees, targetG);
-			if(targetLoc != null)
+			//if(targetLoc != null)
 			//System.out.println("my target location is " + targetLoc.toString());
+			if(targetLoc != null && debug) rc.setIndicatorLine(here, targetLoc, 255, 0, 0);
 			if (targetLoc == null) {
 				// System.out.println("can't find a tree, but still trying to
 				// kill gardener");
-				if (here.distanceTo(targetG.location) < 5 ) {
+				if(closestEnemy == null){
+					goToDangerous(targetG.location);
+				}
+				else{
+					harassMove(targetG.location, closestEnemy);
+				}
+				if (here.distanceTo(targetG.location) < 2.005) {
 					RangedCombat.shootSingleShot(targetG);
 				}
-				goToDangerous(targetG.location);
 			} else if (inGoodSpot(targetLoc)) {
 				// rc.setIndicatorLine(here,targetG.location,0,0,255);
-				shiftButtSlightly(targetLoc, targetG);
-				//System.out.println("shifting my butt");
-				harassFromTree(targetG);
+				if(closestEnemy == null)
+					harassFromTree(targetG);
+				else if(closestEnemy.type != RobotType.LUMBERJACK){
+					shiftButtSlightly(targetLoc, targetG);
+					if(debug)System.out.println("shifting my butt");
+					harassFromTree(targetG);
+				}
+				else if(here.distanceTo(closestEnemy.location) <  type.bodyRadius + RobotType.LUMBERJACK.strideRadius + GameConstants.LUMBERJACK_STRIKE_RADIUS){
+					updateTargetLoc(nearbyTrees, targetG, closestEnemy);
+					harassMove(targetG.location, closestEnemy);
+				}
+				else{
+					harassFromTree(targetG);
+				}
 			} else {
 				// rc.setIndicatorLine(here,targetLoc,0,0,255);
 				// System.out.println("heading toward tree");
-				if (here.distanceTo(targetG.location) < 5) {
+				if (here.distanceTo(targetG.location) < 2.005) {
 					RangedCombat.shootSingleShot(targetG);
 				}
-				goToDangerous(targetLoc);
-			}
-			return true;
-		}
-		return false;
-	}
-
-	private boolean inDanger(RobotInfo[] nearbyEnemyRobots, BulletInfo[] nearbyBullets) throws GameActionException {
-		boolean inTree = false;
-		if (targetLoc != null) {
-			inTree = inGoodSpot(targetLoc);
-			if (inTree && rc.canSenseRobot(targetGardenerID)&& rc.senseRobot(targetGardenerID).health > 39) {
-				for (RobotInfo enemy : nearbyEnemyRobots) {
-					if (enemy.type == RobotType.LUMBERJACK && Util.distanceSquaredTo(here, enemy.location) < 10) {
-						return true;
-					}
+				if(closestEnemy == null){
+					goToDangerous(targetG.location);
+				}
+				else{
+					harassMove(targetG.location, closestEnemy);
+				}
+				if (here.distanceTo(targetG.location) < 2.005 && rc.canFireSingleShot()) {
+					RangedCombat.shootSingleShot(targetG);
 				}
 			}
-		}
-		else if (dangerRating(here) > 0) {
 			return true;
 		}
-
 		return false;
 	}
 
-	private static void updateTargetGardener() {
-		RobotInfo closestEnemyGardener = closestUndefendedGardener(nearbyEnemyRobots);
+	private void harassMove(MapLocation targetG, RobotInfo closestEnemy) throws GameActionException {
+		float safeDist = closestEnemy.type.bodyRadius + type.bodyRadius + closestEnemy.type.strideRadius + (closestEnemy.type == RobotType.LUMBERJACK ? GameConstants.LUMBERJACK_STRIKE_RADIUS - closestEnemy.type.bodyRadius : closestEnemy.type.bulletSpeed);
+		MapLocation enemyLoc = closestEnemy.location;
+		MapLocation target = targetLoc;
+		if(target == null){
+			target = targetG;
+		}
+		Direction targetDir = here.directionTo(target);
+		float dist = here.distanceTo(target);
+		if(dist < type.strideRadius && rc.canMove(targetDir, dist) && isSafe(here.add(targetDir, dist), closestEnemy, safeDist)){
+			rc.move(targetDir, dist);
+			return;
+		}
+		float maxDist = -99999;
+		Direction backupDir = null;
+		//check for easy move in desired dir
+		Direction dir = here.directionTo(target);
+		if(rc.canMove(dir, type.strideRadius)){
+			MapLocation moveTo = here.add(dir, type.strideRadius);
+			if(isSafe(moveTo, closestEnemy, safeDist)){
+				rc.move(dir, type.strideRadius);
+				return;
+			}
+			else if (bulletSafe && moveTo.distanceTo(enemyLoc) > maxDist){
+				maxDist = moveTo.distanceTo(enemyLoc);
+				backupDir = dir;
+			}
+		}
+        if(debug)System.out.println("Checking for an easy move:"+Clock.getBytecodeNum());
+
+        //check the other directions
+		Direction left = dir.rotateLeftDegrees(10);
+		Direction right = dir.rotateRightDegrees(10);
+		for(int i = 0; i < 18; i++){
+            if(debug)System.out.println("Going through directions:"+Clock.getBytecodeNum());
+
+            if(rc.canMove(left, type.strideRadius)){
+				MapLocation moveTo = here.add(left, type.strideRadius);
+				if(isSafe(moveTo, closestEnemy, safeDist)){
+					rc.move(left, type.strideRadius);
+					return;
+				}
+				else if (bulletSafe && moveTo.distanceTo(enemyLoc) > maxDist){
+					maxDist = moveTo.distanceTo(enemyLoc);
+					backupDir = left;
+				}
+			}
+			if(rc.canMove(right, type.strideRadius)){
+				MapLocation moveTo = here.add(right, type.strideRadius);
+				if(isSafe(moveTo, closestEnemy, safeDist)){
+					rc.move(right, type.strideRadius);
+					return;
+				}
+				else if (bulletSafe && moveTo.distanceTo(enemyLoc) > maxDist){
+					maxDist = moveTo.distanceTo(enemyLoc);
+					backupDir = right;
+				}
+			}
+			left = left.rotateLeftDegrees(10);
+			right = right.rotateRightDegrees(10);
+		}
+		if(rc.canMove(backupDir, type.strideRadius))
+			rc.move(backupDir, type.strideRadius);
+	}
+
+	/**
+	 * Checks if the loc is in danger and if it is in a safe spot relative to the target
+	 * @param loc the location to check for safety
+	 * @param target the eventual target whos location we want to check against
+	 * @return whether that location is safe
+	 * @throws GameActionException 
+	 */
+	private static boolean isSafe(MapLocation loc, RobotInfo closestEnemy, float safeDist) throws GameActionException {
+		MapLocation enemyLoc = closestEnemy.location;
+		if(targetLoc != null && closestEnemy.type != RobotType.LUMBERJACK && loc == targetLoc && rc.isLocationOccupiedByTree(loc))//hide in dat tree
+			return true;
+		//System.out.println("safe dist = " + safeDist);
+
+        if(debug)System.out.println("Pre Bullet:"+Clock.getBytecodeNum());
+
+        //check that now bullets will hit the location
+		bulletSafe = true;
+		for (BulletInfo b : nearbyBullets) {
+		    if(b.location.distanceTo(loc) > 3){
+		        break;
+            }
+			if (willCollide(b, loc)) {
+				bulletSafe = false;
+				return false;
+			}
+		}
+
+		if(debug)System.out.println("Post Bullet:"+Clock.getBytecodeNum());
+
+        //check if the spot can be immediately damaged next turn
+		
+		return loc.distanceTo(enemyLoc) > safeDist;
+	}
+
+	private RobotInfo closestHarmfulEnemy() {
+		RobotInfo e = null;
+		for(RobotInfo ri: nearbyEnemyRobots){
+			if(ri.type != RobotType.GARDENER && ri.type != RobotType.ARCHON){
+				e = ri;
+				break;
+			}
+		}
+		return e;
+	}
+
+	private static void updateTargetGardener(RobotInfo closestEnemy) {
+		RobotInfo closestEnemyGardener = bestTargetGardener(closestEnemy);
 		if (closestEnemyGardener != null) {
 			targetGardenerID = closestEnemyGardener.ID;
 		}
 	}
 
-	private static void updateTargetLoc(TreeInfo[] nearbyTrees, RobotInfo targetG) throws GameActionException {
-		TreeInfo bestTree = closestSafeTree(nearbyTrees, targetG.location);
+	private static void updateTargetLoc(TreeInfo[] nearbyTrees, RobotInfo targetG, RobotInfo closestEnemy) throws GameActionException {
+		TreeInfo bestTree = null;
+		if(closestEnemy == null)
+			bestTree = closestTree(nearbyTrees, targetG.location);
+		else{
+			bestTree = calcBestTree(nearbyTrees, targetG.location, closestEnemy);
+		}
 		if (bestTree != null) {
 			MapLocation outerEdge = bestTree.location.add(bestTree.location.directionTo(targetG.location),
 					bestTree.radius);
 			targetLoc = outerEdge.add(targetG.location.directionTo(bestTree.location),(float) 1.000);
 			//System.out.println("my just updated target location is " + targetLoc.toString());
-
 		}
+		else{
+			targetLoc = null;
+		}
+	}
+
+	private static TreeInfo calcBestTree(TreeInfo[] trees, MapLocation toHere, RobotInfo closestEnemy) {
+		TreeInfo best = null;
+		float bestDist = 5;
+		float dist;
+		Direction bestDir = closestEnemy.location.directionTo(toHere);
+		float bestDif = 181;
+		float dif;
+		for (int i = trees.length; i-- > 0;) {
+			dist = toHere.distanceTo(trees[i].location) - trees[i].radius + here.distanceTo(trees[i].location)/10;
+			if (dist < bestDist + 0.5) {
+					Direction dir = toHere.directionTo(trees[i].location);
+					dif = dir.radiansBetween(bestDir);
+					if(dif < bestDif){
+						bestDif = dif;
+						bestDist = dist;
+						best = trees[i];
+					}	
+			}
+		}
+		return best;
 	}
 
 	// note: array trees not presorted because they are combined neutral and
 	// enemy
-	public static TreeInfo closestSafeTree(TreeInfo[] trees, MapLocation toHere) {
+	public static TreeInfo closestTree(TreeInfo[] trees, MapLocation toHere) {
 		TreeInfo closest = null;
 		float bestDist = 5;
 		float dist;
 		for (int i = trees.length; i-- > 0;) {
 			dist = toHere.distanceTo(trees[i].location) - trees[i].radius + here.distanceTo(trees[i].location)/10;
 			if (dist < bestDist) {
-					RobotInfo[] enemiesWithinRangeOfTree = rc.senseNearbyRobots(trees[i].location, (float) 2.1, enemy);
-					if (consistsOfOnlyHarmlessUnits(enemiesWithinRangeOfTree)) {
-						bestDist = dist;
-						closest = trees[i];
-					}
+					bestDist = dist;
+					closest = trees[i];
 			}
-		}
-		if(closest == null){
-			targetLoc = null;
 		}
 		return closest;
 	}
 
-	private static RobotInfo closestUndefendedGardener(RobotInfo[] robots) {
-		for (int i = robots.length; i-- > 0;) {
-			if (robots[i].type == RobotType.GARDENER)
-				return robots[i];
+	private static RobotInfo bestTargetGardener(RobotInfo closestEnemy) {
+		float maxDist = -1;
+		RobotInfo ret = null;
+		for (int i = nearbyEnemyRobots.length; i-- > 0;) {
+			if (nearbyEnemyRobots[i].type == RobotType.GARDENER){
+				if(closestEnemy == null)
+					return nearbyEnemyRobots[i];
+				else if (nearbyEnemyRobots[i].location.distanceTo(closestEnemy.location) > maxDist){
+					ret = nearbyEnemyRobots[i];
+					maxDist = nearbyEnemyRobots[i].location.distanceTo(closestEnemy.location);
+				}
+					
+			}
 		}
-		return null;
+		return ret;
 		/*
 		 * from before things were presorted: RobotInfo closest = null; float
 		 * bestDist = 99999; float dist; for (int i = robots.length; i-- > 0;) {
@@ -382,6 +529,25 @@ public class Scout extends Bot {
 		}
 
 		return true;
+	}
+	
+	private boolean inDanger(RobotInfo[] nearbyEnemyRobots, BulletInfo[] nearbyBullets) throws GameActionException {
+		boolean inTree = false;
+		if (targetLoc != null) {
+			inTree = inGoodSpot(targetLoc);
+			if (inTree && rc.canSenseRobot(targetGardenerID)&& rc.senseRobot(targetGardenerID).health > 39) {
+				for (RobotInfo enemy : nearbyEnemyRobots) {
+					if (enemy.type == RobotType.LUMBERJACK && Util.distanceSquaredTo(here, enemy.location) < 10) {
+						return true;
+					}
+				}
+			}
+		}
+		else if (dangerRating(here) > 0) {
+			return true;
+		}
+
+		return false;
 	}
 
 }

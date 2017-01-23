@@ -22,16 +22,22 @@ public enum Message {
     GARDENER_BUILD_ORDERS(14, 0),
     GARDENER_BUILD_NUM(15, 0),
     MAP_SIZE(16, 0),
-    // TODO: wtf does "scout stuff for map size" mean in the gdoc?
-    NUM_DISTRESS_SIGNALS_SENT(21, 0),
-    GARDENERS_BUILT(22, 0),
-    SOLDIER_IS_DEFENDER(23, 0),
+//<<<<<<< HEAD
+//    // TODO: wtf does "scout stuff for map size" mean in the gdoc?
+//    NUM_DISTRESS_SIGNALS_SENT(21, 0),
+//    GARDENERS_BUILT(22, 0),
+//    SOLDIER_IS_DEFENDER(23, 0),
+//=======
+    //don't need to use this doc for scout edge stuff
+    ARCHON_DISTRESS_NUM(21,0),
+//>>>>>>> origin/dev
     TREES_WITH_UNITS(50, 49),
     NEUTRAL_TREES(100, 99),
     ENEMY_TREES(200, 99),
     ENEMY_ARMIES(300, 399),
     ISOLATED_ENEMIES(700, 299),
     DISTRESS_SIGNALS(1000, 199),
+    ENEMY_ARCHONS(1200, 50)
     ;
 
     /** Ok great, but how tf do I use this?
@@ -99,10 +105,15 @@ public enum Message {
         return Bot.rc.readBroadcastFloat(channel);
     }
 
+    public boolean containsLocation(MapLocation loc) throws GameActionException{
+    	//System.out.println("bandStart = " + bandStart);
+    	return duplicateLocInRange(loc,bandStart+1,bandStart + getValue());
+    }
+    
     public void addLocation(MapLocation loc) throws GameActionException {
         int size = getValue(); // for ranges, the number of elements is stored in the first spot, so the list is 1-indexed (sorry)
         if (size > bandWidth || duplicateLocInRange(loc,bandStart+1,bandStart+size)) return;
-        // full!              or it's already in there
+        // full!             or it's already in there
         setValue(bandStart + size + 1, (int)(loc.x * FLOAT_MULTIPLIER) * CODE_OFFSET_AMT + (int)(loc.y * FLOAT_MULTIPLIER));
         setValue(size+1);
     }
