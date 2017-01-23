@@ -18,7 +18,6 @@ public class Lumberjack extends Bot {
             myRandomDirection = Util.randomDirection();
         }
 
-        scanForGardenerInDistress(); //This needs to be looked over
         
         if(nearbyEnemyRobots.length > 0) {
             tryMoveDirection(here.directionTo(nearbyEnemyRobots[0].location), true, true);
@@ -33,8 +32,11 @@ public class Lumberjack extends Bot {
                 attacked = true;
             }
         }
+        else{
+        	updateTarget(); 
+        }
         if(target != null){
-        	if(debug) { rc.setIndicatorLine(here, target, 255, 0, 0); };
+        	if(debug) { rc.setIndicatorLine(here, target, (us == Team.A ? 255: 0), (us == Team.A ? 0: 255), 0); };
             goTo(target);
             moved = true;
         } 
@@ -73,14 +75,27 @@ public class Lumberjack extends Bot {
     }
 
 
-    public void scanForGardenerInDistress()throws GameActionException {
-        MapLocation targetD = Messaging.getClosestDistressSignal(here);
+    public void updateTarget()throws GameActionException {
+    	if(target != null && roundNum + rc.getID() / 10 == 0 && !Message.DISTRESS_SIGNALS.containsLocation(target) && !Message.ENEMY_ARCHONS.containsLocation(target) ){
+    		if(debug)System.out.println("changing");
+    		target = null;
+    	}
+        MapLocation targetD = Message.DISTRESS_SIGNALS.getClosestLocation(here);
         if (targetD != null && target == null && here.distanceTo(targetD) < 25) {
+        	//if(debug)System.out.println("targetD = " + targetD);
             target = targetD;
         }
-
+        if(target ==  null){
+            MapLocation targetA = Message.ENEMY_ARCHONS.getClosestLocation(here);
+            if(targetA != null && here.distanceTo(targetA) < 25){
+            	//if(debug)System.out.println("targetA = " + targetA);
+            	target = targetA;
+            }
+        }
         if (target != null && rc.getLocation().distanceTo(target) < 6 && nearbyEnemyRobots.length == 0){
-            Messaging.removeDistressLocation(target);
+        	if(debug)System.out.println("removing");
+            Message.ENEMY_ARCHONS.removeLocation(target);
+            Message.DISTRESS_SIGNALS.removeLocation(target);
             target = null;
         }
     }

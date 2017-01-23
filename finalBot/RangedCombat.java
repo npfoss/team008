@@ -349,7 +349,7 @@ public class RangedCombat extends Bot {
 			Direction dirToT = here.directionTo(t.location);
 			float deg = Math.abs(targetDir.degreesBetween(dirToT));
 			if(deg < PENTAD_SPREAD_DEGREES){
-				if(debug)System.out.println("added enemy tree to pentad");
+				//if(debug)System.out.println("added enemy tree to pentad");
 				pentadValue += TREE_HIT_VALUE;
 				if(deg < TRIAD_SPREAD_DEGREES){
 					triadValue += TREE_HIT_VALUE;
@@ -360,7 +360,7 @@ public class RangedCombat extends Bot {
 		//Its better if we can deal collateral dmg to other enemies
 		for(RobotInfo r: nearbyEnemyRobots){
 			if(r == targetRobot){
-				if(debug)System.out.println("didn't count target");
+				//if(debug)System.out.println("didn't count target");
 				continue;
 			}
 			Direction dirToR = here.directionTo(r.location);
@@ -378,7 +378,7 @@ public class RangedCombat extends Bot {
 				float valFromHitting = ENEMY_HIT_VALUE - howFarAwayTheyCanGet; 
 				if(valFromHitting < 0)
 					continue;
-				if(debug)System.out.println("adding robot at " + r.location);
+				//if(debug)System.out.println("adding robot at " + r.location);
 				pentadValue += valFromHitting;
 				if(deg < TRIAD_SPREAD_DEGREES){
 					triadValue += valFromHitting;
@@ -459,18 +459,7 @@ public class RangedCombat extends Bot {
 			}
 
 		}
-		for (TreeInfo friend : nearbyAlliedTrees) {
-			if (friend.location.distanceTo(here) < here.distanceTo(target.location) - type.bodyRadius
-					- target.type.bodyRadius) {
-				if (intendedAttackDir.radiansBetween(here.directionTo(friend.location)) < Math.PI / 12) {
-					if(debug)System.out.println("Direction is not safe");
-					return false;
-				}
-			} else {
-				break;
-			}
-		}
-		for (TreeInfo friend : nearbyEnemyTrees) {
+		for (TreeInfo friend : nearbyTrees) {
 			if (friend.location.distanceTo(here) < here.distanceTo(target.location) - type.bodyRadius
 					- target.type.bodyRadius) {
 				if (intendedAttackDir.radiansBetween(here.directionTo(friend.location)) < Math.PI / 12) {
