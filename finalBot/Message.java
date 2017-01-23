@@ -99,6 +99,7 @@ public enum Message {
     }
 
     public boolean containsLocation(MapLocation loc) throws GameActionException{
+    	//System.out.println("bandStart = " + bandStart);
     	return duplicateLocInRange(loc,bandStart+1,bandStart + getValue());
     }
     

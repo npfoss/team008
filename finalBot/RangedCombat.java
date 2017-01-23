@@ -58,7 +58,7 @@ public class RangedCombat extends Bot {
 			tryMoveDirection(here.directionTo(MapAnalysis.center), true, false);
 			return;
 		}
-		if(debug)System.out.println("My Target is"+attack.getTarget().getID());
+		//if(debug)System.out.println("My Target is"+attack.getTarget().getID());
 		MapLocation targetLoc = target.getLocation();
 		//Direction targetDir = here.directionTo(attack.getTarget().getLocation());
 		//Direction moveDir = (targetDir);
@@ -92,8 +92,8 @@ public class RangedCombat extends Bot {
 
         parseShotTypeAndShoot(attack.getTarget(), attack.getShotType());
 
-		if(debug)System.out.println("I tried to shoot a "+ attack.getShotType());
-		if(rc.getMoveCount()  == 0 && moveDir != null){
+		//if(debug)System.out.println("I tried to shoot a "+ attack.getShotType());
+		if(rc.getMoveCount()  == 0 && moveDir != null && rc.canMove(moveDir, MOVE_DIST)){
 			//System.out.println("shot before moving");
 			rc.move(moveDir, MOVE_DIST);
 		}
@@ -141,7 +141,7 @@ public class RangedCombat extends Bot {
 		float maxDist = -99999;
 		Direction backupDir = null;
 		if(Math.abs(safeDist -1) < .01){//dealing with scout in tree
-			if(debug)System.out.println("Scout Hunting");
+			//if(debug)System.out.println("Scout Hunting");
 			MapLocation targetSpot = targetLoc.add(targetDir.opposite(), (float) 2.004);
 			float dist = here.distanceTo(targetSpot);
 			if(dist < type.strideRadius && rc.canMove(targetDir, dist)){
@@ -285,7 +285,7 @@ public class RangedCombat extends Bot {
 			}
 		}
 		if(bestRobot != null && !attackingGardener){
-			if(bestRobot.type == RobotType.SCOUT && rc.isLocationOccupiedByTree(bestRobot.location)){//edge case for scouts in trees
+			if(bestRobot.type == RobotType.SCOUT && rc.canSenseLocation(bestRobot.location) && rc.isLocationOccupiedByTree(bestRobot.location)){//edge case for scouts in trees
 				safeDist = -1; //signal we are dealing with a scout
 			}
 			else{
@@ -337,7 +337,7 @@ public class RangedCombat extends Bot {
 				singleValue += 5;
 			}
 		}
-        System.out.println("singleValue = " + singleValue);
+        //System.out.println("singleValue = " + singleValue);
 		int pentadValue = singleValue;
 		int triadValue = singleValue;
 		if(target == null)
@@ -395,8 +395,8 @@ public class RangedCombat extends Bot {
 			return SINGLE_SHOT;
 		}
 
-		if(debug)System.out.println("Pentad Value: " + pentadValue);
-		if(debug)System.out.println("Triad Value: " + triadValue);
+		//if(debug)System.out.println("Pentad Value: " + pentadValue);
+		//if(debug)System.out.println("Triad Value: " + triadValue);
 		/*if (target != null) {
 			if (here.distanceTo(target.getLocation()) - type.bulletSpeed - type.bodyRadius - target.getRadius() < 0) {
 				score = 7;
@@ -450,8 +450,8 @@ public class RangedCombat extends Bot {
 			if (friend.location.distanceTo(here) < here.distanceTo(target.location) - type.bodyRadius
 					- target.type.bodyRadius) {
 
-				if (intendedAttackDir.radiansBetween(here.directionTo(friend.location)) < Math.PI / 12) {
-					if(debug)System.out.println("Direction is not safe");
+				if (intendedAttackDir.radiansBetween(here.directionTo(friend.location)) < Math.PI / 6) {
+					//if(debug)System.out.println("Direction is not safe");
 					return false;
 				}
 			} else {
@@ -462,8 +462,8 @@ public class RangedCombat extends Bot {
 		for (TreeInfo friend : nearbyTrees) {
 			if (friend.location.distanceTo(here) < here.distanceTo(target.location) - type.bodyRadius
 					- target.type.bodyRadius) {
-				if (intendedAttackDir.radiansBetween(here.directionTo(friend.location)) < Math.PI / 12) {
-					if(debug)System.out.println("Direction is not safe");
+				if (intendedAttackDir.radiansBetween(here.directionTo(friend.location)) < Math.PI / 6) {
+					//if(debug)System.out.println("Direction is not safe");
 					return false;
 				}
 			} else {
@@ -488,7 +488,7 @@ public class RangedCombat extends Bot {
 	public static void shootSingleShot(BodyInfo target) throws GameActionException {
 		if (rc.canFireSingleShot() && target != null) {
 			rc.fireSingleShot(rc.getLocation().directionTo(target.getLocation()));
-			System.out.println("I shot a single");
+			//System.out.println("I shot a single");
 
 		}
 
@@ -499,7 +499,7 @@ public class RangedCombat extends Bot {
 
 		if (rc.canFireTriadShot() && target != null) {
 			rc.fireTriadShot(rc.getLocation().directionTo(target.getLocation()));
-			System.out.println("I shot a triad");
+			//System.out.println("I shot a triad");
 
 		}
 
@@ -510,7 +510,7 @@ public class RangedCombat extends Bot {
 
 		if (rc.canFirePentadShot() && target != null) {
 			rc.firePentadShot(rc.getLocation().directionTo(target.getLocation()));
-			System.out.println("I shot a pentad");
+			//System.out.println("I shot a pentad");
 
 		}
 

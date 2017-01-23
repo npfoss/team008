@@ -13,6 +13,7 @@ public class Bot {
 	public static Team enemy;
 	public static Team us;
 	public static MapLocation here;
+	public static Direction calculatedMove;
 
 	// Most units need this
 	public static Direction dirIAmMoving;
@@ -193,7 +194,7 @@ public class Bot {
 		MapLocation targetD = Message.DISTRESS_SIGNALS.getClosestLocation(here);
 		if (targetD != null) {
 			if (debug) {
-				System.out.println("got target D");
+				//System.out.println("got target D");
 			}
 			
 		}
@@ -270,6 +271,7 @@ public class Bot {
 			int danger = 0;
 			danger = dangerRating(here.add(dir, dist));
 			if (danger == 0) {
+				calculatedMove = dir;
 				if (makeMove) {
 					rc.move(dir, dist);
 					here = rc.getLocation();
@@ -321,6 +323,9 @@ public class Bot {
 		if (tempDanger < bestDanger) {
 			bestDir = null;
 			bestDanger = tempDanger;
+		}
+		if(bestDir != null){
+			calculatedMove = bestDir;
 		}
 		if (bestDir != null && makeMove) {
 			rc.move(bestDir, type.strideRadius);
@@ -415,11 +420,11 @@ public class Bot {
 	}
 
 	private static int numRightRotations(Direction start, Direction end) {
-		return ((int) (end.getAngleDegrees() - start.getAngleDegrees())) / 45;
+		return ((int) ((end.getAngleDegrees() - start.getAngleDegrees()) + 360) % 360) / 45;
 	}
 
 	private static int numLeftRotations(Direction start, Direction end) {
-		return ((int) (start.getAngleDegrees() - end.getAngleDegrees())) / 45;
+		return ((int) ((start.getAngleDegrees() - end.getAngleDegrees()) + 360) % 360) / 45;
 	}
 
 	private static boolean move(Direction dir) throws GameActionException {
@@ -432,9 +437,9 @@ public class Bot {
 
 	private static boolean detectBugIntoEdge() throws GameActionException {
 		if (bugWallSide == WallSide.LEFT) {
-			return !rc.onTheMap(here.add(bugLastMoveDir.rotateLeftDegrees(45)));
+			return !rc.onTheMap(here.add(bugLastMoveDir.rotateLeftDegrees(45)), type.strideRadius);
 		} else {
-			return !rc.onTheMap(here.add(bugLastMoveDir.rotateRightDegrees(45)));
+			return !rc.onTheMap(here.add(bugLastMoveDir.rotateRightDegrees(45)), type.strideRadius);
 		}
 	}
 
@@ -505,7 +510,8 @@ public class Bot {
 		if (bugMovesSinceSeenObstacle >= 2)
 			return true;
 		if (debug) {
-			//System.out.println("bug rotation count = " + bugRotationCount);
+			System.out.println("bug rotation count = " + bugRotationCount);
+			System.out.println("bugMovesSinceSeenObstacle = " + bugMovesSinceSeenObstacle);
 		}
 		return (bugRotationCount <= 0 || bugRotationCount >= 8) && here.distanceSquaredTo(dest) <= bugStartDistSq;
 	}

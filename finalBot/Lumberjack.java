@@ -20,16 +20,23 @@ public class Lumberjack extends Bot {
 
         
         if(nearbyEnemyRobots.length > 0) {
-            tryMoveDirection(here.directionTo(nearbyEnemyRobots[0].location), true, true);
-
+        	calculatedMove = null;
+            tryMoveDirection(here.directionTo(nearbyEnemyRobots[0].location), false, true);
+            if(calculatedMove != null && here.add(calculatedMove, type.strideRadius).distanceTo(nearbyEnemyRobots[0].location) < here.distanceTo(nearbyEnemyRobots[0].location)){
+            	rc.move(calculatedMove, type.strideRadius);
+            	moved = true;
+            }
             //Notify allies of enemies
             if((rc.getRoundNum() +rc.getID()) % 25 == 0 || target == null){
                 notifyFriendsOfEnemies(nearbyEnemyRobots);
             }
-            moved = true;
             if(here.distanceTo(nearbyEnemyRobots[0].location) <= GameConstants.LUMBERJACK_STRIKE_RADIUS + nearbyEnemyRobots[0].type.bodyRadius){
                 rc.strike();
                 attacked = true;
+            }
+            if(calculatedMove != null && !moved){
+            	rc.move(calculatedMove, type.strideRadius);
+            	moved = true;
             }
         }
         else{
@@ -75,9 +82,9 @@ public class Lumberjack extends Bot {
     }
 
 
-    public void updateTarget()throws GameActionException {
-    	if(target != null && roundNum + rc.getID() / 10 == 0 && !Message.DISTRESS_SIGNALS.containsLocation(target) && !Message.ENEMY_ARCHONS.containsLocation(target) ){
-    		if(debug)System.out.println("changing");
+    public void updateTarget() throws GameActionException {
+    	if(target != null && roundNum + rc.getID() % 10 == 0 && !Message.DISTRESS_SIGNALS.containsLocation(target) && !Message.ENEMY_ARCHONS.containsLocation(target) ){
+    		//if(debug)System.out.println("changing");
     		target = null;
     	}
         MapLocation targetD = Message.DISTRESS_SIGNALS.getClosestLocation(here);

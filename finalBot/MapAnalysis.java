@@ -65,6 +65,7 @@ public class MapAnalysis extends Bot {
 		numTree = rc.getTreeCount();
 		adaptation = Message.ADAPTATION.getValue();
 		genetics = Message.GENETICS.getValue();
+		/*
 		System.out.println("numArchon = " + numArchon);
 		System.out.println("numGardener = " + numGardener);
 		System.out.println("numSoldier = " + numSoldier);
@@ -75,6 +76,7 @@ public class MapAnalysis extends Bot {
 		System.out.println("Archon BuildNum = " + rc.readBroadcast(13));
 		System.out.println("Gardener BuildType = " + rc.readBroadcast(14));
 		System.out.println("Gardener BuildNum = " + rc.readBroadcast(15));
+		*/
 	}
 
 	public static void updateMapSize() throws GameActionException {
