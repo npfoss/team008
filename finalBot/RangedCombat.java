@@ -271,7 +271,7 @@ public class RangedCombat extends Bot {
 			canWeHitThemValue = canWeHitHeuristic(robot);
 			score = (int) (canWeHitThemValue);
 			//if(debug)System.out.println("score = " + score);
-			if (score + (robot.type == RobotType.GARDENER ? 20 : 0) > bestScore && isDirectionSafe(robot)) {
+			if (score > bestScore && isDirectionSafe(robot)) {
 				//if(debug) System.out.println("chose target");
 				attackingGardener = (robot.type == RobotType.GARDENER);
 				bestScore = score;
@@ -335,10 +335,12 @@ public class RangedCombat extends Bot {
 		Direction rightTriadDir = targetDir.rotateRightDegrees(20);
 		Direction leftPentadDir = targetDir.rotateLeftDegrees(30);
 		Direction rightPentadDir = targetDir.rotateRightDegrees(30);
+		int pentadValue = singleValue;
+		int triadValue = singleValue;
 		
-		if(targetRobot != null && here.distanceTo(targetLoc) - type.bodyRadius - targetRobot.type.bodyRadius < targetRobot.type.bulletSpeed){
+		if(targetRobot != null && here.distanceTo(targetLoc) - type.bodyRadius - targetRobot.type.bodyRadius < type.bulletSpeed){
 			if(willHitLoc(leftPentadDir, targetLoc, targetRobot.type.bodyRadius)){
-				if(debug)System.out.println("close enough to penta");
+				if(debug)System.out.println("close enough to pentad");
 				return PENTAD_SHOT;
 			}
 			if(willHitLoc(leftTriadDir, targetLoc, targetRobot.type.bodyRadius)){
@@ -353,17 +355,22 @@ public class RangedCombat extends Bot {
 			count++;
 			if(count > limit)
 				break;
-			if(here.distanceTo(a.location) > type.bulletSpeed + type.bodyRadius + a.type.bodyRadius)
+			if(here.distanceTo(a.location) > type.bulletSpeed + type.bodyRadius + a.type.bodyRadius || (targetRobot != null) && here.distanceTo(targetRobot.location) < here.distanceTo(a.location))
 				break;
-			if(willHitLoc(leftPentadDir, a.location, a.type.bodyRadius) || willHitLoc(rightPentadDir, a.location, a.type.bodyRadius)){
-				if(debug)System.out.println("ruling out triad and pentad");
-				ableToShootTriad = false;
-				ableToShootPentad = false;
-			}
 			if(willHitLoc(leftTriadDir, a.location, a.type.bodyRadius) || willHitLoc(rightTriadDir, a.location, a.type.bodyRadius)){
-				if(debug)System.out.println("ruling out triad");
-				ableToShootTriad = false;
+				//if(debug)System.out.println("ruling out triad and pentad");
+				triadValue -= 15;
+				pentadValue -= 15;
+				continue;
 			}
+			if(willHitLoc(leftPentadDir, a.location, a.type.bodyRadius) || willHitLoc(rightTriadDir, a.location, a.type.bodyRadius)){
+				//if(debug)System.out.println("ruling out triad");
+				triadValue -= 15;
+				continue;
+			}
+			singleValue += 5;
+			triadValue += 5;
+			pentadValue += 5;
 		}
 		
 		count = 0;
@@ -371,23 +378,23 @@ public class RangedCombat extends Bot {
 			count++;
 			if(count > limit)
 				break;
-			if(here.distanceTo(t.location) > type.bulletSpeed + type.bodyRadius + t.radius)
+			if(here.distanceTo(t.location) > type.bulletSpeed + type.bodyRadius + t.radius || (targetRobot != null) && here.distanceTo(targetRobot.location) < here.distanceTo(t.location))
 				break;
-			if(willHitLoc(leftPentadDir, t.location, t.radius) || willHitLoc(rightPentadDir, t.location, t.radius)){
-				if(debug)System.out.println("ruling out triad and pentad");
-				ableToShootTriad = false;
-				ableToShootPentad = false;
-			}
 			if(willHitLoc(leftTriadDir, t.location, t.radius) || willHitLoc(rightTriadDir, t.location, t.radius)){
-				if(debug)System.out.println("ruling out triad");
-				ableToShootTriad = false;
+				//if(debug)System.out.println("ruling out triad");
+				triadValue -= 7;
+				pentadValue -= 7;
+				continue;
+			}
+			if(willHitLoc(leftPentadDir, t.location, t.radius) || willHitLoc(rightPentadDir, t.location, t.radius)){
+				//if(debug)System.out.println("ruling out triad and pentad");
+				pentadValue -= 7;
+				continue;
 			}
 		}
 		// come up with some sort of formula for choosing the kind of shot
 
         //System.out.println("singleValue = " + singleValue);
-		int pentadValue = singleValue;
-		int triadValue = singleValue;
 		if(target == null)
 			return NO_SHOT;
 
@@ -458,16 +465,16 @@ public class RangedCombat extends Bot {
 			}
 		}*/
 		int treeMod = rc.getTreeCount() / 3;
-		if (ableToShootPentad && pentadValue + treeMod + (type.attackPower + type.bulletSpeed) * 4 > 125 && (pentadValue > 150 || pentadValue > triadValue)) {
+		if (ableToShootPentad && pentadValue + treeMod + (type.attackPower + type.bulletSpeed) * 4 > 126 && (pentadValue > 150 || pentadValue > triadValue)) {
 			return PENTAD_SHOT;
 		}
-		if (ableToShootTriad && triadValue + treeMod + (type.attackPower + type.bulletSpeed) * 4 > 110) {
+		if (ableToShootTriad && triadValue + treeMod + (type.attackPower + type.bulletSpeed) * 4 > 111) {
 			return TRIAD_SHOT;
 		}
-		if (singleValue + treeMod + (type.attackPower + type.bulletSpeed) * 4 > 84){
+		if (singleValue + treeMod + (type.attackPower + type.bulletSpeed) * 4 > 85){
 			return SINGLE_SHOT;
 		}
-		if (ableToShootTriad && triadValue + (type.attackPower + type.bulletSpeed) * 4 > 70) {
+		if (ableToShootTriad && triadValue + (type.attackPower + type.bulletSpeed) * 4 > 71) {
 			return TRIAD_SHOT;
 		}
 		return NO_SHOT;

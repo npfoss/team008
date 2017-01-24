@@ -395,7 +395,7 @@ public class Bot {
 		for (int i = 18; i-- > 0;) {
 			if (canMove(dir))
 				return dir;
-			dir = (bugWallSide == WallSide.LEFT ? dir.rotateLeftDegrees(20) : dir.rotateRightDegrees(20));
+			dir = (bugWallSide == WallSide.LEFT ? dir.rotateRightDegrees(20) : dir.rotateLeftDegrees(20));
 			if(i < 17)
 				bugMovesSinceSeenObstacle = 0;
 		}
@@ -509,7 +509,7 @@ public class Bot {
 	}
 
 	private static boolean canEndBug() {
-		if (bugMovesSinceSeenObstacle >= 4)
+		if (bugMovesSinceSeenObstacle >= 2)
 			return true;
 		if (debug) {
 			System.out.println("bug rotation count = " + bugRotationCount);
