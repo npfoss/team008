@@ -5,7 +5,7 @@ import battlecode.common.*;
 
 public class Bot {
 	// for debugging
-	public static boolean debug = false;
+	public static boolean debug = true;
 
 	// for everyone to use
 	public static RobotController rc;
@@ -36,8 +36,7 @@ public class Bot {
 	private static BugState bugState;
 	private static WallSide bugWallSide = null;
 
-	public Bot() {
-	}
+	public Bot() {}
 
 	public Bot(RobotController r) throws GameActionException {
 		rc = r;
@@ -267,7 +266,7 @@ public class Bot {
 	}
 
 	private static int tryMove(Direction dir, float dist, boolean makeMove) throws GameActionException {
-		if (rc.canMove(dir, dist)) {
+		if (rc.canMove(dir, dist) && !(type == RobotType.TANK && rc.isLocationOccupiedByTree(here.add(dir,dist)) && rc.senseTreeAtLocation(here.add(dir,dist)).team == us)) {
 			int danger = 0;
 			danger = dangerRating(here.add(dir, dist));
 			if (danger == 0) {
@@ -280,7 +279,6 @@ public class Bot {
 			return danger;
 		}
 		return 9999;
-
 	}
 
 	public static boolean tryMoveDirection(Direction dir, boolean makeMove, boolean goBackwards)
@@ -361,6 +359,7 @@ public class Bot {
 		if (debug)
 			//System.out.println("bugging");
 		if (bugState == BugState.BUG) {
+			if(debug)System.out.println("bugging");
 			if (canEndBug()) {
 				bugState = BugState.DIRECT;
 				bugMovesSinceMadeProgress = 0;
@@ -429,7 +428,7 @@ public class Bot {
 	}
 
 	private static boolean move(Direction dir) throws GameActionException {
-		if (rc.canMove(dir, type.strideRadius)) {
+		if (rc.canMove(dir, type.strideRadius) && !(type == RobotType.TANK && rc.isLocationOccupiedByTree(here.add(dir, type.strideRadius)) && rc.senseTreeAtLocation(here.add(dir, type.strideRadius)).team == us)) {
 			rc.move(dir);
 			return true;
 		}
@@ -481,24 +480,24 @@ public class Bot {
 
 	}
 
-	private static boolean canMove(Direction leftTryDir) {
+	private static boolean canMove(Direction dir) throws GameActionException {
 		// TODO: add safety
-		return rc.canMove(leftTryDir, type.strideRadius);
+		return rc.canMove(dir, type.strideRadius) && !(type == RobotType.TANK && rc.isLocationOccupiedByTree(here.add(dir, type.strideRadius)) && rc.senseTreeAtLocation(here.add(dir, type.strideRadius)).team == us);
 	}
 
 	private static boolean tryMoveDirect() throws GameActionException {
 		Direction dir = here.directionTo(dest);
 		//System.out.println(dest.toString() + here.toString() + dir.toString());
-		if (tryMove(dir, here.distanceTo(dest),true) == 0) {
+		if (tryMove(dir, type.strideRadius,true) == 0) {
 			return true;
 		}
 		Direction left = dir.rotateLeftDegrees(15);
 		Direction right = dir.rotateRightDegrees(15);
 		for (int i = 0; i < 3; i++) {
-			if (tryMove(left, here.distanceTo(dest),true) == 0) {
+			if (tryMove(left, type.strideRadius,true) == 0) {
 				return true;
 			}
-			if (tryMove(right, here.distanceTo(dest),true) == 0) {
+			if (tryMove(right, type.strideRadius,true) == 0) {
 				return true;
 			}
 			left = left.rotateLeftDegrees(15);
@@ -538,7 +537,7 @@ public class Bot {
 
 	/////////////////////////////// Dangerous Nav///////////////////////////////
 	public static void goToDangerous(MapLocation loc) throws GameActionException {
-		if (here.distanceTo(loc) < type.strideRadius && rc.canMove(loc)) {
+		if (here.distanceTo(loc) < type.strideRadius && rc.canMove(loc) && !(type == RobotType.TANK && rc.isLocationOccupiedByTree(loc) && rc.senseTreeAtLocation(loc).team == us)) {
 			rc.move(loc);
 			here = rc.getLocation();
 			return;
@@ -566,7 +565,7 @@ public class Bot {
 	}
 
 	private static boolean tryMoveDangerous(Direction dir, float dist) throws GameActionException {
-		if (rc.canMove(dir, dist)) {
+		if (rc.canMove(dir, dist) && !(type == RobotType.TANK && rc.isLocationOccupiedByTree(here.add(dir,dist)) && rc.senseTreeAtLocation(here.add(dir,dist)).team == us)) {
 			rc.move(dir, dist);
 			here = rc.getLocation();
 			return true;

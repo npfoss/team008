@@ -23,21 +23,22 @@ public enum Message {
     GARDENER_BUILD_NUM(15, 0),
     MAP_SIZE(16, 0),
 //<<<<<<< HEAD
-//    // TODO: wtf does "scout stuff for map size" mean in the gdoc?
+//    // wtf does "scout stuff for map size" mean in the gdoc?
 //    NUM_DISTRESS_SIGNALS_SENT(21, 0),
 //    GARDENERS_BUILT(22, 0),
 //    SOLDIER_IS_DEFENDER(23, 0),
 //=======
     //don't need to use this doc for scout edge stuff
     ARCHON_DISTRESS_NUM(21,0),
-//>>>>>>> origin/dev
-    TREES_WITH_UNITS(50, 49),
+    //>>>>>>> origin/dev
     NEUTRAL_TREES(100, 99),
     ENEMY_TREES(200, 99),
     ENEMY_ARMIES(300, 399),
     ISOLATED_ENEMIES(700, 299),
     DISTRESS_SIGNALS(1000, 199),
-    ENEMY_ARCHONS(1200, 50)
+    ENEMY_ARCHONS(1200, 50),
+    TREES_WITH_UNITS(1250, 99),
+    CLEAR_TREES_PLEASE(1350, 49) // make this location the tree you want cleared ideally
     ;
 
     /** Ok great, but how tf do I use this?
