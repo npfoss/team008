@@ -24,6 +24,20 @@ public class Util extends Bot {
         return closest;
     }
 
+    public static TreeInfo closestTree(TreeInfo[] trees, MapLocation toHere, boolean excludeEmpty){
+        TreeInfo closest = null;
+        float bestDist = 999999;
+        float dist;
+        for (int i = trees.length; i-- > 0; ) {
+            dist = distanceSquaredTo(toHere, trees[i].getLocation());
+            if (dist < bestDist && (!excludeEmpty || trees[i].containedRobot != null)) {
+                bestDist = dist;
+                closest = trees[i];
+            }
+        }
+        return closest;
+    }
+
     ////////////------ leastHealth stuff ----/////////////
 
     public static RobotInfo leastHealth(RobotInfo[] robots, boolean excludeArchons) {
@@ -62,6 +76,18 @@ public class Util extends Bot {
         return ret;
     }
 
+    public static TreeInfo leastHealthTouchingRadius(TreeInfo[] trees, MapLocation toHere, float radius, boolean withContainedUnit) {
+        TreeInfo ret = null;
+        double minHealth = 999999;
+        for (TreeInfo tree : trees){
+            if (tree.health < minHealth && (!withContainedUnit || tree.containedRobot != null) && distanceSquaredTo(toHere, tree.getLocation()) < (radius + tree.getRadius())*(radius + tree.getRadius())) {
+                minHealth = tree.health;
+                ret = tree;
+            }
+        }
+        return ret;
+    }
+
     ////////////------ misc/unsorted --------/////////////
     
     public static RobotInfo closestSpecificType(RobotInfo[] robots, MapLocation toHere, RobotType type) {
@@ -83,6 +109,15 @@ public class Util extends Bot {
         return !(t == RobotType.ARCHON || t == RobotType.GARDENER);
     }
 
+    public static int numBodiesTouchingRadius(BodyInfo[] trees, MapLocation toHere, float radius){
+        int count = 0;
+        for (BodyInfo tree : trees){
+            if (distanceSquaredTo(toHere, tree.getLocation()) <= (radius + tree.getRadius())*(radius + tree.getRadius())){
+                count++;
+            }
+        }
+        return count;
+    }
 
     public static TreeInfo[] combineTwoTIArrays(TreeInfo[] array1, TreeInfo[] array2) {
         TreeInfo[] combo = new TreeInfo[array1.length + array2.length];
