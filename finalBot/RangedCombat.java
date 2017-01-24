@@ -323,6 +323,8 @@ public class RangedCombat extends Bot {
 	 */
 	public static String calculateShotType(BodyInfo target, int singleValue) throws GameActionException {
 		//Cast body info if its a robot
+		if(target == null)
+			return NO_SHOT;
 		RobotInfo targetRobot = null;
 		if(target.isRobot()){
 			targetRobot = (RobotInfo)target;
@@ -335,8 +337,7 @@ public class RangedCombat extends Bot {
 		Direction rightTriadDir = targetDir.rotateRightDegrees(20);
 		Direction leftPentadDir = targetDir.rotateLeftDegrees(30);
 		Direction rightPentadDir = targetDir.rotateRightDegrees(30);
-		int pentadValue = singleValue;
-		int triadValue = singleValue;
+		int tempSV = singleValue;
 		
 		if(targetRobot != null && here.distanceTo(targetLoc) - type.bodyRadius - targetRobot.type.bodyRadius < type.bulletSpeed){
 			if(willHitLoc(leftPentadDir, targetLoc, targetRobot.type.bodyRadius)){
@@ -349,54 +350,42 @@ public class RangedCombat extends Bot {
 			}
 		}
 		
-		int limit = 5;
-		int count = 0;
 		for(RobotInfo a: nearbyAlliedRobots){
-			count++;
-			if(count > limit)
+			if(a.type == RobotType.LUMBERJACK){
+				singleValue = tempSV;
 				break;
-			if(here.distanceTo(a.location) > type.bulletSpeed + type.bodyRadius + a.type.bodyRadius || (targetRobot != null) && here.distanceTo(targetRobot.location) < here.distanceTo(a.location))
-				break;
-			if(willHitLoc(leftTriadDir, a.location, a.type.bodyRadius) || willHitLoc(rightTriadDir, a.location, a.type.bodyRadius)){
-				//if(debug)System.out.println("ruling out triad and pentad");
-				triadValue -= 15;
-				pentadValue -= 15;
-				continue;
 			}
-			if(willHitLoc(leftPentadDir, a.location, a.type.bodyRadius) || willHitLoc(rightTriadDir, a.location, a.type.bodyRadius)){
-				//if(debug)System.out.println("ruling out triad");
-				triadValue -= 15;
-				continue;
+			if(a.type == RobotType.SOLDIER || a.type == RobotType.TANK){
+				singleValue += 5;
 			}
-			singleValue += 5;
-			triadValue += 5;
-			pentadValue += 5;
 		}
 		
-		count = 0;
+		int pentadValue = singleValue;
+		int triadValue = singleValue;
+		/*
+		int limit = 5;
+		int count = 0;
 		for(TreeInfo t: nearbyNeutralTrees){
 			count++;
 			if(count > limit)
 				break;
-			if(here.distanceTo(t.location) > type.bulletSpeed + type.bodyRadius + t.radius || (targetRobot != null) && here.distanceTo(targetRobot.location) < here.distanceTo(t.location))
+			if(targetRobot != null && here.distanceTo(targetRobot.location) < here.distanceTo(t.location))
 				break;
 			if(willHitLoc(leftTriadDir, t.location, t.radius) || willHitLoc(rightTriadDir, t.location, t.radius)){
 				//if(debug)System.out.println("ruling out triad");
-				triadValue -= 7;
-				pentadValue -= 7;
+				triadValue -= 10;
+				pentadValue -= 10;
 				continue;
 			}
 			if(willHitLoc(leftPentadDir, t.location, t.radius) || willHitLoc(rightPentadDir, t.location, t.radius)){
 				//if(debug)System.out.println("ruling out triad and pentad");
-				pentadValue -= 7;
+				pentadValue -= 10;
 				continue;
 			}
-		}
+		}*/
 		// come up with some sort of formula for choosing the kind of shot
 
         //System.out.println("singleValue = " + singleValue);
-		if(target == null)
-			return NO_SHOT;
 
 		//Its better if we can also do collateral dmg to enemy trees
 		/*
