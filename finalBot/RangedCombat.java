@@ -26,14 +26,10 @@ public class RangedCombat extends Bot {
 	 * to call execute, number of enemies must be > 0
 	 */
 	public static void execute() throws GameActionException {
-	    //if(debug)System.out.println("Instantiation:"+Clock.getBytecodeNum());
-
-		//int temp = Clock.getBytecodeNum();
-		// System.out.println("moving used: " + (Clock.getBytecodeNum() -
-		// temp));
+	    //if(debug)System.out.println("Instantiation: "+ Clock.getBytecodeNum());
 		potentialAttackStats attack = chooseTargetAndShotType();
 		onlyHarmlessUnitsAround = onlyHarmlessUnitsNearby();
-		// if(debug)System.out.println("Shot Calc:"+Clock.getBytecodeNum());
+		//if(debug)System.out.println("Shot Calc:"+Clock.getBytecodeNum());
 		if (attack == null) {
 			RobotInfo bestRobot = nearbyEnemyRobots[0];
 			safeDist = bestRobot.type.bodyRadius + type.bodyRadius + bestRobot.type.strideRadius
@@ -139,7 +135,11 @@ public class RangedCombat extends Bot {
 		if(debug)rc.setIndicatorLine(here, targetLoc, 255, 0, 0);
 		Direction targetDir = here.directionTo(targetLoc);
 		float maxDist = -99999;
-		Direction backupDir = null;
+		Direction backupDir = targetDir.opposite();
+		RobotInfo[] nearbyEs = null;
+		if(Math.abs(safeDist) < .01){//dealing with gardener
+			nearbyEs = rc.senseNearbyRobots(targetLoc, -1, enemy);
+		}
 		if(Math.abs(safeDist -1) < .01){//dealing with scout in tree
 			//if(debug)System.out.println("Scout Hunting");
 			MapLocation targetSpot = targetLoc.add(targetDir.opposite(), (float) 2.004);
@@ -153,7 +153,7 @@ public class RangedCombat extends Bot {
 		Direction dir = here.directionTo(targetLoc);
 		if(rc.canMove(dir, type.strideRadius)){
 			MapLocation moveTo = here.add(dir, type.strideRadius);
-			if(isSafe(moveTo, target))
+			if(isSafe(moveTo, target, nearbyEs))
 				return dir;
 			else if (bulletSafe && moveTo.distanceTo(targetLoc) > maxDist){
 				maxDist = moveTo.distanceTo(targetLoc);
@@ -163,14 +163,17 @@ public class RangedCombat extends Bot {
         //if(debug)System.out.println("Checking for an easy move:"+Clock.getBytecodeNum());
 
         //check the other directions
-		Direction left = dir.rotateLeftDegrees(10);
-		Direction right = dir.rotateRightDegrees(10);
-		for(int i = 0; i < 18; i++){
+		int dirsToCheck = 36;
+		if(nearbyBullets.length > 5)
+			dirsToCheck = 18;
+		Direction left = dir.rotateLeftDegrees(360/dirsToCheck);
+		Direction right = dir.rotateRightDegrees(360/dirsToCheck);
+		for(int i = 0; i < dirsToCheck/2; i++){
             //if(debug)System.out.println("Going through directions:"+Clock.getBytecodeNum());
 
             if(rc.canMove(left, type.strideRadius)){
 				MapLocation moveTo = here.add(left, type.strideRadius);
-				if(isSafe(moveTo, target))
+				if(isSafe(moveTo, target, nearbyEs))
 					return left;
 				else if (bulletSafe && moveTo.distanceTo(targetLoc) > maxDist){
 					maxDist = moveTo.distanceTo(targetLoc);
@@ -179,15 +182,15 @@ public class RangedCombat extends Bot {
 			}
 			if(rc.canMove(right, type.strideRadius)){
 				MapLocation moveTo = here.add(right, type.strideRadius);
-				if(isSafe(moveTo, target))
+				if(isSafe(moveTo, target, nearbyEs))
 					return right;
 				else if (bulletSafe && moveTo.distanceTo(targetLoc) > maxDist){
 					maxDist = moveTo.distanceTo(targetLoc);
 					backupDir = right;
 				}
 			}
-			left = left.rotateLeftDegrees(10);
-			right = right.rotateRightDegrees(10);
+			left = left.rotateLeftDegrees(360/dirsToCheck);
+			right = right.rotateRightDegrees(360/dirsToCheck);
 		}
 		return backupDir;
 	}
@@ -198,7 +201,7 @@ public class RangedCombat extends Bot {
 	 * @param target the eventual target whos location we want to check against
 	 * @return whether that location is safe
 	 */
-	private static boolean isSafe(MapLocation loc, BodyInfo target) {
+	private static boolean isSafe(MapLocation loc, BodyInfo target, RobotInfo[] nearbyEs) {
 		//System.out.println("safe dist = " + safeDist);
 		float safeDistLocal = 0;
 
@@ -207,7 +210,7 @@ public class RangedCombat extends Bot {
         //check that now bullets will hit the location
 		bulletSafe = true;
 		for (BulletInfo b : nearbyBullets) {
-		    if(b.location.distanceTo(loc)>2){
+		    if(b.location.distanceTo(loc) > b.speed){
 		        break;
             }
 			if (willCollide(b, loc)) {
@@ -228,7 +231,7 @@ public class RangedCombat extends Bot {
             if(nearbyEnemyRobots.length == 0 || nearbyEnemyRobots.length == 1 && nearbyEnemyRobots[0].type == RobotType.GARDENER)
                 return true;
 			else{
-				RobotInfo[] nearbyEs = rc.senseNearbyRobots(loc, -1, enemy); //robots closest to gardener or tree
+					//robots closest to gardener or tree
 				for(RobotInfo e: nearbyEs){
 					if(e.type != RobotType.GARDENER && e.type != RobotType.ARCHON){
 						loc = e.location;
@@ -268,7 +271,7 @@ public class RangedCombat extends Bot {
 			canWeHitThemValue = canWeHitHeuristic(robot);
 			score = (int) (canWeHitThemValue);
 			//if(debug)System.out.println("score = " + score);
-			if (score + (robot.type == RobotType.GARDENER ? 20 : 0) > bestScore && isDirectionSafe(robot)) {
+			if (score > bestScore && isDirectionSafe(robot)) {
 				//if(debug) System.out.println("chose target");
 				attackingGardener = (robot.type == RobotType.GARDENER);
 				bestScore = score;
@@ -276,7 +279,6 @@ public class RangedCombat extends Bot {
 				shotValue = canWeHitThemValue;
 				if(attackingGardener){
 					safeDist = 0;
-					break;
 				}
 			}
 			calculated++;
@@ -321,13 +323,33 @@ public class RangedCombat extends Bot {
 	 */
 	public static String calculateShotType(BodyInfo target, int singleValue) throws GameActionException {
 		//Cast body info if its a robot
+		if(target == null)
+			return NO_SHOT;
 		RobotInfo targetRobot = null;
 		if(target.isRobot()){
 			targetRobot = (RobotInfo)target;
 		}
+		MapLocation targetLoc = target.getLocation();
+		Direction targetDir = here.directionTo(targetLoc);
+		boolean ableToShootTriad = true;
+		boolean ableToShootPentad = true;
+		Direction leftTriadDir = targetDir.rotateLeftDegrees(20);
+		Direction rightTriadDir = targetDir.rotateRightDegrees(20);
+		Direction leftPentadDir = targetDir.rotateLeftDegrees(30);
+		Direction rightPentadDir = targetDir.rotateRightDegrees(30);
 		int tempSV = singleValue;
-		// come up with some sort of formula for choosing the kind of shot
-
+		
+		if(targetRobot != null && here.distanceTo(targetLoc) - type.bodyRadius - targetRobot.type.bodyRadius < type.bulletSpeed){
+			if(willHitLoc(leftPentadDir, targetLoc, targetRobot.type.bodyRadius)){
+				if(debug)System.out.println("close enough to pentad");
+				return PENTAD_SHOT;
+			}
+			if(willHitLoc(leftTriadDir, targetLoc, targetRobot.type.bodyRadius)){
+				if(debug)System.out.println("close enough to triad");
+				return TRIAD_SHOT;
+			}
+		}
+		
 		for(RobotInfo a: nearbyAlliedRobots){
 			if(a.type == RobotType.LUMBERJACK){
 				singleValue = tempSV;
@@ -337,28 +359,54 @@ public class RangedCombat extends Bot {
 				singleValue += 5;
 			}
 		}
-        //System.out.println("singleValue = " + singleValue);
+		
 		int pentadValue = singleValue;
 		int triadValue = singleValue;
-		if(target == null)
-			return NO_SHOT;
+		/*
+		int limit = 5;
+		int count = 0;
+		for(TreeInfo t: nearbyNeutralTrees){
+			count++;
+			if(count > limit)
+				break;
+			if(targetRobot != null && here.distanceTo(targetRobot.location) < here.distanceTo(t.location))
+				break;
+			if(willHitLoc(leftTriadDir, t.location, t.radius) || willHitLoc(rightTriadDir, t.location, t.radius)){
+				//if(debug)System.out.println("ruling out triad");
+				triadValue -= 10;
+				pentadValue -= 10;
+				continue;
+			}
+			if(willHitLoc(leftPentadDir, t.location, t.radius) || willHitLoc(rightPentadDir, t.location, t.radius)){
+				//if(debug)System.out.println("ruling out triad and pentad");
+				pentadValue -= 10;
+				continue;
+			}
+		}*/
+		// come up with some sort of formula for choosing the kind of shot
+
+        //System.out.println("singleValue = " + singleValue);
 
 		//Its better if we can also do collateral dmg to enemy trees
+		/*
 		Direction targetDir = here.directionTo(target.getLocation());
 		for(TreeInfo t: nearbyEnemyTrees){
 			Direction dirToT = here.directionTo(t.location);
 			float deg = Math.abs(targetDir.degreesBetween(dirToT));
 			if(deg < PENTAD_SPREAD_DEGREES){
-				//if(debug)System.out.println("added enemy tree to pentad");
+				if(debug)System.out.println("added enemy tree to pentad");
 				pentadValue += TREE_HIT_VALUE;
 				if(deg < TRIAD_SPREAD_DEGREES){
 					triadValue += TREE_HIT_VALUE;
 				}
 			}
-		}
-
+		}*/
+		
 		//Its better if we can deal collateral dmg to other enemies
 		for(RobotInfo r: nearbyEnemyRobots){
+			if(!ableToShootTriad){
+				break;
+			}
 			if(r == targetRobot){
 				//if(debug)System.out.println("didn't count target");
 				continue;
@@ -368,7 +416,7 @@ public class RangedCombat extends Bot {
 			//if(debug) System.out.println("dirToR = " + dirToR);
 			float deg = Math.abs(targetDir.degreesBetween(dirToR));
 			//if(debug) System.out.println("deg = " + deg);
-			if(deg < PENTAD_SPREAD_DEGREES){
+			if(deg < PENTAD_SPREAD_DEGREES + 5){
 				float howFarAwayTheyCanGet = here.distanceTo(r.location)
 						- type.bulletSpeed
 						- type.bodyRadius
@@ -379,40 +427,43 @@ public class RangedCombat extends Bot {
 				if(valFromHitting < 0)
 					continue;
 				//if(debug)System.out.println("adding robot at " + r.location);
-				pentadValue += valFromHitting;
-				if(deg < TRIAD_SPREAD_DEGREES){
+				if(ableToShootPentad){
+					pentadValue += valFromHitting;
+				}
+				if(deg < TRIAD_SPREAD_DEGREES + 5){
 					triadValue += valFromHitting;
 				}
 			}
 		}
 
 		//adjusting shots
-		if(pentadValue == triadValue && pentadValue>110){
+		/*
+		if(pentadValue == triadValue && pentadValue > 110){
 			pentadValue = -1;
-			triadValue = 96;
-		}
+			triadValue = 111;
+		}*/
 		if(target.isRobot() && targetRobot!=null && targetRobot.type == RobotType.ARCHON){
 			return SINGLE_SHOT;
 		}
 
-		//if(debug)System.out.println("Pentad Value: " + pentadValue);
-		//if(debug)System.out.println("Triad Value: " + triadValue);
+		if(debug)System.out.println("Pentad Value: " + pentadValue);
+		if(debug)System.out.println("Triad Value: " + triadValue);
 		/*if (target != null) {
 			if (here.distanceTo(target.getLocation()) - type.bulletSpeed - type.bodyRadius - target.getRadius() < 0) {
 				score = 7;
 			}
 		}*/
-		int treeMod = rc.getTreeCount()/3;
-		if (pentadValue + treeMod> 110) {
+		int treeMod = rc.getTreeCount() / 3;
+		if (ableToShootPentad && pentadValue + treeMod + (type.attackPower + type.bulletSpeed) * 4 > 126 && (pentadValue > 150 || pentadValue > triadValue)) {
 			return PENTAD_SHOT;
 		}
-		if (triadValue + treeMod > 95) {
+		if (ableToShootTriad && triadValue + treeMod + (type.attackPower + type.bulletSpeed) * 4 > 111) {
 			return TRIAD_SHOT;
 		}
-		if (singleValue + treeMod > 69){
+		if (singleValue + treeMod + (type.attackPower + type.bulletSpeed) * 4 > 85){
 			return SINGLE_SHOT;
 		}
-		if (triadValue > 55) {
+		if (ableToShootTriad && triadValue + (type.attackPower + type.bulletSpeed) * 4 > 71) {
 			return TRIAD_SHOT;
 		}
 		return NO_SHOT;
@@ -448,19 +499,12 @@ public class RangedCombat extends Bot {
 	 * @throws GameActionException
 	 */
 	private static boolean isDirectionSafe(RobotInfo target) throws GameActionException {
-		//System.out.println(Clock.getBytecodeNum());
+		//if(debug)System.out.println("starting isDirSafe " + Clock.getBytecodeNum());
 		Direction intendedAttackDir = here.directionTo(target.location);
 		for (RobotInfo friend : nearbyAlliedRobots) {
 			if (friend.location.distanceTo(here) < here.distanceTo(target.location) - type.bodyRadius
 					- target.type.bodyRadius){ 
-				MapLocation leftSide = friend.location.add(here.directionTo(friend.location).rotateLeftDegrees(90), friend.getRadius());
-				MapLocation rightSide = friend.location.add(here.directionTo(friend.location).rotateRightDegrees(90), friend.getRadius());
-				Direction left = here.directionTo(leftSide);
-				Direction right = here.directionTo(rightSide);
-				float degL = Math.abs(left.degreesBetween(intendedAttackDir));
-				float degR = Math.abs(right.degreesBetween(intendedAttackDir));
-				float degT = Math.abs(left.degreesBetween(right));
-				if (degL < degT && degR < degT) {
+				if (willHitLoc(intendedAttackDir, friend.location, friend.type.bodyRadius)) {
 					//if(debug)System.out.println("Direction is not safe");
 					return false;
 				}
@@ -471,18 +515,7 @@ public class RangedCombat extends Bot {
 		}
 		for (TreeInfo friend : nearbyTrees) {
 			if (friend.location.distanceTo(here) < here.distanceTo(target.location)) {
-				MapLocation leftSide = friend.location.add(here.directionTo(friend.location).rotateLeftDegrees(90), friend.radius);
-				MapLocation rightSide = friend.location.add(here.directionTo(friend.location).rotateRightDegrees(90), friend.radius);
-				//if(debug)System.out.println("left = " + leftSide + "left dir = " + here.directionTo(leftSide).getAngleDegrees() + "right = " + rightSide + "right dir = " + here.directionTo(rightSide).getAngleDegrees() + "intended = " + intendedAttackDir.getAngleDegrees());
-				//if(debug)rc.setIndicatorLine(here, leftSide, 255, 0, 0);
-				//if(debug)rc.setIndicatorLine(here, rightSide, 255, 0, 0);
-				//if(debug)rc.setIndicatorLine(here, target.location, 0, 255, 0);
-				Direction left = here.directionTo(leftSide);
-				Direction right = here.directionTo(rightSide);
-				float degL = Math.abs(left.degreesBetween(intendedAttackDir));
-				float degR = Math.abs(right.degreesBetween(intendedAttackDir));
-				float degT = Math.abs(left.degreesBetween(right));
-				if (degL < degT && degR < degT) {
+				if (willHitLoc(intendedAttackDir, friend.location, friend.radius)) {
 					//if(debug)System.out.println("Direction is not safe");
 					return false;
 				}
@@ -490,7 +523,7 @@ public class RangedCombat extends Bot {
 				break;
 			}
 		}
-		//System.out.println(Clock.getBytecodeNum());
+		//if(debug)System.out.println("end dir safe " + Clock.getBytecodeNum());
 //		for (TreeInfo friend : nearbyNeutralTrees) {
 //			if (friend.location.distanceTo(here) < here.distanceTo(target.location) - type.bodyRadius
 //					- target.type.bodyRadius) {
@@ -505,6 +538,20 @@ public class RangedCombat extends Bot {
 	}
 
 
+	public static boolean willHitLoc(Direction dir, MapLocation loc, float rad){
+		MapLocation leftSide = loc.add(here.directionTo(loc).rotateLeftDegrees(90), rad);
+		MapLocation rightSide = loc.add(here.directionTo(loc).rotateRightDegrees(90), rad);
+		Direction left = here.directionTo(leftSide);
+		Direction right = here.directionTo(rightSide);
+		float degL = Math.abs(left.degreesBetween(dir));
+		float degR = Math.abs(right.degreesBetween(dir));
+		float degT = Math.abs(left.degreesBetween(right));
+		if (degL < degT && degR < degT) {
+			return true;
+		}
+		return false;
+	}
+	
 	///////////////////// These Might Belong in Util/////////////////////
 	public static void shootSingleShot(BodyInfo target) throws GameActionException {
 		if (rc.canFireSingleShot() && target != null) {

@@ -109,7 +109,9 @@ public class MapAnalysis extends Bot {
 		if (!startedGame && rc.getRoundNum() == 1) {
 			determineInitialStrategy();
 		}
-		switch (genetics) {
+		if(GameConstants.GAME_DEFAULT_ROUNDS - rc.getRoundNum() < 10)
+			rc.donate(rc.getTeamBullets());
+		switch(genetics){
 		case RUSH_VP:
 			break;
 		case RUSH_ENEMY:
