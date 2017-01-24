@@ -20,6 +20,7 @@ public class MapAnalysis extends Bot {
 	public static float maxX;
 	public static float maxY;
 	public static float area;
+	public static float conflictDist;
 	public static final int RUSH_VP = 1;
 	public static final int RUSH_ENEMY = 2;
 	public static final int CLEAR_TREES = 3;
@@ -65,7 +66,8 @@ public class MapAnalysis extends Bot {
 		numTree = rc.getTreeCount();
 		adaptation = Message.ADAPTATION.getValue();
 		genetics = Message.GENETICS.getValue();
-		
+		updateMapSize();
+		if(debug){
 		  System.out.println("numArchon = " + numArchon); System.out.println(
 		  "numGardener = " + numGardener); System.out.println("numSoldier = " +
 		  numSoldier); System.out.println("numTank = " + numTank);
@@ -75,6 +77,7 @@ public class MapAnalysis extends Bot {
 		  System.out.println("Archon BuildNum = " + rc.readBroadcast(13));
 		  System.out.println("Gardener BuildType = " + rc.readBroadcast(14));
 		  System.out.println("Gardener BuildNum = " + rc.readBroadcast(15));
+		}
 		 
 	}
 
@@ -85,15 +88,16 @@ public class MapAnalysis extends Bot {
 	public static void determineInitialStrategy() throws GameActionException {
 		startedGame = true;
 		float TreesNearMe = nearbyNeutralTrees.length;
-		float conflictDist = 999;
+		float conflictDistance = 999;
 		for (MapLocation ourLoc : initialAlliedArchonLocations) {
 			for (MapLocation theirLoc : initialEnemyArchonLocations) {
 				float temp = ourLoc.distanceTo(theirLoc);
-				if (temp < conflictDist) {
-					conflictDist = temp;
+				if (temp < conflictDistance) {
+					conflictDistance = temp;
 				}
 			}
 		}
+		conflictDist = conflictDistance;
 		if (conflictDist < 40) {
 			Message.GENETICS.setValue(RUSH_ENEMY);
 		} else if (TreesNearMe > 10) {
@@ -140,10 +144,10 @@ public class MapAnalysis extends Bot {
 				} else if (numTank == 0 || numTank*2 < numLumberjack){
 					Message.GARDENER_BUILD_ORDERS.setValue(TANK);
 					Message.GARDENER_BUILD_NUM.setValue(1);
-				} else if (numLumberjack < numSoldier && numLumberjack < area / 10) {
+				} else if (numLumberjack < numSoldier && numLumberjack < (area > 0 ? area: conflictDist*15) / 100) {
 					Message.GARDENER_BUILD_ORDERS.setValue(LUMBERJACK);
 					Message.GARDENER_BUILD_NUM.setValue(numGardener);
-				} else if (numSoldier < area / 10) {
+				} else if (numSoldier < (area > 0 ? area: conflictDist*15) / 100) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
 					Message.GARDENER_BUILD_NUM.setValue(numGardener);
 				}
@@ -171,10 +175,10 @@ public class MapAnalysis extends Bot {
 				} else if (numTank == 0 || numTank*5 < numLumberjack){
 					Message.GARDENER_BUILD_ORDERS.setValue(TANK);
 					Message.GARDENER_BUILD_NUM.setValue(1);
-				}else if (numLumberjack < numSoldier && numLumberjack < area / 10) {
+				}else if (numLumberjack < numSoldier && numLumberjack < (area > 0 ? area: conflictDist*15) / 100) {
 					Message.GARDENER_BUILD_ORDERS.setValue(LUMBERJACK);
 					Message.GARDENER_BUILD_NUM.setValue(numGardener);
-				} else if (numSoldier < area / 10) {
+				} else if (numSoldier < (area > 0 ? area: conflictDist*15) / 100) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
 					Message.GARDENER_BUILD_NUM.setValue(numGardener);
 				}
@@ -193,10 +197,10 @@ public class MapAnalysis extends Bot {
 				} else if (numTank == 0 || numTank*5 < numLumberjack){
 					Message.GARDENER_BUILD_ORDERS.setValue(TANK);
 					Message.GARDENER_BUILD_NUM.setValue(1);
-				} else if (numLumberjack < numSoldier && numLumberjack < area / 10) {
+				} else if (numLumberjack < numSoldier && numLumberjack < (area > 0 ? area: conflictDist*15) / 100) {
 					Message.GARDENER_BUILD_ORDERS.setValue(LUMBERJACK);
 					Message.GARDENER_BUILD_NUM.setValue(numGardener);
-				} else if (numSoldier < area / 10) {
+				} else if (numSoldier < (area > 0 ? area: conflictDist*15) / 100) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
 					Message.GARDENER_BUILD_NUM.setValue(numGardener);
 				}
@@ -224,10 +228,10 @@ public class MapAnalysis extends Bot {
 				} else if (numTank == 0 || numTank < numLumberjack){
 					Message.GARDENER_BUILD_ORDERS.setValue(TANK);
 					Message.GARDENER_BUILD_NUM.setValue(1);
-				}else if (numLumberjack < numSoldier && numLumberjack < area / 10) {
+				}else if (numLumberjack < numSoldier && numLumberjack < (area > 0 ? area: conflictDist*15) / 100) {
 					Message.GARDENER_BUILD_ORDERS.setValue(LUMBERJACK);
 					Message.GARDENER_BUILD_NUM.setValue(numGardener);
-				} else if (numSoldier < area / 10) {
+				} else if (numSoldier < (area > 0 ? area: conflictDist*15) / 100) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
 					Message.GARDENER_BUILD_NUM.setValue(numGardener);
 				}
@@ -246,10 +250,10 @@ public class MapAnalysis extends Bot {
 				} else if (numTank == 0 || numTank < numLumberjack){
 					Message.GARDENER_BUILD_ORDERS.setValue(TANK);
 					Message.GARDENER_BUILD_NUM.setValue(1);
-				}else if (numLumberjack < numSoldier && numLumberjack < area / 10) {
+				}else if (numLumberjack < numSoldier && numLumberjack < (area > 0 ? area: conflictDist*15) / 10) {
 					Message.GARDENER_BUILD_ORDERS.setValue(LUMBERJACK);
 					Message.GARDENER_BUILD_NUM.setValue(numGardener);
-				} else if (numSoldier < area / 10) {
+				} else if (numSoldier < (area > 0 ? area: conflictDist*15) / 10) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
 					Message.GARDENER_BUILD_NUM.setValue(numGardener);
 				}
