@@ -20,27 +20,14 @@ public class Lumberjack extends Bot {
 
         
         if(nearbyEnemyRobots.length > 0) {
-        	calculatedMove = null;
-            tryMoveDirection(here.directionTo(nearbyEnemyRobots[0].location), false, true);
-            if(calculatedMove != null && here.add(calculatedMove, type.strideRadius).distanceTo(nearbyEnemyRobots[0].location) < here.distanceTo(nearbyEnemyRobots[0].location)){
-            	rc.move(calculatedMove, type.strideRadius);
-            	moved = true;
-            }
             //Notify allies of enemies
             if((rc.getRoundNum() +rc.getID()) % 25 == 0 || target == null){
                 notifyFriendsOfEnemies(nearbyEnemyRobots);
             }
-            if(here.distanceTo(nearbyEnemyRobots[0].location) <= GameConstants.LUMBERJACK_STRIKE_RADIUS + nearbyEnemyRobots[0].type.bodyRadius){
-                rc.strike();
-                attacked = true;
-            }
-            if(calculatedMove != null && !moved){
-            	rc.move(calculatedMove, type.strideRadius);
-            	moved = true;
-            }
-        }
-        else{
-        	updateTarget(); 
+
+            doMicro();
+        } else {
+        	updateTarget();
         }
         if(target != null){
         	if(debug) { rc.setIndicatorLine(here, target, (us == Team.A ? 255: 0), (us == Team.A ? 0: 255), 0); };
@@ -106,7 +93,22 @@ public class Lumberjack extends Bot {
         }
     }
 
-
+    public void doMicro() throws GameActionException {
+        calculatedMove = null;
+        tryMoveDirection(here.directionTo(nearbyEnemyRobots[0].location), false, true);
+        if(calculatedMove != null && here.add(calculatedMove, type.strideRadius).distanceTo(nearbyEnemyRobots[0].location) < here.distanceTo(nearbyEnemyRobots[0].location)){
+            rc.move(calculatedMove, type.strideRadius);
+            moved = true;
+        }
+        if(here.distanceTo(nearbyEnemyRobots[0].location) <= GameConstants.LUMBERJACK_STRIKE_RADIUS + nearbyEnemyRobots[0].type.bodyRadius){
+            rc.strike();
+            attacked = true;
+        }
+        if(calculatedMove != null && !moved){
+            rc.move(calculatedMove, type.strideRadius);
+            moved = true;
+        }
+    }
 
 
 }

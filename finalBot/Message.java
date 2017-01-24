@@ -23,7 +23,7 @@ public enum Message {
     GARDENER_BUILD_NUM(15, 0),
     MAP_SIZE(16, 0),
 //<<<<<<< HEAD
-//    // TODO: wtf does "scout stuff for map size" mean in the gdoc?
+//    // wtf does "scout stuff for map size" mean in the gdoc?
 //    NUM_DISTRESS_SIGNALS_SENT(21, 0),
 //    GARDENERS_BUILT(22, 0),
 //    SOLDIER_IS_DEFENDER(23, 0),
