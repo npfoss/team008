@@ -412,6 +412,9 @@ public class RangedCombat extends Bot {
 		if (singleValue + treeMod > 69){
 			return SINGLE_SHOT;
 		}
+		if (triadValue > 55) {
+			return TRIAD_SHOT;
+		}
 		return NO_SHOT;
 
 	}
