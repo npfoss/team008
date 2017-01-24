@@ -89,7 +89,7 @@ public class Gardener extends Bot {
 				isExploring = false;
 			}
 		}
-		if (!isExploring) {
+		if (!isExploring || nearbyEnemyRobots.length > 0) {
 			buildSomething();
 		}
 	}
@@ -103,11 +103,11 @@ public class Gardener extends Bot {
 	}
 
 	public void buildSomething() throws GameActionException {
+		int typeToBuild = Message.GARDENER_BUILD_ORDERS.getValue();
 		int myGenetics = Message.GENETICS.getValue();
-		if ((!(myGenetics == MapAnalysis.RUSH_ENEMY || myGenetics == MapAnalysis.CLEAR_TREES)||rc.getRoundNum() > 200) && nearbyEnemyRobots.length == 0 && plantATree() && rc.getRoundNum() > 50)
+		if ((!(myGenetics == MapAnalysis.RUSH_ENEMY || myGenetics == MapAnalysis.CLEAR_TREES)||rc.getRoundNum() > 100) && nearbyEnemyRobots.length == 0  && rc.getRoundNum() > 5 && typeToBuild != MapAnalysis.TANK && plantATree())
 			return;
 		else if (rc.getBuildCooldownTurns() == 0 && (rc.readBroadcast(15) > 0)) {
-			int typeToBuild = Message.GARDENER_BUILD_ORDERS.getValue();
 			switch (typeToBuild) {
 			case 0:
 				break;
