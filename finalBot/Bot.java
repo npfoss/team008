@@ -36,8 +36,7 @@ public class Bot {
 	private static BugState bugState;
 	private static WallSide bugWallSide = null;
 
-	public Bot() {
-	}
+	public Bot() {}
 
 	public Bot(RobotController r) throws GameActionException {
 		rc = r;
@@ -280,7 +279,6 @@ public class Bot {
 			return danger;
 		}
 		return 9999;
-
 	}
 
 	public static boolean tryMoveDirection(Direction dir, boolean makeMove, boolean goBackwards)

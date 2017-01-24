@@ -163,13 +163,21 @@ public class Scout extends Bot {
 
 	public static boolean dealWithNearbyTrees() throws GameActionException {
 		//int start = Clock.getBytecodeNum();
-		for (TreeInfo tree : nearbyNeutralTrees) {
-			if (tree.containedBullets > 0) {
-				goTo(tree.location);
-				return true;
-			}
-		}
-		return false;
+		boolean moved = false;
+		for (TreeInfo tree : nearbyTrees) {
+			if (tree.team == Team.NEUTRAL){
+                if(tree.containedBullets > 0 && !moved) {
+                    goTo(tree.location);
+                    moved = true;
+                }
+                if(tree.containedRobot != null){
+                    Message.TREES_WITH_UNITS.addLocation(tree.getLocation());
+                }
+            } else if(tree.team == enemy){
+			    Message.ENEMY_TREES.addLocation(tree.getLocation());
+            }
+        }
+		return moved;
 	}
 
 	/**
