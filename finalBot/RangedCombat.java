@@ -503,9 +503,9 @@ public class RangedCombat extends Bot {
 		float twoDistTheyCanGetAway = targetDist + twoTurnsParallelToShot - type.bodyRadius - targetRobot.type.bodyRadius;
 		float threeDistTheyCanGetAway = targetDist + threeTurnsParallelToShot - type.bodyRadius - targetRobot.type.bodyRadius;
 		if(type == RobotType.TANK){
-			if(type.bulletSpeed * 2 > twoDistTheyCanGetAway && twoDistTheyCanGetAway * Math.tan(Math.PI/12) < targetRobot.type.bodyRadius * 2 + 0.5)
+			if(type.bulletSpeed * 2 > twoDistTheyCanGetAway && twoDistTheyCanGetAway * Math.tan(Math.PI/12) < targetRobot.type.bodyRadius * 2 + 2)
 				return PENTAD_SHOT;
-			if(type.bulletSpeed * 3 > threeDistTheyCanGetAway && threeDistTheyCanGetAway * Math.tan(Math.PI/12) < targetRobot.type.bodyRadius * 2 + 0.5)
+			if(type.bulletSpeed * 3 > threeDistTheyCanGetAway && threeDistTheyCanGetAway * Math.tan(Math.PI/12) < targetRobot.type.bodyRadius * 2 + 2)
 				return PENTAD_SHOT;
 		}
 		if (ableToShootTriad && triadValue + treeMod + (type.attackPower + type.bulletSpeed) * 4 > 111) {
@@ -516,9 +516,9 @@ public class RangedCombat extends Bot {
 		}
 		if(type == RobotType.SOLDIER){
 			if(debug)System.out.println(threeDistTheyCanGetAway);
-			if(type.bulletSpeed * 2 > twoDistTheyCanGetAway && twoDistTheyCanGetAway * Math.tan(Math.PI/9) < targetRobot.type.bodyRadius * 2 + 0.5)
+			if(type.bulletSpeed * 2 > twoDistTheyCanGetAway && twoDistTheyCanGetAway * Math.tan(Math.PI/9) < targetRobot.type.bodyRadius * 2 + 1)
 				return TRIAD_SHOT;
-			if(type.bulletSpeed * 3 > threeDistTheyCanGetAway && threeDistTheyCanGetAway * Math.tan(Math.PI/9) < targetRobot.type.bodyRadius * 2 + 0.5)
+			if(type.bulletSpeed * 3 > threeDistTheyCanGetAway && threeDistTheyCanGetAway * Math.tan(Math.PI/9) < targetRobot.type.bodyRadius * 2 + 1)
 				return TRIAD_SHOT;
 		}
 		if (singleValue + treeMod + (type.attackPower + type.bulletSpeed) * 4 > 85){
