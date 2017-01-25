@@ -487,7 +487,7 @@ public class RangedCombat extends Bot {
 				score = 7;
 			}
 		}*/
-		int treeMod = rc.getTreeCount() / 3;
+		int treeMod = rc.getTreeCount() / 4;
 		if (ableToShootPentad && pentadValue + treeMod + (type.attackPower + type.bulletSpeed) * 4 > 126 && (pentadValue > 150 || pentadValue > triadValue)) {
 			return PENTAD_SHOT;
 		}
@@ -506,6 +506,9 @@ public class RangedCombat extends Bot {
 		}
 		if (ableToShootTriad && triadValue + treeMod + (type.attackPower + type.bulletSpeed) * 4 > 111) {
 			return TRIAD_SHOT;
+		}
+		if(tempSV > 69){
+			return SINGLE_SHOT;
 		}
 		if(type == RobotType.SOLDIER){
 			if(debug)System.out.println(threeDistTheyCanGetAway);

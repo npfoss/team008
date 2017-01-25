@@ -132,15 +132,13 @@ public class MapAnalysis extends Bot {
 		if (!startedGame && rc.getRoundNum() == 1) {
 			determineInitialStrategy();
 		}
-		if(GameConstants.GAME_DEFAULT_ROUNDS - rc.getRoundNum() < 10)
-			rc.donate(rc.getTeamBullets());
 		switch(genetics){
 		case RUSH_VP:
 			break;
 		case RUSH_ENEMY:
 			if (numGardener == 0 ||  
 				    rc.getRoundNum() > 100 &&   
-				    ((rc.getTreeCount() + rc.getRobotCount()) / numGardener > 4 || rc.getTeamBullets() > 500 && rc.getRoundNum() < 300)
+				    (((rc.getTreeCount() + rc.getRobotCount()) / numGardener > 4 || rc.getTeamBullets() > rc.getRoundNum() * 2) && numGardener < 8)
 					&& (numGardener == 1 || rc.getTeamBullets() > (numTank == 0 ? 310:150))) {
 				Message.ARCHON_BUILD_NUM.setValue(1);
 			}
@@ -159,12 +157,12 @@ public class MapAnalysis extends Bot {
 				} else if (numSoldier < rc.getTreeCount() * 2.0 / 3.0 && numSoldier < 8) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
 					Message.GARDENER_BUILD_NUM.setValue((int)(rc.getTreeCount() * 2.0/3.0 - numSoldier));
-				} else if (rc.getTreeCount() > 7 && (numTank == 0 || numTank * 4 < numSoldier)){
+				} else if (rc.getTreeCount() > 11 && (numTank == 0 || numTank * 4 < numSoldier)){
 					Message.GARDENER_BUILD_ORDERS.setValue(TANK);
 					Message.GARDENER_BUILD_NUM.setValue(1);
-				} else if (numSoldier < rc.getTreeCount() * 2.0 / 3.0 && numSoldier < (area > 0 ? area: conflictDist * 15) / 100) {
+				} else if (numSoldier > 7 && numSoldier < rc.getTreeCount() && numSoldier < (area > 0 ? area: conflictDist * 15) / 200) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
-					Message.GARDENER_BUILD_NUM.setValue((int)(rc.getTreeCount() * 2.0/3.0 - numSoldier));
+					Message.GARDENER_BUILD_NUM.setValue((int)(rc.getTreeCount() - numSoldier));
 				}
 				break;
 			case CLEAR_AS_WELL:
@@ -183,12 +181,12 @@ public class MapAnalysis extends Bot {
 				} else if (numSoldier < rc.getTreeCount() * 2.0 / 3.0 && numSoldier < 8) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
 					Message.GARDENER_BUILD_NUM.setValue((int)(rc.getTreeCount() * 2.0/3.0 - numSoldier));
-				} else if (rc.getTreeCount() > 7 && (numTank == 0 || numTank * 4 < numSoldier)){
+				} else if (rc.getTreeCount() > 11 && (numTank == 0 || numTank * 4 < numSoldier)){
 					Message.GARDENER_BUILD_ORDERS.setValue(TANK);
 					Message.GARDENER_BUILD_NUM.setValue(1);
-				} else if (numSoldier < rc.getTreeCount() * 2.0 / 3.0 && numSoldier < (area > 0 ? area: conflictDist * 15) / 100) {
+				} else if (numSoldier > 7 && numSoldier < rc.getTreeCount() && numSoldier < (area > 0 ? area: conflictDist * 15) / 200) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
-					Message.GARDENER_BUILD_NUM.setValue((int)(rc.getTreeCount() * 2.0/3.0 - numSoldier));
+					Message.GARDENER_BUILD_NUM.setValue((int)(rc.getTreeCount() - numSoldier));
 				}
 				break;
 			}
@@ -196,7 +194,7 @@ public class MapAnalysis extends Bot {
 		case CLEAR_TREES:
 			if (numGardener == 0 ||  
 			rc.getRoundNum() > 100 &&   
-		    ((rc.getTreeCount() + rc.getRobotCount()) / numGardener > 4 || rc.getTeamBullets() > 500 && rc.getRoundNum() < 300)
+		    (((rc.getTreeCount() + rc.getRobotCount()) / numGardener > 4 || rc.getTeamBullets() > rc.getRoundNum() * 2) && numGardener < 8)
 			&& (numGardener == 1 || numGardener * 4 < numTree || rc.getTeamBullets() > (numTank == 0 ? 310:150))) {
 				Message.ARCHON_BUILD_NUM.setValue(1);
 			}
@@ -216,12 +214,12 @@ public class MapAnalysis extends Bot {
 				} else if (numSoldier < rc.getTreeCount() * 2.0 / 3.0 && numSoldier < 8) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
 					Message.GARDENER_BUILD_NUM.setValue((int)(rc.getTreeCount() * 2.0/3.0 - numSoldier));
-				} else if (rc.getTreeCount() > 7 && (numTank == 0 || numTank * 4 < numSoldier)){
+				} else if (rc.getTreeCount() > 11 && (numTank == 0 || numTank * 4 < numSoldier)){
 					Message.GARDENER_BUILD_ORDERS.setValue(TANK);
 					Message.GARDENER_BUILD_NUM.setValue(1);
-				} else if (numSoldier < rc.getTreeCount() * 2.0 / 3.0 && numSoldier < (area > 0 ? area: conflictDist * 15) / 100) {
+				} else if (numSoldier > 7 && numSoldier < rc.getTreeCount() && numSoldier < (area > 0 ? area: conflictDist * 15) / 200) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
-					Message.GARDENER_BUILD_NUM.setValue((int)(rc.getTreeCount() * 2.0/3.0 - numSoldier));
+					Message.GARDENER_BUILD_NUM.setValue((int)(rc.getTreeCount() - numSoldier));
 				}
 				break;
 			case DEFEND_SOLDIER:
@@ -238,12 +236,12 @@ public class MapAnalysis extends Bot {
 				} else if (numSoldier < rc.getTreeCount() * 2.0 / 3.0 && numSoldier < 8) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
 					Message.GARDENER_BUILD_NUM.setValue((int)(rc.getTreeCount() * 2.0/3.0 - numSoldier));
-				} else if (rc.getTreeCount() > 7 && (numTank == 0 || numTank * 4 < numSoldier)){
+				} else if (rc.getTreeCount() > 11 && (numTank == 0 || numTank * 4 < numSoldier)){
 					Message.GARDENER_BUILD_ORDERS.setValue(TANK);
 					Message.GARDENER_BUILD_NUM.setValue(1);
-				} else if (numSoldier < rc.getTreeCount() * 2.0 / 3.0 && numSoldier < (area > 0 ? area: conflictDist * 15) / 100) {
+				} else if (numSoldier > 7 && numSoldier < rc.getTreeCount() && numSoldier < (area > 0 ? area: conflictDist * 15) / 100) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
-					Message.GARDENER_BUILD_NUM.setValue((int)(rc.getTreeCount() * 2.0/3.0 - numSoldier));
+					Message.GARDENER_BUILD_NUM.setValue((int)(rc.getTreeCount() - numSoldier));
 				}
 				break;
 			}
@@ -251,7 +249,7 @@ public class MapAnalysis extends Bot {
 		case BUILD_TREES:
 			if (numGardener == 0 ||  
 		    rc.getRoundNum() > 100 && 
-		    ((rc.getTreeCount() + rc.getRobotCount()) / numGardener > 4 || rc.getTeamBullets() > 500 && rc.getRoundNum() < 300)
+		    (((rc.getTreeCount() + rc.getRobotCount()) / numGardener > 4 || rc.getTeamBullets() > rc.getRoundNum() * 2) && numGardener < 8)
 			&& (numGardener == 1 || numGardener * 4 < numTree || rc.getTeamBullets() > (numTank == 0 ? 310:150))) {
 				Message.ARCHON_BUILD_NUM.setValue(1);
 			}
@@ -271,12 +269,12 @@ public class MapAnalysis extends Bot {
 				} else if (numSoldier < rc.getTreeCount() * 2.0 / 3.0 && numSoldier < 8) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
 					Message.GARDENER_BUILD_NUM.setValue((int)(rc.getTreeCount() * 2.0/3.0 - numSoldier));
-				} else if (rc.getTreeCount() > 7 && (numTank == 0 || numTank * 4 < numSoldier)){
+				} else if (rc.getTreeCount() > 11 && (numTank == 0 || numTank * 4 < numSoldier)){
 					Message.GARDENER_BUILD_ORDERS.setValue(TANK);
 					Message.GARDENER_BUILD_NUM.setValue(1);
-				} else if (numSoldier < rc.getTreeCount() * 2.0 / 3.0 && numSoldier < (area > 0 ? area: conflictDist * 15) / 100) {
+				} else if (numSoldier > 7 && numSoldier < rc.getTreeCount() && numSoldier < (area > 0 ? area: conflictDist * 15) / 100) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
-					Message.GARDENER_BUILD_NUM.setValue((int)(rc.getTreeCount() * 2.0/3.0 - numSoldier));
+					Message.GARDENER_BUILD_NUM.setValue((int)(rc.getTreeCount() - numSoldier));
 				}
 				break;
 			case DEFEND_SOLDIER:
@@ -296,12 +294,12 @@ public class MapAnalysis extends Bot {
 				} else if (numSoldier < rc.getTreeCount() * 2.0 / 3.0 && numSoldier < 8) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
 					Message.GARDENER_BUILD_NUM.setValue((int)(rc.getTreeCount() * 2.0/3.0 - numSoldier));
-				} else if (rc.getTreeCount() > 7 && (numTank == 0 || numTank * 4 < numSoldier)){
+				} else if (rc.getTreeCount() > 11 && (numTank == 0 || numTank * 4 < numSoldier)){
 					Message.GARDENER_BUILD_ORDERS.setValue(TANK);
 					Message.GARDENER_BUILD_NUM.setValue(1);
-				} else if (numSoldier < rc.getTreeCount() * 2.0 / 3.0 && numSoldier < (area > 0 ? area: conflictDist * 15) / 100) {
+				} else if (numSoldier > 7 && numSoldier < rc.getTreeCount() && numSoldier < (area > 0 ? area: conflictDist * 15) / 100) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
-					Message.GARDENER_BUILD_NUM.setValue((int)(rc.getTreeCount() * 2.0/3.0 - numSoldier));
+					Message.GARDENER_BUILD_NUM.setValue((int)(rc.getTreeCount() - numSoldier));
 				}
 				break;
 			}

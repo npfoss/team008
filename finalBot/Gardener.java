@@ -26,7 +26,7 @@ public class Gardener extends Bot {
 			}
 			for (TreeInfo t : nearbyAlliedTrees)
 				if (Math.abs(dir.radiansBetween(here.directionTo(t.location))) < Math.PI / 2) {
-					thingsInTheWay+=3;
+					thingsInTheWay += 2;
 				}
 			boolean addedTree = false;
 			for (TreeInfo t : nearbyNeutralTrees){
@@ -35,13 +35,13 @@ public class Gardener extends Bot {
 					addedTree = true;
 				}
 				if (Math.abs(dir.radiansBetween(here.directionTo(t.location))) < Math.PI / 2){
-					thingsInTheWay+=3;
+					thingsInTheWay += 2;
 				}
 			}
 			for (RobotInfo t : nearbyRobots)
 				if ((t.type == RobotType.ARCHON || t.type == RobotType.GARDENER)
 						&& Math.abs(dir.radiansBetween(here.directionTo(t.location))) < Math.PI / 2) {
-					thingsInTheWay += (t.type == RobotType.ARCHON ? 3 : 10);
+					thingsInTheWay += (t.type == RobotType.ARCHON ? 2 : 10);
 				}
 			if (thingsInTheWay < bestScore) {
 				bestDir = dir;
@@ -114,7 +114,7 @@ public class Gardener extends Bot {
 	public void buildSomething() throws GameActionException {
 		int typeToBuild = Message.GARDENER_BUILD_ORDERS.getValue();
 		int myGenetics = Message.GENETICS.getValue();
-		if ((!(myGenetics == MapAnalysis.RUSH_ENEMY || myGenetics == MapAnalysis.CLEAR_TREES)||rc.getRoundNum() > 100) && nearbyEnemyRobots.length == 0  && rc.getRoundNum() > 5 && typeToBuild != MapAnalysis.TANK && plantATree())
+		if ((!(myGenetics == MapAnalysis.RUSH_ENEMY) || rc.getRoundNum() > 100) && nearbyEnemyRobots.length == 0  && rc.getRoundNum() > 5 && (typeToBuild != MapAnalysis.TANK || rc.readBroadcast(15) == 0) && plantATree())
 			return;
 		else if (rc.getBuildCooldownTurns() == 0 && (rc.readBroadcast(15) > 0)) {
 			switch (typeToBuild) {
@@ -226,8 +226,6 @@ public class Gardener extends Bot {
 	}
 
 	public boolean plantATree() throws GameActionException {
-		if(isExploring)
-			return false;
 		Direction dir = here.directionTo(MapAnalysis.center);
 		Boolean skipped = false;
 		for (int i = 36; i-- > 0;) {
@@ -237,14 +235,11 @@ public class Gardener extends Bot {
 					return true;
 				} else {
 					skipped = true;
+					dir = dir.rotateLeftDegrees(50);
+					i -= 5;
 				}
 			}
-			if (skipped) {
-				dir = dir.rotateLeftDegrees(60);
-				i -= 5;
-			} else {
-				dir = dir.rotateLeftDegrees(10);
-			}
+			dir = dir.rotateLeftDegrees(10);
 		}
 		return false;
 	}

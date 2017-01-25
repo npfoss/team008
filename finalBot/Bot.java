@@ -156,8 +156,8 @@ public class Bot {
 					isDead = true;
 				}
 				// test this
-				if (roundNum+1 == GameConstants.GAME_DEFAULT_ROUNDS
-						|| rc.getTeamVictoryPoints() + rc.getTeamBullets() /rc.getVictoryPointCost() >= 1000) {
+				if (roundNum + 5 > GameConstants.GAME_DEFAULT_ROUNDS
+						|| rc.getTeamVictoryPoints() + rc.getTeamBullets() / rc.getVictoryPointCost() >= 1000) {
 					rc.donate(((int) (rc.getTeamBullets() / rc.getVictoryPointCost())) * rc.getVictoryPointCost());
 				}
 				shakeNearbyTrees();
@@ -267,7 +267,7 @@ public class Bot {
 	}
 
 	private static int tryMove(Direction dir, float dist, boolean makeMove) throws GameActionException {
-		if (rc.canMove(dir, dist) && !(type == RobotType.TANK && rc.isLocationOccupiedByTree(here.add(dir,dist)) && rc.senseTreeAtLocation(here.add(dir,dist)).team == us)) {
+		if (rc.canMove(dir, dist) && !(type == RobotType.TANK && rc.isCircleOccupiedExceptByThisRobot(here.add(dir, dist), type.bodyRadius))) {
 			int danger = 0;
 			danger = dangerRating(here.add(dir, dist));
 			if (danger == 0) {
@@ -429,7 +429,7 @@ public class Bot {
 	}
 
 	private static boolean move(Direction dir) throws GameActionException {
-		if (rc.canMove(dir, type.strideRadius) && !(type == RobotType.TANK && rc.isLocationOccupiedByTree(here.add(dir, type.strideRadius)) && rc.senseTreeAtLocation(here.add(dir, type.strideRadius)).team == us)) {
+		if (rc.canMove(dir, type.strideRadius) && !(type == RobotType.TANK && rc.isCircleOccupiedExceptByThisRobot(here.add(dir, type.strideRadius), type.bodyRadius))) {
 			rc.move(dir);
 			return true;
 		}
@@ -483,7 +483,7 @@ public class Bot {
 
 	private static boolean canMove(Direction dir) throws GameActionException {
 		// TODO: add safety
-		return rc.canMove(dir, type.strideRadius) && !(type == RobotType.TANK && rc.isLocationOccupiedByTree(here.add(dir, type.strideRadius)) && rc.senseTreeAtLocation(here.add(dir, type.strideRadius)).team == us);
+		return rc.canMove(dir, type.strideRadius) && !(type == RobotType.TANK && rc.isCircleOccupiedExceptByThisRobot(here.add(dir, type.strideRadius), type.bodyRadius));
 	}
 
 	private static boolean tryMoveDirect() throws GameActionException {
@@ -538,7 +538,7 @@ public class Bot {
 
 	/////////////////////////////// Dangerous Nav///////////////////////////////
 	public static void goToDangerous(MapLocation loc) throws GameActionException {
-		if (here.distanceTo(loc) < type.strideRadius && rc.canMove(loc) && !(type == RobotType.TANK && rc.isLocationOccupiedByTree(loc) && rc.senseTreeAtLocation(loc).team == us)) {
+		if (here.distanceTo(loc) < type.strideRadius && rc.canMove(loc) && !(type == RobotType.TANK && rc.isCircleOccupiedExceptByThisRobot(loc, type.bodyRadius))) {
 			rc.move(loc);
 			here = rc.getLocation();
 			return;
@@ -566,7 +566,7 @@ public class Bot {
 	}
 
 	private static boolean tryMoveDangerous(Direction dir, float dist) throws GameActionException {
-		if (rc.canMove(dir, dist) && !(type == RobotType.TANK && rc.isLocationOccupiedByTree(here.add(dir,dist)) && rc.senseTreeAtLocation(here.add(dir,dist)).team == us)) {
+		if (rc.canMove(dir, dist) && !(type == RobotType.TANK && rc.isCircleOccupiedExceptByThisRobot(here.add(dir, type.strideRadius), type.bodyRadius))) {
 			rc.move(dir, dist);
 			here = rc.getLocation();
 			return true;
