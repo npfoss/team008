@@ -38,7 +38,8 @@ public enum Message {
     DISTRESS_SIGNALS(1000, 199),
     ENEMY_ARCHONS(1200, 50),
     TREES_WITH_UNITS(1250, 99),
-    CLEAR_TREES_PLEASE(1350, 49) // make this location the tree you want cleared ideally
+    CLEAR_TREES_PLEASE(1350, 49), // make this location the tree you want cleared ideally
+    GARDENER_BUILD_LOCS(1400,100)
     ;
 
     /** Ok great, but how tf do I use this?
