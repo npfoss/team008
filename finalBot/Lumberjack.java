@@ -1,12 +1,14 @@
 package team008.finalBot;
 
 import battlecode.common.*;
+import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 
 public class Lumberjack extends Bot {
 
     public Lumberjack(RobotController r) throws GameActionException{
         super(r);
         myRandomDirection = Util.randomDirection();
+//        debug = true;
     }
 
     public static boolean attacked = false;
@@ -42,7 +44,9 @@ public class Lumberjack extends Bot {
             moved = true;
         }
 
+        int start = Clock.getBytecodeNum();
         goForTrees(); // moves towards them and chops
+        if(debug) System.out.println(" going for trees took " + (Clock.getBytecodeNum() - start));
 
         if (!moved) { // no trees around // just random ish
             MapLocation[] enemyArchonLocs = rc.getInitialArchonLocations(enemy);
@@ -92,7 +96,9 @@ public class Lumberjack extends Bot {
     }
 
     public void goForTrees() throws GameActionException {
-        TreeInfo closestNeutralWithUnit = Util.closestTree(nearbyNeutralTrees, rc.getLocation(), true);
+        int s = Clock.getBytecodeNum();
+        TreeInfo closestNeutralWithUnit = Util.closestTree(nearbyNeutralTrees, rc.getLocation(), true, 50);
+        System.out.println("getting closest " + nearbyNeutralTrees.length + " neutral took " + (Clock.getBytecodeNum() - s));
         if(closestNeutralWithUnit != null){
             if(!moved){
                 tryMoveDirection(here.directionTo(closestNeutralWithUnit.location), true, false);
@@ -137,6 +143,7 @@ public class Lumberjack extends Bot {
     }
 
     public void doMicro() throws GameActionException {
+        if(debug) rc.setIndicatorDot(here, 255, 0 , 0);
         calculatedMove = null;
         tryMoveDirection(here.directionTo(nearbyEnemyRobots[0].location), false, true);
         if(calculatedMove != null && here.add(calculatedMove, type.strideRadius).distanceTo(nearbyEnemyRobots[0].location) < here.distanceTo(nearbyEnemyRobots[0].location)){
