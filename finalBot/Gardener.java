@@ -5,12 +5,12 @@ import battlecode.common.*;
 public class Gardener extends Bot {
 	public boolean isExploring;
 	public static Direction dirIAmMoving;
-	public static int built;
+	public static boolean updatedLocs;
 
 	public Gardener(RobotController r) throws GameActionException {
 		super(r);
 		isExploring = true;
-		built = 0;
+		updatedLocs = false;
 		// anything else gardener specific
 	}
 
@@ -60,7 +60,20 @@ public class Gardener extends Bot {
 		return bestDir;
 
 	}
-
+	public boolean isBadLocation(MapLocation targetLoc) throws GameActionException{
+		if(targetLoc == null){
+			return false;
+		}
+		if( here.distanceTo(targetLoc) < type.sensorRadius-.001 && (!rc.onTheMap(targetLoc) || rc.isLocationOccupiedByTree(targetLoc)) || !rc.onTheMap(here.add(here.directionTo(targetLoc),(float) (type.sensorRadius-.1)))){
+			Message.GARDENER_BUILD_LOCS.removeLocation(targetLoc);
+			return true;
+		}
+		return false;
+	}
+	public void updateLocs() throws GameActionException{
+		for(int i = 0; i < 6 ; i++)
+		Message.GARDENER_BUILD_LOCS.addLocation(here.add(new Direction((float) (Math.PI/3 * i)), (float) 8.5));
+	}
 	public void takeTurn() throws GameActionException {
 		waterLowestHealthTree();
 		if (nearbyEnemyRobots.length > 0) {
@@ -81,25 +94,41 @@ public class Gardener extends Bot {
 			}
 		}
 		if (isExploring) {
-			if (dirIAmMoving == null
-					|| myRand.nextDouble() < .5 + (double) (-rc.getRoundNum()) / (double) (2 * rc.getRoundLimit())) {
-				dirIAmMoving = findOpenSpaces();
+			MapLocation targetLoc = Message.GARDENER_BUILD_LOCS.getClosestLocation(here);
+			while (isBadLocation(targetLoc)) {
+				targetLoc = Message.GARDENER_BUILD_LOCS.getClosestLocation(here);
 			}
-			goTo(dirIAmMoving);
-			boolean farAway = true;
-			for (RobotInfo r : nearbyAlliedRobots) {
-				if (r.type == RobotType.GARDENER || r.type == RobotType.ARCHON) {
-					farAway = false;
-					break;
+			if (targetLoc == null) {
+				if (dirIAmMoving == null || myRand.nextDouble() < .5
+						+ (double) (-rc.getRoundNum()) / (double) (2 * rc.getRoundLimit())) {
+					dirIAmMoving = findOpenSpaces();
+				}
+				goTo(dirIAmMoving);
+				boolean farAway = true;
+				for (RobotInfo r : nearbyAlliedRobots) {
+					if (r.type == RobotType.GARDENER || r.type == RobotType.ARCHON) {
+						farAway = false;
+						break;
+					}
+				}
+				isExploring = !farAway;
+			} else {
+				goToDangerous(targetLoc);
+				if (here.distanceTo(targetLoc) < .1) {
+					isExploring = false;
 				}
 			}
-			isExploring = !farAway;
 			if (Message.NUM_GARDENERS.getValue() == 1) {
 				isExploring = false;
 			}
 		}
-		if (!isExploring || nearbyEnemyRobots.length > 0) {
+		if (!isExploring
+				|| nearbyEnemyRobots.length > 0 && Message.GARDENER_BUILD_ORDERS.getValue() != MapAnalysis.TANK) {
 			buildSomething();
+		}
+		if(!isExploring && !updatedLocs){
+			updateLocs();
+			updatedLocs = true;
 		}
 	}
 
