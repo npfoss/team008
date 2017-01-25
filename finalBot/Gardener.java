@@ -30,7 +30,7 @@ public class Gardener extends Bot {
 				}
 			boolean addedTree = false;
 			for (TreeInfo t : nearbyNeutralTrees){
-				if(here.distanceTo(t.location) < 4 && !addedTree){
+				if(here.distanceTo(t.location) < 6 + t.radius && !addedTree){
 					Message.CLEAR_TREES_PLEASE.addLocation(t.location);
 					addedTree = true;
 				}
