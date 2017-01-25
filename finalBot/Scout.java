@@ -162,21 +162,23 @@ public class Scout extends Bot {
 	}
 
 	public static boolean dealWithNearbyTrees() throws GameActionException {
-		//int start = Clock.getBytecodeNum();
+//		int start = Clock.getBytecodeNum();
 		boolean moved = false;
-		for (TreeInfo tree : nearbyTrees) {
-			if (tree.team == Team.NEUTRAL){
-                if(tree.containedBullets > 0 && !moved) {
-                    goTo(tree.location);
+		int giveUp = (nearbyEnemyRobots.length == 0 && rc.getRoundNum() % 9 == 0 ? 9999 : 50);
+		for (int i = 0; i < Math.min(nearbyTrees.length, giveUp); i++) {
+			if (nearbyTrees[i].team == Team.NEUTRAL){
+                if(nearbyTrees[i].containedBullets > 0 && !moved) {
+                    goTo(nearbyTrees[i].location);
                     moved = true;
                 }
-                if(tree.containedRobot != null){
-                    Message.TREES_WITH_UNITS.addLocation(tree.getLocation());
+                if(nearbyTrees[i].containedRobot != null){
+                    Message.TREES_WITH_UNITS.addLocation(nearbyTrees[i].getLocation());
                 }
-            } else if(tree.team == enemy){
-			    Message.ENEMY_TREES.addLocation(tree.getLocation());
+            } else if(nearbyTrees[i].team == enemy){
+			    Message.ENEMY_TREES.addLocation(nearbyTrees[i].getLocation());
             }
         }
+//        if (debug) System.out.println("dealWithNearbyTrees took " + (Clock.getBytecodeNum() - start));
 		return moved;
 	}
 

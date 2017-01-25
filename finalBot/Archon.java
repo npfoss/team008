@@ -42,6 +42,9 @@ public class Archon extends Bot {
 
 	public void hireGardener() throws GameActionException {
 		Direction dir = here.directionTo(MapAnalysis.center);
+		MapLocation gardenerBuildLoc = Message.GARDENER_BUILD_LOCS.getClosestLocation(here);
+		if(gardenerBuildLoc != null)
+			dir = here.directionTo(Message.GARDENER_BUILD_LOCS.getClosestLocation(here));
 		if (rc.canHireGardener(dir)) {
 			rc.hireGardener(dir);
 			Message.ARCHON_BUILD_NUM.setValue(Message.ARCHON_BUILD_NUM.getValue()-1);

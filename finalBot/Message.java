@@ -31,6 +31,7 @@ public enum Message {
     //don't need to use this doc for scout edge stuff
     ARCHON_DISTRESS_NUM(21,0),
     //>>>>>>> origin/dev
+    DIST_TO_CENTER(22, 0),
     NEUTRAL_TREES(100, 99),
     ENEMY_TREES(200, 99),
     ENEMY_ARMIES(300, 399),
@@ -38,7 +39,8 @@ public enum Message {
     DISTRESS_SIGNALS(1000, 199),
     ENEMY_ARCHONS(1200, 50),
     TREES_WITH_UNITS(1250, 99),
-    CLEAR_TREES_PLEASE(1350, 49) // make this location the tree you want cleared ideally
+    CLEAR_TREES_PLEASE(1350, 49), // make this location the tree you want cleared ideally
+    GARDENER_BUILD_LOCS(1400,100)
     ;
 
     /** Ok great, but how tf do I use this?
@@ -74,12 +76,17 @@ public enum Message {
         bandWidth = width;
     }
 
+    public int getLength() throws GameActionException{
+    	return getValue();
+    }
+    
     public void setValue(int x) throws GameActionException {
         Bot.rc.broadcast(bandStart, x);
     }
 
     public void setValue(float f) throws GameActionException {
         Bot.rc.broadcastFloat(bandStart, f);
+        //System.out.println("broadcasting " + f);
     }
 
     public void setValue(int channel, int x) throws GameActionException {
@@ -122,8 +129,10 @@ public enum Message {
     public boolean removeLocation(MapLocation loc) throws GameActionException{
         int code = (int)(loc.x*FLOAT_MULTIPLIER)*CODE_OFFSET_AMT + (int)(loc.y*FLOAT_MULTIPLIER);
         int size = getValue();
+//        System.out.println("trying to remove " + bandStart);
         for(int i = 1; i <= size; i++){
             if(getValue(bandStart + i) == code){
+//                System.out.println("FOUND! at channel " + (bandStart + i));
                 setValue(bandStart + i, getValue(bandStart+size));
                 setValue(size-1);
                 return true;

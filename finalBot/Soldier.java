@@ -10,7 +10,7 @@ public class Soldier extends Bot {
     
 	public void takeTurn() throws Exception{
         //if(debug)System.out.println("In instantiation:"+Clock.getBytecodeNum());
-        if(nearbyEnemyRobots.length > 0 && !(nearbyEnemyRobots.length == 1 && nearbyEnemyRobots[0].type == RobotType.ARCHON)){
+        if(nearbyEnemyRobots.length > 0){
             if((rc.getRoundNum() +rc.getID()) % 25 == 0 || target == null){
                 notifyFriendsOfEnemies(nearbyEnemyRobots);
             }
@@ -29,7 +29,7 @@ public class Soldier extends Bot {
 			}
 			else if (target != null) {
 				if (debug) {
-		        	if(debug) { rc.setIndicatorLine(here, target, (us == Team.A ? 255: 0), (us == Team.A ? 0: 255), 0); };
+		        	rc.setIndicatorLine(here, target, (us == Team.A ? 255: 0), (us == Team.A ? 0: 255), 0); 
 				}
 				goTo(target);
 			} 

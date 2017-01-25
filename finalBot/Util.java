@@ -24,15 +24,32 @@ public class Util extends Bot {
         return closest;
     }
 
-    public static TreeInfo closestTree(TreeInfo[] trees, MapLocation toHere, boolean excludeEmpty){
+    public static TreeInfo closestTree(TreeInfo[] trees, MapLocation toHere, boolean excludeEmpty) {
+        return closestTree(trees, toHere, excludeEmpty, 9999, false);
+    }
+
+    public static TreeInfo closestTree(TreeInfo[] trees, MapLocation toHere, boolean excludeEmpty, int whenToGiveUp) {
+        return closestTree(trees, toHere, excludeEmpty, whenToGiveUp, false);
+    }
+
+    public static TreeInfo closestTree(TreeInfo[] trees, MapLocation toHere, boolean excludeEmpty, int whenToGiveUp, boolean careAboutHealth){
         TreeInfo closest = null;
         float bestDist = 999999;
         float dist;
-        for (int i = trees.length; i-- > 0; ) {
-            dist = distanceSquaredTo(toHere, trees[i].getLocation());
-            if (dist < bestDist && (!excludeEmpty || trees[i].containedRobot != null)) {
-                bestDist = dist;
-                closest = trees[i];
+        float bestHealth = 999999;
+        for (int i = Math.min(whenToGiveUp, trees.length); i-- > 0; ) {
+            if (!excludeEmpty || trees[i].containedRobot != null) {
+                dist = here.distanceTo(trees[i].getLocation());
+                if (careAboutHealth && dist < GameConstants.LUMBERJACK_STRIKE_RADIUS + trees[i].getRadius()){
+                    if( trees[i].getHealth() < bestHealth){
+                        bestHealth = trees[i].getHealth();
+                        closest = trees[i];
+                        bestDist = dist;
+                    }
+                } else if (dist < bestDist) {
+                    bestDist = dist;
+                    closest = trees[i];
+                }
             }
         }
         return closest;
@@ -112,7 +129,7 @@ public class Util extends Bot {
     public static int numBodiesTouchingRadius(BodyInfo[] trees, MapLocation toHere, float radius){
         int count = 0;
         for (BodyInfo tree : trees){
-            if (distanceSquaredTo(toHere, tree.getLocation()) <= (radius + tree.getRadius())*(radius + tree.getRadius())){
+            if (toHere.distanceTo(tree.getLocation()) <= radius + tree.getRadius()){
                 count++;
             }
         }
