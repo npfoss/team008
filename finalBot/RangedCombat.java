@@ -374,6 +374,7 @@ public class RangedCombat extends Bot {
 		Direction rightTriadDir = targetDir.rotateRightDegrees(20);
 		Direction leftPentadDir = targetDir.rotateLeftDegrees(30);
 		Direction rightPentadDir = targetDir.rotateRightDegrees(30);
+		singleValue += (targetRobot.type == RobotType.TANK ? 16 : 0); //TODO: make this better
 		int tempSV = singleValue;
 		
 		if(targetRobot != null && here.distanceTo(targetLoc) - type.bodyRadius - targetRobot.type.bodyRadius < type.bulletSpeed){
