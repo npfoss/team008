@@ -74,8 +74,8 @@ public enum Message {
         bandWidth = width;
     }
 
-    public int getWidth(){
-    	return bandWidth;
+    public int getLength() throws GameActionException{
+    	return getValue();
     }
     
     public void setValue(int x) throws GameActionException {

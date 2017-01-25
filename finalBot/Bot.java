@@ -360,7 +360,7 @@ public class Bot {
 		if (debug)
 			//System.out.println("bugging");
 		if (bugState == BugState.BUG) {
-			if(debug)System.out.println("bugging");
+			//if(debug)System.out.println("bugging");
 			if (canEndBug()) {
 				bugState = BugState.DIRECT;
 				bugMovesSinceMadeProgress = 0;
@@ -511,8 +511,8 @@ public class Bot {
 		if (bugMovesSinceSeenObstacle >= 2)
 			return true;
 		if (debug) {
-			System.out.println("bug rotation count = " + bugRotationCount);
-			System.out.println("bugMovesSinceSeenObstacle = " + bugMovesSinceSeenObstacle);
+			//System.out.println("bug rotation count = " + bugRotationCount);
+			//System.out.println("bugMovesSinceSeenObstacle = " + bugMovesSinceSeenObstacle);
 		}
 		return (bugRotationCount <= 0 || bugRotationCount >= 18) && here.distanceSquaredTo(dest) <= bugStartDistSq;
 	}

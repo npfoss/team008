@@ -40,7 +40,7 @@ public class Lumberjack extends Bot {
         	    updateTarget(2);
             }
         }
-        if(target != null && !moved){
+        if(target != null && !moved && !(rc.canSenseLocation(target) && rc.isLocationOccupiedByTree(target) && rc.canChop(target))){
             goTo(target);
             moved = true;
         }
@@ -72,26 +72,27 @@ public class Lumberjack extends Bot {
         target = (closestNeutralWithUnit == null ? null : closestNeutralWithUnit.getLocation());
         MapLocation targetD;
 
-        for(int i = 0; i < messagesToTry.length && target == null; i++){
+        for(int i = 0; i < messagesToTry.length; i++){
             //System.out.println("loops " + i);
             targetD = messagesToTry[i].getClosestLocation(here);
-            if (targetD != null && here.distanceTo(targetD) < howFarToGoForMessage[i]*howDesperate) {
+            if (targetD != null && here.distanceTo(targetD) < howFarToGoForMessage[i]*howDesperate && (target == null || (here.distanceTo(targetD) < here.distanceTo(target) && here.distanceTo(targetD) < 7))) {
                 //if(debug)System.out.println("targetD = " + targetD);
                 target = targetD;
             }
         }
 
         if (target != null && rc.getLocation().distanceTo(target) < 5){
-            if(debug)System.out.println("thinking about removing");
+            //if(debug)System.out.println("thinking about removing");
             if( nearbyEnemyRobots.length == 0 &&
                     Message.ENEMY_ARCHONS.removeLocation(target))
                 target = null;
             else if (nearbyEnemyTrees.length == 0 &&
                     Message.ENEMY_TREES.removeLocation(target))
                 target = null;
-            else if (here.distanceTo(target) < 1.5 &&
-                    Message.CLEAR_TREES_PLEASE.removeLocation(target))
+            else if (here.distanceTo(target) < 2.5 &&
+                    Message.CLEAR_TREES_PLEASE.removeLocation(target)){
                 target = null;
+            }
             else if (here.distanceTo(target) < 1.5 &&
                     Message.TREES_WITH_UNITS.removeLocation(target))
                 target = null;

@@ -565,7 +565,7 @@ public class RangedCombat extends Bot {
 
 		}
 		for (TreeInfo friend : nearbyTrees) {
-			if (friend.location.distanceTo(here) < here.distanceTo(target.location)) {
+			if (friend.location.distanceTo(here) - friend.radius - target.type.strideRadius < here.distanceTo(target.location)) {
 				if (willHitLoc(intendedAttackDir, friend.location, friend.radius)) {
 					//if(debug)System.out.println("Direction is not safe");
 					return false;

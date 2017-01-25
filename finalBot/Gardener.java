@@ -26,18 +26,22 @@ public class Gardener extends Bot {
 			}
 			for (TreeInfo t : nearbyAlliedTrees)
 				if (Math.abs(dir.radiansBetween(here.directionTo(t.location))) < Math.PI / 2) {
-					thingsInTheWay++;
+					thingsInTheWay+=3;
 				}
+			boolean addedTree = false;
 			for (TreeInfo t : nearbyNeutralTrees){
-				if(here.distanceTo(t.location) < 7){
+				if(here.distanceTo(t.location) < 4 && !addedTree){
 					Message.CLEAR_TREES_PLEASE.addLocation(t.location);
-					break;
+					addedTree = true;
+				}
+				if (Math.abs(dir.radiansBetween(here.directionTo(t.location))) < Math.PI / 2){
+					thingsInTheWay+=3;
 				}
 			}
 			for (RobotInfo t : nearbyRobots)
 				if ((t.type == RobotType.ARCHON || t.type == RobotType.GARDENER)
 						&& Math.abs(dir.radiansBetween(here.directionTo(t.location))) < Math.PI / 2) {
-					thingsInTheWay += (t.type == RobotType.ARCHON ? 1 : 10);
+					thingsInTheWay += (t.type == RobotType.ARCHON ? 3 : 10);
 				}
 			if (thingsInTheWay < bestScore) {
 				bestDir = dir;
@@ -90,7 +94,7 @@ public class Gardener extends Bot {
 				}
 			}
 			isExploring = !farAway;
-			if (Message.NUM_GARDENERS.getValue() == 1 || Message.NUM_LUMBERJACKS.getValue() == 0) {
+			if (Message.NUM_GARDENERS.getValue() == 1) {
 				isExploring = false;
 			}
 		}
@@ -222,7 +226,8 @@ public class Gardener extends Bot {
 	}
 
 	public boolean plantATree() throws GameActionException {
-
+		if(isExploring)
+			return false;
 		Direction dir = here.directionTo(MapAnalysis.center);
 		Boolean skipped = false;
 		for (int i = 36; i-- > 0;) {
