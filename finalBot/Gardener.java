@@ -8,6 +8,7 @@ public class Gardener extends Bot {
 	public static boolean updatedLocs;
 	public static int turnsIHaveBeenTrying;
 	public static boolean tankBuilder;
+	public static int turnsTank;
 
 	public Gardener(RobotController r) throws GameActionException {
 		super(r);
@@ -15,6 +16,7 @@ public class Gardener extends Bot {
 		updatedLocs = false;
 		tankBuilder = false;
 		turnsIHaveBeenTrying = 0;
+		turnsTank = 0;
 		// anything else gardener specific
 	}
 
@@ -68,8 +70,17 @@ public class Gardener extends Bot {
 		if(targetLoc == null){
 			return false;
 		}
+		if(turnsIHaveBeenTrying > 30){
+			turnsIHaveBeenTrying = 0;
+			Message.GARDENER_BUILD_LOCS.removeLocation(targetLoc);
+			return true;
+		}
+		if(rc.canSenseLocation(targetLoc) && rc.senseRobotAtLocation(targetLoc) != null && rc.senseRobotAtLocation(targetLoc).type != RobotType.GARDENER && rc.senseRobotAtLocation(targetLoc).type != RobotType.ARCHON || !rc.canSenseLocation(targetLoc)){
+			turnsIHaveBeenTrying++;
+			return false;
+		}
 		float dist = here.distanceTo(targetLoc);
-		if(turnsIHaveBeenTrying > 30 ||
+		if(
 		(dist < type.sensorRadius -.001 && (!rc.onTheMap(targetLoc) || (rc.canSenseAllOfCircle(targetLoc, type.bodyRadius) && rc.isCircleOccupiedExceptByThisRobot(targetLoc, type.bodyRadius))) 
 		|| (!rc.onTheMap(here.add(here.directionTo(targetLoc), (float)(dist + (type.sensorRadius -.001 - dist < 2 ? type.sensorRadius -.001 - dist : 2))))
 		&& Message.GARDENER_BUILD_LOCS.getLength() > 1))){
@@ -77,7 +88,6 @@ public class Gardener extends Bot {
 			Message.GARDENER_BUILD_LOCS.removeLocation(targetLoc);
 			return true;
 		}
-		turnsIHaveBeenTrying++;
 		return false;
 	}
 	public void updateLocs() throws GameActionException{
@@ -86,6 +96,8 @@ public class Gardener extends Bot {
 	}
 	public void takeTurn() throws GameActionException {
 		if(debug){
+		if(tankBuilder)
+			System.out.println("tank builder");
 		System.out.println("dtc = " + here.distanceTo(MapAnalysis.center));
 		System.out.println("rb = " + Message.DIST_TO_CENTER.getFloatValue());
 		}
@@ -94,6 +106,10 @@ public class Gardener extends Bot {
 			if(debug)System.out.println("not tank builder");
 		}
 		if(tankBuilder && rc.getHealth() < 9){//announce my death
+			Message.DIST_TO_CENTER.setValue((float)(999));
+		}
+		if(tankBuilder && turnsTank > 25){
+			tankBuilder = false;
 			Message.DIST_TO_CENTER.setValue((float)(999));
 		}
 		waterLowestHealthTree();
@@ -167,7 +183,7 @@ public class Gardener extends Bot {
 				|| nearbyEnemyRobots.length > 0) {
 			buildSomething();
 		}
-		if(!isExploring && !updatedLocs){
+		if(!isExploring && (!updatedLocs || rc.getRoundNum() + rc.getID() % 200 == 0)){
 			updateLocs();
 			updatedLocs = true;
 		}
@@ -184,6 +200,11 @@ public class Gardener extends Bot {
 	public void buildSomething() throws GameActionException {
 		int typeToBuild = Message.GARDENER_BUILD_ORDERS.getValue();
 		int myGenetics = Message.GENETICS.getValue();
+		if(rc.getTeamBullets() > 500 && tankBuilder && (MapAnalysis.numTank + 1) * 4 < MapAnalysis.numSoldier){
+			if(buildRobot(RobotType.TANK, true)){
+				return;
+			}
+		}
 		if ((!(myGenetics == MapAnalysis.RUSH_ENEMY) || rc.getRoundNum() > 100) && nearbyEnemyRobots.length == 0  && rc.getRoundNum() > 5 && (typeToBuild != MapAnalysis.TANK || rc.readBroadcast(15) == 0) && plantATree())
 			return;
 		else if (rc.getBuildCooldownTurns() == 0 && (rc.readBroadcast(15) > 0)) {
@@ -191,22 +212,27 @@ public class Gardener extends Bot {
 			case 0:
 				break;
 			case 1:
-				if (buildRobot(RobotType.SOLDIER)) {
+				if (buildRobot(RobotType.SOLDIER, true)) {
 					return;
 				}
 				break;
 			case 2:
-				if (tankBuilder && buildRobot(RobotType.TANK)) {
+				if(tankBuilder && debug)
+					System.out.println("trying to build tank");
+				if (tankBuilder && buildRobot(RobotType.TANK, true)) {
 					return;
+				}
+				else if(tankBuilder && rc.getTeamBullets() > 300){
+					turnsTank++;
 				}
 				break;
 			case 3:
-				if (buildRobot(RobotType.SCOUT)) {
+				if (buildRobot(RobotType.SCOUT, true)) {
 					return;
 				}
 				break;
 			case 4:
-				if (buildRobot(RobotType.LUMBERJACK)) {
+				if (buildRobot(RobotType.LUMBERJACK, true)) {
 					return;
 				}
 				break;
@@ -215,17 +241,18 @@ public class Gardener extends Bot {
 			}
 		}
 		else if(rc.getBuildCooldownTurns() == 0 && nearbyEnemyRobots.length > 0){
-			buildRobot(RobotType.SOLDIER);
+			buildRobot(RobotType.SOLDIER, false);
 		}
 	}
 
-	public boolean buildRobot(RobotType type) throws GameActionException {
+	public boolean buildRobot(RobotType type, boolean dec) throws GameActionException {
 		if (rc.getTeamBullets() < type.bulletCost)
 			return false;
 		Direction dir = here.directionTo(MapAnalysis.center);
 		if (rc.canBuildRobot(type, dir)) {
 			rc.buildRobot(type, dir);
-			rc.broadcast(15, rc.readBroadcast(15) - 1);
+			if(dec)
+				rc.broadcast(15, rc.readBroadcast(15) - 1);
 			switch (type) {
 			case SOLDIER:
 				Message.NUM_SOLDIERS.setValue(Message.NUM_SOLDIERS.getValue() + 1);
@@ -249,7 +276,8 @@ public class Gardener extends Bot {
 		for (int i = 18; i-- > 0;) {
 			if (rc.canBuildRobot(type, left)) {
 				rc.buildRobot(type, left);
-				rc.broadcast(15, rc.readBroadcast(15) - 1);
+				if(dec)
+					rc.broadcast(15, rc.readBroadcast(15) - 1);
 				switch (type) {
 
 				case SOLDIER:
@@ -271,7 +299,8 @@ public class Gardener extends Bot {
 			}
 			if (rc.canBuildRobot(type, right)) {
 				rc.buildRobot(type, right);
-				rc.broadcast(15, rc.readBroadcast(15) - 1);
+				if(dec)
+					rc.broadcast(15, rc.readBroadcast(15) - 1);
 				switch (type) {
 
 				case SOLDIER:
@@ -307,8 +336,8 @@ public class Gardener extends Bot {
 					return true;
 				} else {
 					skipped = true;
-					dir = dir.rotateLeftDegrees((tankBuilder ? 110: 50));
-					i -= (tankBuilder ? 11 : 5);
+					dir = dir.rotateLeftDegrees((tankBuilder ? 120: 50));
+					i -= (tankBuilder ? 12 : 5);
 				}
 			}
 			dir = dir.rotateLeftDegrees(10);
