@@ -73,7 +73,7 @@ public class Lumberjack extends Bot {
         MapLocation targetD;
 
         for(int i = 0; i < messagesToTry.length && target == null; i++){
-            System.out.println("loops " + i);
+            //System.out.println("loops " + i);
             targetD = messagesToTry[i].getClosestLocation(here);
             if (targetD != null && here.distanceTo(targetD) < howFarToGoForMessage[i]*howDesperate) {
                 //if(debug)System.out.println("targetD = " + targetD);
