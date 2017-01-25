@@ -28,12 +28,17 @@ public class Gardener extends Bot {
 				if (Math.abs(dir.radiansBetween(here.directionTo(t.location))) < Math.PI / 2) {
 					thingsInTheWay++;
 				}
+			for (TreeInfo t : nearbyNeutralTrees){
+				if(here.distanceTo(t.location) < 7){
+					Message.CLEAR_TREES_PLEASE.addLocation(t.location);
+					break;
+				}
+			}
 			for (RobotInfo t : nearbyRobots)
 				if ((t.type == RobotType.ARCHON || t.type == RobotType.GARDENER)
 						&& Math.abs(dir.radiansBetween(here.directionTo(t.location))) < Math.PI / 2) {
 					thingsInTheWay += (t.type == RobotType.ARCHON ? 1 : 10);
 				}
-
 			if (thingsInTheWay < bestScore) {
 				bestDir = dir;
 				bestScore = thingsInTheWay;

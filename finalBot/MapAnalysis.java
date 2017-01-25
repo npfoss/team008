@@ -109,6 +109,7 @@ public class MapAnalysis extends Bot {
 	}
 
 	public static void makeDecisions() throws GameActionException {
+		
 		updateUnitCount();
 		if (!startedGame && rc.getRoundNum() == 1) {
 			determineInitialStrategy();
@@ -119,7 +120,8 @@ public class MapAnalysis extends Bot {
 		case RUSH_VP:
 			break;
 		case RUSH_ENEMY:
-			if (numGardener == 0 || rc.getRoundNum() > 200 && numGardener < 10
+			if (numGardener == 0 ||  
+				    (rc.getTreeCount() + rc.getRobotCount()) / numGardener > 3
 					&& (numGardener == 1 || numGardener * 4 < numTree || rc.getTeamBullets() > (numTank == 0 ? 310:150))) {
 				Message.ARCHON_BUILD_NUM.setValue(1);
 			}
@@ -155,8 +157,9 @@ public class MapAnalysis extends Bot {
 			}
 			break;
 		case CLEAR_TREES:
-			if (numGardener == 0 || rc.getRoundNum() > 50 && numGardener < 10
-					&& (numGardener == 1 || numGardener * 4 < numTree || rc.getTeamBullets() > (numTank == 0 ? 310:150))) {
+			if (numGardener == 0 ||  
+		    (rc.getTreeCount() + rc.getRobotCount()) / numGardener > 3
+			&& (numGardener == 1 || numGardener * 4 < numTree || rc.getTeamBullets() > (numTank == 0 ? 310:150))) {
 				Message.ARCHON_BUILD_NUM.setValue(1);
 			}
 			switch (adaptation) {
@@ -208,8 +211,9 @@ public class MapAnalysis extends Bot {
 			}
 			break;
 		case BUILD_TREES:
-			if (numGardener == 0 || rc.getRoundNum() > 50 && numGardener < 10
-					&& (numGardener == 1 || numGardener * 4 < numTree || rc.getTeamBullets() > (numTank == 0 ? 310:150))) {
+			if (numGardener == 0 ||  
+		    (rc.getTreeCount() + rc.getRobotCount()) / numGardener > 3
+			&& (numGardener == 1 || numGardener * 4 < numTree || rc.getTeamBullets() > (numTank == 0 ? 310:150))) {
 				Message.ARCHON_BUILD_NUM.setValue(1);
 			}
 			switch (adaptation) {

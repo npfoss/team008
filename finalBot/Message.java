@@ -74,6 +74,10 @@ public enum Message {
         bandWidth = width;
     }
 
+    public int getWidth(){
+    	return bandWidth;
+    }
+    
     public void setValue(int x) throws GameActionException {
         Bot.rc.broadcast(bandStart, x);
     }
