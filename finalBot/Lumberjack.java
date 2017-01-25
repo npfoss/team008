@@ -40,7 +40,9 @@ public class Lumberjack extends Bot {
         	    updateTarget(2);
             }
         }
-        if(target != null && !moved && !(rc.canSenseLocation(target) && rc.isLocationOccupiedByTree(target) && rc.canChop(target))){
+        if(target != null && !moved){
+            if(rc.canSenseLocation(target) && rc.isLocationOccupiedByTree(target) && rc.canChop(target))
+                bugState = BugState.DIRECT;
             goTo(target);
             moved = true;
         }
@@ -89,15 +91,14 @@ public class Lumberjack extends Bot {
             else if (nearbyEnemyTrees.length == 0 &&
                     Message.ENEMY_TREES.removeLocation(target))
                 target = null;
-            else if (here.distanceTo(target) < 2.5 &&
-                    Message.CLEAR_TREES_PLEASE.removeLocation(target)){
-                target = null;
-            }
             else if (here.distanceTo(target) < 1.5 &&
                     Message.TREES_WITH_UNITS.removeLocation(target))
                 target = null;
             else if (nearbyEnemyRobots.length == 0 &&
                     Message.DISTRESS_SIGNALS.removeLocation(target))
+                target = null;
+            else if (here.distanceTo(target) < 1.5 && (nearbyNeutralTrees.length == 0 || target.distanceTo(nearbyNeutralTrees[0].getLocation()) > 2 )&&
+                    Message.CLEAR_TREES_PLEASE.removeLocation(target))
                 target = null;
         }
     }

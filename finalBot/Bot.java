@@ -33,7 +33,7 @@ public class Bot {
 	public static int roundNum;
 	public static boolean isLeader = false;
 	public static boolean isDead = false;
-	private static BugState bugState;
+	public static BugState bugState;
 	private static WallSide bugWallSide = null;
 
 	public Bot() {}
@@ -84,7 +84,7 @@ public class Bot {
 		}
 	}
 
-	private enum BugState {
+	enum BugState {
 		DIRECT, BUG
 	}
 
@@ -228,7 +228,7 @@ public class Bot {
 
 	/******* ALL NAVIGATION METHODS BELOW *******/
 	private static MapLocation dest = null;
-	private static boolean isBugging = false;
+//	private static boolean isBugging = false;
 	private static int bugRotationCount;
 
 	private static float bugStartDistSq;
