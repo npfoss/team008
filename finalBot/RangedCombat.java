@@ -300,7 +300,7 @@ public class RangedCombat extends Bot {
 		int robotsToCalculate = 5;
 		int calculated = 0;
 		for (RobotInfo robot : nearbyEnemyRobots) {
-			if(robot.type == RobotType.ARCHON)
+			if(robot.type == RobotType.ARCHON && nearbyEnemyRobots.length > 1)
 				continue;
 			canWeHitThemValue = canWeHitHeuristic(robot);
 			score = (int) (canWeHitThemValue);
@@ -364,6 +364,9 @@ public class RangedCombat extends Bot {
 		Direction targetDir = here.directionTo(targetLoc);
 		if(target.isRobot()){
 			targetRobot = (RobotInfo)target;
+			if(targetRobot.type == RobotType.ARCHON){
+				return (rc.getTreeCount() > 10 || rc.getTeamBullets() > 500 ? SINGLE_SHOT: NO_SHOT);
+			}
 		}
 		boolean ableToShootTriad = true;
 		boolean ableToShootPentad = true;
@@ -487,7 +490,7 @@ public class RangedCombat extends Bot {
 				score = 7;
 			}
 		}*/
-		int treeMod = rc.getTreeCount() / 3;
+		int treeMod = rc.getTreeCount() / 4;
 		if (ableToShootPentad && pentadValue + treeMod + (type.attackPower + type.bulletSpeed) * 4 > 126 && (pentadValue > 150 || pentadValue > triadValue)) {
 			return PENTAD_SHOT;
 		}
@@ -506,6 +509,9 @@ public class RangedCombat extends Bot {
 		}
 		if (ableToShootTriad && triadValue + treeMod + (type.attackPower + type.bulletSpeed) * 4 > 111) {
 			return TRIAD_SHOT;
+		}
+		if(tempSV > 69){
+			return SINGLE_SHOT;
 		}
 		if(type == RobotType.SOLDIER){
 			if(debug)System.out.println(threeDistTheyCanGetAway);
@@ -565,7 +571,7 @@ public class RangedCombat extends Bot {
 
 		}
 		for (TreeInfo friend : nearbyTrees) {
-			if (friend.location.distanceTo(here) < here.distanceTo(target.location)) {
+			if (friend.location.distanceTo(here) - friend.radius - target.type.strideRadius < here.distanceTo(target.location)) {
 				if (willHitLoc(intendedAttackDir, friend.location, friend.radius)) {
 					//if(debug)System.out.println("Direction is not safe");
 					return false;
