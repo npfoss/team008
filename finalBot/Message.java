@@ -31,6 +31,7 @@ public enum Message {
     //don't need to use this doc for scout edge stuff
     ARCHON_DISTRESS_NUM(21,0),
     //>>>>>>> origin/dev
+    DIST_TO_CENTER(22, 0),
     NEUTRAL_TREES(100, 99),
     ENEMY_TREES(200, 99),
     ENEMY_ARMIES(300, 399),
@@ -85,6 +86,7 @@ public enum Message {
 
     public void setValue(float f) throws GameActionException {
         Bot.rc.broadcastFloat(bandStart, f);
+        //System.out.println("broadcasting " + f);
     }
 
     public void setValue(int channel, int x) throws GameActionException {

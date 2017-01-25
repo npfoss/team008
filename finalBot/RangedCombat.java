@@ -300,7 +300,7 @@ public class RangedCombat extends Bot {
 		int robotsToCalculate = 5;
 		int calculated = 0;
 		for (RobotInfo robot : nearbyEnemyRobots) {
-			if(robot.type == RobotType.ARCHON)
+			if(robot.type == RobotType.ARCHON && nearbyEnemyRobots.length > 1)
 				continue;
 			canWeHitThemValue = canWeHitHeuristic(robot);
 			score = (int) (canWeHitThemValue);
@@ -364,6 +364,9 @@ public class RangedCombat extends Bot {
 		Direction targetDir = here.directionTo(targetLoc);
 		if(target.isRobot()){
 			targetRobot = (RobotInfo)target;
+			if(targetRobot.type == RobotType.ARCHON){
+				return (rc.getTreeCount() > 10 || rc.getTeamBullets() > 500 ? SINGLE_SHOT: NO_SHOT);
+			}
 		}
 		boolean ableToShootTriad = true;
 		boolean ableToShootPentad = true;
