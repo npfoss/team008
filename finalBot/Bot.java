@@ -165,6 +165,7 @@ public class Bot {
 				if (rc.canShake()) {
 					shakeNearbyTrees();
 				}
+				if (rc.getRoundNum() != roundNum) System.out.println("******SHITSHITSHITSHITSHIT RAN OUT OF BYTECODE******");
 			} catch (Exception e) {
 				System.out.println(rc.getType().toString() + " Exception :(");
 				e.printStackTrace();
