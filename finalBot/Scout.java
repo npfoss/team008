@@ -164,7 +164,7 @@ public class Scout extends Bot {
 	public static boolean dealWithNearbyTrees() throws GameActionException {
 //		int start = Clock.getBytecodeNum();
 		boolean moved = false;
-		int giveUp = (nearbyEnemyRobots.length == 0 && rc.getRoundNum() % 5 == 0 ? 9999 : 50);
+		int giveUp = (nearbyEnemyRobots.length == 0 && rc.getRoundNum() % 9 == 0 ? 9999 : 50);
 		for (int i = 0; i < Math.min(nearbyTrees.length, giveUp); i++) {
 			if (nearbyTrees[i].team == Team.NEUTRAL){
                 if(nearbyTrees[i].containedBullets > 0 && !moved) {

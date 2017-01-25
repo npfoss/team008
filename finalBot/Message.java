@@ -122,8 +122,10 @@ public enum Message {
     public boolean removeLocation(MapLocation loc) throws GameActionException{
         int code = (int)(loc.x*FLOAT_MULTIPLIER)*CODE_OFFSET_AMT + (int)(loc.y*FLOAT_MULTIPLIER);
         int size = getValue();
+        System.out.println("trying to remove " + bandStart);
         for(int i = 1; i <= size; i++){
             if(getValue(bandStart + i) == code){
+                System.out.println("FOUND! at channel " + (bandStart + i));
                 setValue(bandStart + i, getValue(bandStart+size));
                 setValue(size-1);
                 return true;

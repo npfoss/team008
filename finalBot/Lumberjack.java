@@ -1,7 +1,6 @@
 package team008.finalBot;
 
 import battlecode.common.*;
-import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 
 public class Lumberjack extends Bot {
 
@@ -14,6 +13,7 @@ public class Lumberjack extends Bot {
     public static boolean attacked = false;
     public static boolean moved = false;
     public static Direction myRandomDirection;
+    public TreeInfo closestNeutralWithUnit;
     public Message[] messagesToTry = {Message.DISTRESS_SIGNALS, Message.TREES_WITH_UNITS, Message.CLEAR_TREES_PLEASE, Message.ENEMY_TREES, Message.ENEMY_ARCHONS};
     public int[] howFarToGoForMessage = {     30,                       25,                       25,                         20,                  20};
 //    public boolean[] checkEnemiesToRemove = { true,                     false,                    false,               true};
@@ -25,7 +25,8 @@ public class Lumberjack extends Bot {
             myRandomDirection = Util.randomDirection();
         }
 
-        
+        closestNeutralWithUnit = Util.closestTree(nearbyNeutralTrees, rc.getLocation(), true, 50);
+
         if(nearbyEnemyRobots.length > 0) {
             //Notify allies of enemies
             if((rc.getRoundNum() +rc.getID()) % 25 == 0 || target == null){
@@ -44,9 +45,9 @@ public class Lumberjack extends Bot {
             moved = true;
         }
 
-        int start = Clock.getBytecodeNum();
+//        int start = Clock.getBytecodeNum();
         goForTrees(); // moves towards them and chops
-        if(debug) System.out.println(" going for trees took " + (Clock.getBytecodeNum() - start));
+//        if(debug) System.out.println(" going for trees took " + (Clock.getBytecodeNum() - start));
 
         if (!moved) { // no trees around // just random ish
             MapLocation[] enemyArchonLocs = rc.getInitialArchonLocations(enemy);
@@ -68,10 +69,11 @@ public class Lumberjack extends Bot {
     		//if(debug)System.out.println("changing");
     		target = null;
     	}*/
-    	target = null;
+        target = (closestNeutralWithUnit == null ? null : closestNeutralWithUnit.getLocation());
         MapLocation targetD;
 
         for(int i = 0; i < messagesToTry.length && target == null; i++){
+            System.out.println("loops " + i);
             targetD = messagesToTry[i].getClosestLocation(here);
             if (targetD != null && here.distanceTo(targetD) < howFarToGoForMessage[i]*howDesperate) {
                 //if(debug)System.out.println("targetD = " + targetD);
@@ -80,25 +82,28 @@ public class Lumberjack extends Bot {
         }
 
         if (target != null && rc.getLocation().distanceTo(target) < 5){
-        	if(debug)System.out.println("removing");
+            if(debug)System.out.println("thinking about removing");
             if( nearbyEnemyRobots.length == 0 &&
-                    Message.ENEMY_ARCHONS.removeLocation(target));
+                    Message.ENEMY_ARCHONS.removeLocation(target))
+                target = null;
             else if (nearbyEnemyTrees.length == 0 &&
-                    Message.ENEMY_TREES.removeLocation(target));
+                    Message.ENEMY_TREES.removeLocation(target))
+                target = null;
             else if (here.distanceTo(target) < 1.5 &&
-                    Message.CLEAR_TREES_PLEASE.removeLocation(target));
+                    Message.CLEAR_TREES_PLEASE.removeLocation(target))
+                target = null;
             else if (here.distanceTo(target) < 1.5 &&
-                    Message.TREES_WITH_UNITS.removeLocation(target));
+                    Message.TREES_WITH_UNITS.removeLocation(target))
+                target = null;
             else if (nearbyEnemyRobots.length == 0 &&
-                    Message.DISTRESS_SIGNALS.removeLocation(target));
-            target = null;
+                    Message.DISTRESS_SIGNALS.removeLocation(target))
+                target = null;
         }
     }
 
     public void goForTrees() throws GameActionException {
-        int s = Clock.getBytecodeNum();
-        TreeInfo closestNeutralWithUnit = Util.closestTree(nearbyNeutralTrees, rc.getLocation(), true, 50);
-        System.out.println("getting closest " + nearbyNeutralTrees.length + " neutral took " + (Clock.getBytecodeNum() - s));
+//        int s = Clock.getBytecodeNum();
+//        System.out.println("getting closest " + nearbyNeutralTrees.length + " neutral took " + (Clock.getBytecodeNum() - s));
         if(closestNeutralWithUnit != null){
             if(!moved){
                 tryMoveDirection(here.directionTo(closestNeutralWithUnit.location), true, false);
