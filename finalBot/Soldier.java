@@ -15,12 +15,12 @@ public class Soldier extends Bot {
                 notifyFriendsOfEnemies(nearbyEnemyRobots);
             }
             RangedCombat.execute();
+            return;
         }
         if(target == null || (rc.getRoundNum() + rc.getID()) % 10 == 0){
             assignNewTarget();
         }
-
-		if (rc.getMoveCount() == 0) {
+        if (rc.getMoveCount() == 0) {
 			if (target != null && (rc.getLocation().distanceTo(target) < 6 && nearbyEnemyRobots.length == 0 || (nearbyEnemyRobots.length == 1 && nearbyEnemyRobots[0].type == RobotType.ARCHON))) {
 				Message.ENEMY_ARMIES.removeLocation(target);
 				Message.ISOLATED_ENEMIES.removeLocation(target);
