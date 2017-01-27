@@ -142,14 +142,16 @@ public class Lumberjack extends Bot {
 //        System.out.println("getting closest " + nearbyNeutralTrees.length + " neutral took " + (Clock.getBytecodeNum() - s));
         if(debug) rc.setIndicatorDot(rc.getLocation(), 0, 255,0);
 
+//        System.out.println("TSA pre-check");
         if(moved && attacked) return;
+//        System.out.println("TSA post-check" + Clock.getBytecodesLeft());
 
         TreeInfo moveTo = null;
         TreeInfo attackMe = null;
         float bestMoveScore = -99999f;
         float bestAttackScore = -999999f;
         float score;
-        for(int i = 0; i < nearbyTrees.length && Clock.getBytecodesLeft() < WHEN_TO_STOP_SCORING_TREES_AND_MOVE; i++){
+        for(int i = 0; i < nearbyTrees.length && Clock.getBytecodesLeft() > WHEN_TO_STOP_SCORING_TREES_AND_MOVE; i++){
             if(debug) System.out.print("loopy");
              if(nearbyTrees[i].getTeam() == us) continue;
              score = scoreTree(nearbyTrees[i]);
