@@ -189,9 +189,9 @@ public class Bot {
 			return;
 		}
 		if(
-		(dist < type.sensorRadius -.001 && (!rc.onTheMap(targetLoc) || (rc.canSenseAllOfCircle(targetLoc, type.bodyRadius) && rc.isCircleOccupiedExceptByThisRobot(targetLoc, type.bodyRadius))) 
-		|| (!rc.onTheMap(here.add(here.directionTo(targetLoc), (float)(dist + (type.sensorRadius -.001 - dist < 2 ? type.sensorRadius -.001 - dist : 2))))
-		&& Message.GARDENER_BUILD_LOCS.getLength() > 1))){
+		(!rc.onTheMap(here.add(here.directionTo(targetLoc), (float)(dist + (type.sensorRadius -.001 - dist < 2 ? type.sensorRadius -.001 - dist : 2))))
+		|| rc.isLocationOccupiedByTree(targetLoc) || rc.senseRobotAtLocation(targetLoc) != null && (rc.senseRobotAtLocation(targetLoc).type == RobotType.GARDENER || rc.senseRobotAtLocation(targetLoc).type == RobotType.ARCHON)
+		)){
 			Message.GARDENER_BUILD_LOCS.removeLocation(targetLoc);
 		}
 	}
