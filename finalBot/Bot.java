@@ -160,6 +160,9 @@ public class Bot {
 						|| rc.getTeamVictoryPoints() + rc.getTeamBullets() / rc.getVictoryPointCost() >= 1000) {
 					rc.donate(((int) (rc.getTeamBullets() / rc.getVictoryPointCost())) * rc.getVictoryPointCost());
 				}
+				if (rc.getTeamBullets() > 1000){
+					rc.donate(rc.getVictoryPointCost());
+				}
 				shakeNearbyTrees();
 				takeTurn();
 				if (rc.canShake()) {
