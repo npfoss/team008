@@ -26,25 +26,25 @@ public class RangedCombat extends Bot {
 	 * to call execute, number of enemies must be > 0
 	 */
 	public static void execute() throws GameActionException {
-		safeDist = 0;
+
 	    //if(debug)System.out.println("Instantiation: "+ Clock.getBytecodeNum());
 		potentialAttackStats attack = chooseTargetAndShotType();
 		onlyHarmlessUnitsAround = onlyHarmlessUnitsNearby();
 		//if(debug)System.out.println("Shot Calc:"+Clock.getBytecodeNum());
 		if (attack == null) {
-			RobotInfo bestRobot = nearbyEnemyRobots[0];
-			safeDist = bestRobot.type.bodyRadius + type.bodyRadius + bestRobot.type.strideRadius
-					+ (bestRobot.type == RobotType.LUMBERJACK
-							? GameConstants.LUMBERJACK_STRIKE_RADIUS - bestRobot.type.bodyRadius
-							: bestRobot.type.bulletSpeed);
-			if (bestRobot.type == RobotType.GARDENER)
+			RobotInfo closestRobot = nearbyEnemyRobots[0];
+			safeDist = closestRobot.type.bodyRadius + type.bodyRadius + closestRobot.type.strideRadius
+					+ (closestRobot.type == RobotType.LUMBERJACK
+							? GameConstants.LUMBERJACK_STRIKE_RADIUS - closestRobot.type.bodyRadius
+							: closestRobot.type.bulletSpeed);
+			if (closestRobot.type == RobotType.GARDENER)
 				safeDist = 0;
-			if (!onlyHarmlessUnitsAround || here.distanceTo(bestRobot.location) < 3.5) {
-				Direction moveDir = calcMoveDir(bestRobot);
+			if (!onlyHarmlessUnitsAround || here.distanceTo(closestRobot.location) < 3.5) {
+				Direction moveDir = calcMoveDir(closestRobot);
 				if (moveDir != null && rc.canMove(moveDir, MOVE_DIST))
 					rc.move(moveDir, MOVE_DIST);
 			} else {
-				goTo(bestRobot.location);
+				goTo(closestRobot.location);
 			}
 
 			return;

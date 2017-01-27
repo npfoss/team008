@@ -1,5 +1,4 @@
 package team008.finalBot;
-
 import battlecode.common.*;
 
 public class Gardener extends Bot {
@@ -94,6 +93,8 @@ public class Gardener extends Bot {
 		for(int i = 0; i < 6 ; i++)
 		Message.GARDENER_BUILD_LOCS.addLocation(here.add(new Direction((float) (Math.PI/3 * i)), (float) 8.5));
 	}
+
+
 	public void takeTurn() throws GameActionException {
 		if(debug){
 		if(tankBuilder)
@@ -143,7 +144,7 @@ public class Gardener extends Bot {
 				goTo(dirIAmMoving);
 				boolean farAway = true;
 				for (RobotInfo r : nearbyAlliedRobots) {
-					if (r.type == RobotType.GARDENER || r.type == RobotType.ARCHON) {
+					if (r.type == RobotType.GARDENER || r.type == RobotType.ARCHON) { //shouldnt be hard set
 						farAway = false;
 						break;
 					}
