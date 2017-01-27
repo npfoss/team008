@@ -124,7 +124,10 @@ public class Lumberjack extends Bot {
         }
         if(nearbyEnemyTrees.length > 0){
             if(!moved){
-                tryMoveDirection(here.directionTo(nearbyEnemyTrees[0].location), true, false);
+                tryMoveDirection(here.directionTo(nearbyEnemyTrees[0].location), false, false);
+                if(here.distanceTo(nearbyEnemyTrees[0].getLocation()) > here.add(calculatedMove).distanceTo(nearbyEnemyTrees[0].getLocation())){
+                    rc.move(calculatedMove, type.strideRadius);
+                }
                 moved = true;
             }
             if(!attacked){
@@ -139,7 +142,10 @@ public class Lumberjack extends Bot {
             }
         } if(nearbyNeutralTrees.length > 0){
             if(!moved){
-                tryMoveDirection(here.directionTo(nearbyNeutralTrees[0].location), true, false);
+                tryMoveDirection(here.directionTo(nearbyNeutralTrees[0].location), false, false);
+                if(here.distanceTo(nearbyNeutralTrees[0].getLocation()) > here.add(calculatedMove).distanceTo(nearbyNeutralTrees[0].getLocation())){
+                    rc.move(calculatedMove, type.strideRadius);
+                }
                 moved = true;
             }
             if(!attacked){
