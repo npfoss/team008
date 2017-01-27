@@ -36,8 +36,8 @@ public class Gardener extends Bot {
 				}
 			boolean addedTree = false;
 			for (TreeInfo t : nearbyNeutralTrees){
-				if(here.distanceTo(t.location) < 6 + t.radius && !addedTree){
-					Message.CLEAR_TREES_PLEASE.addLocation(t.location);
+				if(here.distanceTo(t.location) < 5 + t.radius && !addedTree){
+					Message.CLEAR_TREES_PLEASE.addLocation(here);
 					addedTree = true;
 				}
 				if (Math.abs(dir.radiansBetween(here.directionTo(t.location))) < Math.PI / 2){
@@ -96,10 +96,10 @@ public class Gardener extends Bot {
 	}
 	public void takeTurn() throws GameActionException {
 		if(debug){
-		if(tankBuilder)
-			System.out.println("tank builder");
-		System.out.println("dtc = " + here.distanceTo(MapAnalysis.center));
-		System.out.println("rb = " + Message.DIST_TO_CENTER.getFloatValue());
+			if(tankBuilder)
+				System.out.println("tank builder");
+			System.out.println("dtc = " + here.distanceTo(MapAnalysis.center));
+			System.out.println("rb = " + Message.DIST_TO_CENTER.getFloatValue());
 		}
 		if(tankBuilder && Math.abs(here.distanceTo(MapAnalysis.center) - Message.DIST_TO_CENTER.getFloatValue()) > 0.1){
 			tankBuilder = false;

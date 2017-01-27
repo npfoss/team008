@@ -126,10 +126,14 @@ public class Util extends Bot {
         return !(t == RobotType.ARCHON || t == RobotType.GARDENER);
     }
 
-    public static int numBodiesTouchingRadius(BodyInfo[] trees, MapLocation toHere, float radius){
+    public static int numBodiesTouchingRadius(BodyInfo[] trees, MapLocation toHere, float radius) {
+        return numBodiesTouchingRadius(trees, toHere, radius, 9999);
+    }
+
+    public static int numBodiesTouchingRadius(BodyInfo[] trees, MapLocation toHere, float radius, int whenToGiveUp){
         int count = 0;
-        for (BodyInfo tree : trees){
-            if (toHere.distanceTo(tree.getLocation()) <= radius + tree.getRadius()){
+        for (int i = Math.min(whenToGiveUp, trees.length); i-->0;){
+            if (toHere.distanceTo(trees[i].getLocation()) <= radius + trees[i].getRadius()){
                 count++;
             }
         }
