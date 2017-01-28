@@ -157,5 +157,9 @@ public class Util extends Bot {
         }
         return new MapLocation(xavg / robots.length, yavg / robots.length);
     }
+
+	public static MapLocation midpoint(MapLocation a, MapLocation b) {
+		return new MapLocation((a.x + b.x)/2, (a.y + b.y)/2);
+	}
 }
 

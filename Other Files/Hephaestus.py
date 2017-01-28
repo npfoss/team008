@@ -5,13 +5,13 @@ In order to use Hephaestus you need python 3.x and Gradle. To run Hephaestus sim
 
 python Hephaestus.py <pkg of team a> <pkg of team b>
 
-ex: python Hephaestus.py team008.finalBot team008.defendbot00
+ex: python Hephaestus.py team008.jonahBot team008.defendbot00
 
 Hephaestus will then play team a and team b against eachother on all the maps in both positions. It should return a result like the following.
 
 	running on maps:  ['Arena']
 	Team A won on Arena
-	flipping sides... (but not names: team008.finalBot is still called team A but plays as blue)
+	flipping sides... (but not names: team008.jonahBot is still called team A but plays as blue)
 	Team A won on Arena
 	Team A won 2 games -- Team B won 0
 
