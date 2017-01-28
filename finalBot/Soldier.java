@@ -21,7 +21,13 @@ public class Soldier extends Bot {
             assignNewTarget();
         }
         if (rc.getMoveCount() == 0) {
-			if (target != null && (rc.getLocation().distanceTo(target) < 6 && nearbyEnemyRobots.length == 0 || (nearbyEnemyRobots.length == 1 && nearbyEnemyRobots[0].type == RobotType.ARCHON))) {
+        	if(nearbyBullets.length > 0){
+        		Direction dirToMove = here.directionTo(nearbyBullets[0].location);
+        		if(nearbyAlliedRobots.length > 0)
+        			dirToMove = here.directionTo(nearbyAlliedRobots[0].location);
+        		RangedCombat.bulletMove(here.add(dirToMove, type.strideRadius), true);
+        	}
+        	else if (target != null && (rc.getLocation().distanceTo(target) < 6 && nearbyEnemyRobots.length == 0 || (nearbyEnemyRobots.length == 1 && nearbyEnemyRobots[0].type == RobotType.ARCHON))) {
 				Message.ENEMY_ARMIES.removeLocation(target);
 				Message.ISOLATED_ENEMIES.removeLocation(target);
 				Message.DISTRESS_SIGNALS.removeLocation(target);

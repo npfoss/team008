@@ -1,6 +1,7 @@
 package team008.finalBot;
 
 import battlecode.common.*;
+import sprint.Util;
 
 
 public class RangedCombat extends Bot {
@@ -134,7 +135,7 @@ public class RangedCombat extends Bot {
 			return null;
 		MapLocation targetLoc = target.getLocation();
 		if(nearbyBullets.length > 0){
-			return bulletMove(targetLoc);
+			return bulletMove(targetLoc, false);
 		}
 		if(debug)rc.setIndicatorLine(here, targetLoc, 255, 0, 0);
 		Direction targetDir = here.directionTo(targetLoc);
@@ -226,65 +227,306 @@ public class RangedCombat extends Bot {
 		return backupDir;
 	}
 	
-	public static Direction bulletMove(MapLocation targetLoc) throws GameActionException {
+	public static Direction bulletMove(MapLocation targetLoc, boolean makeMove) throws GameActionException {
+		if(rc.canSenseLocation(targetLoc)){
+			RobotInfo targetRobot = rc.senseRobotAtLocation(targetLoc);
+			if(targetRobot != null && targetRobot.team == enemy){
+				safeDist = targetRobot.type.bodyRadius + type.bodyRadius + targetRobot.type.strideRadius + (targetRobot.type == RobotType.LUMBERJACK ? GameConstants.LUMBERJACK_STRIKE_RADIUS - RobotType.LUMBERJACK.bodyRadius: targetRobot.type.bulletSpeed * 2 );
+			}
+			else{
+				safeDist = 0;
+			}
+		}
+		if(debug)System.out.println("safeDist = " + safeDist);
 		if(debug)System.out.println("bytecodes = " + Clock.getBytecodeNum() + " at start.");
-		int dirsToCheck = 36;
-		Direction[] options = new Direction[dirsToCheck + 1];
-		int[] scores = new int[dirsToCheck + 1];
-		Direction dir = here.directionTo(targetLoc);
-		for(int i = 1; i < dirsToCheck + 1; i++){
-			options[i] = dir;
-			dir = dir.rotateLeftDegrees(360/dirsToCheck);
-		} 
+		//int precision = 5;
+		int dirsToCheck = 8;
+		int score = 0;
 		for(BulletInfo b: nearbyBullets){
 			float dist = here.distanceTo(b.location);
-			if(Clock.getBytecodesLeft() < 3500 || dist > b.speed + type.strideRadius + type.bodyRadius){
+			if(dist > b.speed * 2 - type.strideRadius + type.bodyRadius){
 				break;
 			}
-			if(dist > type.strideRadius + type.bodyRadius && Math.abs(b.dir.radiansBetween(b.location.directionTo(here))) > Math.PI/2)
-				continue;
-			int start = Clock.getBytecodeNum();
-			scores = increaseScoresOnePly(b, scores, targetLoc, options);
-			//System.out.println("will collide alternative takes " + (Clock.getBytecodeNum() - start));
-		}
-		int bestScore = scores[0];
-		int bestIndex = 0;
-		float bestDist = here.distanceTo(targetLoc);
-		if(debug)System.out.println("bytecodes = " + Clock.getBytecodeNum() + "going into final decision");
-		for(int i = 1; i < dirsToCheck + 1; i++){
-			if(!rc.canMove(options[i], type.strideRadius))
-				continue;
-			if(scores[i] < bestScore){
-				bestScore = scores[i];
-				bestIndex = i;
-				bestDist = here.add(options[i], type.strideRadius).distanceTo(targetLoc);
+			if(willCollide(b, here)){
+				score += b.damage;
 			}
-			else if(scores[i] == bestScore){//tiebreak for now, might later be two ply score
-				float dist = here.add(options[i], type.strideRadius).distanceTo(targetLoc);
-				if(dist > bestDist){
-					bestDist = dist;
-					bestIndex = i;
+			else if(willKillMeNextTurn(b, here)){
+				score += b.damage;
+			}
+		}
+		float bestScore = score;
+		Direction bestDir = null;
+		float bestDist = here.distanceTo(targetLoc);
+		Direction dir = here.directionTo(nearbyBullets[0].location).opposite();
+		int count;
+		int limit = 5;
+		for(int i = 0; i < dirsToCheck; i++){
+			if(Clock.getBytecodesLeft() < 1000)
+				break;
+			float moveDist = type.strideRadius;
+			if(!rc.canMove(dir, moveDist)){
+				dir = dir.rotateLeftDegrees(360/dirsToCheck);
+				continue;
+			}
+			score = 0;
+			MapLocation moveTo = here.add(dir, moveDist);
+			count = 0;
+			for(BulletInfo b: nearbyBullets){
+				//rc.setIndicatorLine(here, b.location, 255, 0, 0);
+				count++;
+				float dist = here.distanceTo(b.location);
+				if(Clock.getBytecodesLeft() < 1000){
+					score = 9999;
+					break;
+				}
+				if(count > limit || dist > b.speed * 2 - type.strideRadius + type.bodyRadius){
+					break;
+				}
+				//System.out.println("checking bullet at " + b.location);
+				if(willCollide(b, moveTo)){
+					score += b.damage;
+					if(score > bestScore)
+						break;
+				}
+				else if(Clock.getBytecodesLeft() > 4000 && willKillMeNextTurn(b, moveTo)){
+					score += b.damage;
+					if(score > bestScore)
+						break;
 				}
 			}
+			if(score < bestScore){
+				bestScore = score;
+				score = i;
+				bestDist = moveTo.distanceTo(targetLoc);
+				bestDir = dir;
+			}
+			else if(score == bestScore){
+				float dist = moveTo.distanceTo(targetLoc);
+				if(bestDist > safeDist && dist > safeDist ? dist < bestDist: dist > bestDist){
+					bestDist = dist;
+					bestDir = dir;
+				}
+			}
+			dir = dir.rotateLeftDegrees(360/dirsToCheck);
 		}
 		if(debug)System.out.println("bytecodes = " + Clock.getBytecodeNum() + " at end");
-		if(debug)System.out.println("chose direction " + options[bestIndex] + " with score of " + bestScore + " and dist of " + bestDist);
-		return options[bestIndex];
+		if(debug)System.out.println("chose direction " + bestDir + " with score of " + bestScore + " and dist of " + bestDist);
+		if(makeMove && bestDir != null){
+			rc.move(bestDir, type.strideRadius);
+		}
+		return bestDir;
 	}
 
-	private static int[] increaseScoresOnePly(BulletInfo b, int[] scores, MapLocation targetLoc, Direction[] options) throws GameActionException {
+	private static boolean willKillMeNextTurn(BulletInfo b, MapLocation loc) {
+		//System.out.println("here");
+		MapLocation nextBulletLoc = b.location.add(b.dir, b.speed);
+		Direction directionToRobot = nextBulletLoc.directionTo(loc);
+		float theta = Math.abs(b.dir.radiansBetween(directionToRobot));
+		if (theta > Math.PI / 2) {
+			return false;
+		}
+		float distToRobot = nextBulletLoc.distanceTo(loc);
+		float perpendicularDist = (float) (distToRobot * Math.sin(theta));
+		//System.out.println("distToRobot = " + distToRobot);
+		//System.out.println("perpDist = " + perpendicularDist);
+		return perpendicularDist < type.bodyRadius - type.strideRadius + .01 && distToRobot - type.bodyRadius + type.strideRadius < b.speed * 2 + .01;
+	}
+
+	private static float[] incrementScores(BulletAura[] bs, int bsSize, MapLocation moveTo, float[] scores, int i, float bestScore){
+		for(int j = 0; j < bsSize; j++){
+			int start = Clock.getBytecodeNum();
+			boolean willHit = bs[j].bulletWillHitLoc(moveTo);
+			System.out.println("will collide alternative takes " + (Clock.getBytecodeNum() - start));
+			if(willHit){
+				scores[i] += bs[j].getDamage();
+				if(scores[i] > bestScore)
+					break;
+			}
+		}
+		return scores;
+	}
+	/*
+	private static MapLocation lineCircleIntersectionOne(MapLocation startLoc, MapLocation endLoc, MapLocation center, float rad){
+		float accuracy = (float)(.2);
+		MapLocation midLoc = Util.midpoint(startLoc, endLoc);
+		while(center.distanceTo(midLoc) - rad > accuracy){
+			if(Math.abs(center.distanceTo(startLoc) - rad) < Math.abs(center.distanceTo(startLoc) - rad)){
+				endLoc = midLoc;
+			}
+			else{
+				startLoc = midLoc;
+			}	
+			midLoc = Util.midpoint(startLoc, endLoc);
+		}
+		return midLoc;
+	}
+	
+	private static MapLocation[] lineCircleIntersectionTwo(MapLocation startLoc, MapLocation endLoc, MapLocation center, float rad){
+		MapLocation[] ret = new MapLocation[2];
+		return ret;
+	}*/
+		
+	private static MapLocation[] circleCircleIntersectionTwo(MapLocation center1, MapLocation center2, float rad1, float rad2){
+		//center 1 is bigger circle aka bullet circle
+		MapLocation[] ret = new MapLocation[2];
+		float d = center1.distanceTo(center2);
+		float r = rad2;
+		float R = rad1;
+		float distA = (d * d - r * r + R * R) / (2 * d);
+		float distB = (float)(Math.sqrt((-d + r - R) * (-d - r + R) * (-d + r + R) * (d + r + R)) / (2 * d));
+		Direction cDir = center1.directionTo(center2);
+		ret[0] = center1.add(cDir,distA).add(cDir.rotateLeftDegrees(90), distB);
+		ret[1] = center1.add(cDir,distA).add(cDir.rotateLeftDegrees(90), distB);
+		return ret;
+	}
+	
+	private static float[] increaseScoresOnePly(BulletInfo b, float[] scores, Direction[] options, MapLocation toHere, float radius) throws GameActionException {
 		MapLocation bLoc = b.location;
-		MapLocation onePlyLoc = bLoc.add(b.dir, b.speed);
-		if(willCollide(b, here))
-			scores[0] += b.damage;
-		float bLineSlope = (onePlyLoc.y - bLoc.y) / (onePlyLoc.x - bLoc.x);
-		float bLineIntercept = bLoc.y - bLineSlope * bLoc.x;
-		return increaseScoresLineThroughCircle(bLineSlope, bLineIntercept, scores, targetLoc, bLoc, onePlyLoc, here, type.strideRadius, b.damage, options);
+		//if(debug)rc.setIndicatorLine(toHere, bLoc, 0, 255, 0);
+		Direction bDir = b.dir;
+		MapLocation onePlyLoc = bLoc.add(bDir, b.speed);
+		float bLocDist = bLoc.distanceTo(here);
+		float onePlyLocDist = bLoc.distanceTo(here);
+		MapLocation midLoc = Util.midpoint(bLoc, onePlyLoc);
+		MapLocation cornerA = bLoc.add(b.dir.rotateLeftDegrees(90), type.bodyRadius);
+		MapLocation cornerB = bLoc.add(b.dir.rotateRightDegrees(90), type.bodyRadius);
+		MapLocation cornerC = onePlyLoc.add(b.dir.rotateRightDegrees(90), type.bodyRadius);
+		MapLocation cornerD = onePlyLoc.add(b.dir.rotateLeftDegrees(90), type.bodyRadius);
+		MapLocation[] locsOfInterest = new MapLocation[2];
+		if(bLocDist < type.bodyRadius - radius || onePlyLocDist < type.bodyRadius - radius){
+			//case 1: we're fucked
+			return scores;
+		}
+		else if(cornerA.distanceTo(toHere) < radius || cornerB.distanceTo(toHere) < radius){
+			//case 4: semi and line
+			//semi
+			MapLocation circCenter = bLoc.distanceTo(toHere) < onePlyLoc.distanceTo(toHere) ? bLoc: onePlyLoc;
+			MapLocation[] semiLocs = circleCircleIntersectionTwo(circCenter, toHere, type.bodyRadius, radius); 
+			locsOfInterest[0] = semiLocs[0].distanceTo(midLoc) > semiLocs[1].distanceTo(midLoc) ? semiLocs[0]: semiLocs[1];
+			//line
+			float slope = (cornerA.y - cornerB.y) / (cornerA.x - cornerB.x);
+			float intercept = cornerA.y - slope * cornerA.x;
+			MapLocation[] lineLocs = intersectionsBetweenLineAndCircle(slope, intercept, toHere, radius); 
+			locsOfInterest[1] = lineLocs[0].distanceTo(midLoc) < lineLocs[1].distanceTo(midLoc) ? lineLocs[0]: lineLocs[1];
+		}
+		else if(cornerC.distanceTo(toHere) < radius || cornerD.distanceTo(toHere) < radius){
+			//case 4: semi and line
+			//semi
+			MapLocation circCenter = bLoc.distanceTo(toHere) < onePlyLoc.distanceTo(toHere) ? bLoc: onePlyLoc;
+			MapLocation[] semiLocs = circleCircleIntersectionTwo(circCenter, toHere, type.bodyRadius, radius); 
+			locsOfInterest[0] = semiLocs[0].distanceTo(midLoc) > semiLocs[1].distanceTo(midLoc) ? semiLocs[0]: semiLocs[1];
+			//line
+			float slope = (cornerC.y - cornerD.y) / (cornerC.x - cornerD.x);
+			float intercept = cornerC.y - slope * cornerD.x;
+			MapLocation[] lineLocs = intersectionsBetweenLineAndCircle(slope, intercept, toHere, radius); 
+			locsOfInterest[1] = lineLocs[0].distanceTo(midLoc) < lineLocs[1].distanceTo(midLoc) ? lineLocs[0]: lineLocs[1];
+		}
+		else if(bLoc.distanceTo(toHere) < radius || onePlyLoc.distanceTo(toHere) < radius){
+			//case 3: two semis
+			MapLocation circCenter = bLoc.distanceTo(toHere) < onePlyLoc.distanceTo(toHere) ? bLoc: onePlyLoc;
+			locsOfInterest = circleCircleIntersectionTwo(circCenter, toHere, type.bodyRadius, radius); 
+		}
+		else{
+			MapLocation[] lineLocs;
+			if(cornerA.distanceTo(toHere) < cornerD.distanceTo(toHere)){
+				float slope = (cornerA.y - cornerB.y) / (cornerA.x - cornerB.x);
+				float intercept = cornerA.y - slope * cornerA.x;
+				lineLocs = intersectionsBetweenLineAndCircle(slope, intercept, toHere, radius); 
+			}
+			else{
+				float slope = (cornerC.y - cornerD.y) / (cornerC.x - cornerD.x);
+				float intercept = cornerC.y - slope * cornerD.x;
+				lineLocs = intersectionsBetweenLineAndCircle(slope, intercept, toHere, radius); 
+			}
+			if(lineLocs[0] != null){
+				//case 2: 2 lines
+				locsOfInterest = lineLocs;
+			}
+			//case 1 or case 5: either we're fucked either way or we're home free
+		}
+		if(locsOfInterest[0] != null){
+			int[] startEndVals = determineStartAndEndVals(locsOfInterest, scores.length, toHere);
+			if(startEndVals[0] < startEndVals[1]){
+				for(int i = startEndVals[0]; i <= startEndVals[1]; i++){
+					scores[i] += b.damage;
+				}
+			}
+			else{
+				for(int i = startEndVals[0]; i < scores.length; i++){
+					scores[i] += b.damage;
+				}
+				for(int i = 1; i <= startEndVals[1]; i++){
+					scores[i] += b.damage;
+				}
+			System.out.println("hi");
+			}
+			if(willCollide(b, toHere)){
+				scores[0] += b.damage;
+			}
+		}
+		/*
+		int[] added = new int[scores.length];
+		boolean enteredCircle = false;
+		int divideBy = 360 / (scores.length - 1);
+		float dist = here.distanceTo(bLoc);
+		for(int i = 0; i < precision; i++){
+			dist = toHere.distanceTo(bLoc);
+			if(added[0] == 0 && dist < type.bodyRadius){
+				scores[0] += b.damage;
+				added[0] = 1;
+			}
+			if(dist < radius){
+				enteredCircle = true;
+				float angOnEachSide = (float)(Math.abs(Math.asin(type.bodyRadius/dist) * 180 / Math.PI));
+				System.out.println("ang on each side = " + angOnEachSide);
+				int mid = (int)(myDegreesBetween(refDir, toHere.directionTo(bLoc)) / divideBy);
+				if(debug)rc.setIndicatorLine(toHere, toHere.add(options[mid], type.strideRadius), 255, 0, 0);
+				int addsub = (int)(angOnEachSide) / divideBy;//+ 1 for now to be extra careful
+				for(int j = mid - addsub; j < mid + addsub; j++){
+					if(j < 0 || j >= scores.length){
+						continue;
+					}
+					if(added[j] == 0){
+						scores[j] += b.damage;
+						//if(debug)rc.setIndicatorLine(toHere, toHere.add(options[j], type.strideRadius), 255, 0, 0);
+					}
+				}
+			}
+			else if(enteredCircle){
+				break;
+			}
+			if(dist < type.bodyRadius - type.strideRadius + 0.05){
+				//we're fucked
+				rip = true;
+				for(int j = 0; j < scores.length; j++){
+					if(added[j] == 0){
+						scores[j] += b.damage;
+						if(debug)rc.setIndicatorLine(toHere, toHere.add(options[j], type.strideRadius), 255, 0, 0);
+					}
+				}
+				break;
+			}
+			if(dist < radius){
+				enteredCircle = true;
+				int toAdd = (int)(myDegreesBetween(refDir, toHere.directionTo(bLoc)) / divideBy);
+				if(added[toAdd] == 0){
+					scores[toAdd] += b.damage;
+					if(debug)rc.setIndicatorLine(toHere, toHere.add(options[toAdd], type.strideRadius), 255, 0, 0);
+				}
+				if(added[toAdd + 1] == 0){
+					scores[toAdd + 1] += b.damage;
+					if(debug)rc.setIndicatorLine(toHere, toHere.add(options[toAdd + 1], type.strideRadius), 255, 0, 0);
+				}
+			}	
+			bLoc = bLoc.add(b.dir, b.speed/precision); 
+			}
+			*/
+		return scores;
 	}
 
 	private static int[] increaseScoresLineThroughCircle(float bLineSlope, float bLineIntercept, int[] scores, MapLocation targetLoc, MapLocation bLoc, MapLocation onePlyLoc, MapLocation toHere, float distToMove, float dmg, Direction[] options) throws GameActionException {
 		//if(debug)System.out.println("start of incrementing scores = " + Clock.getBytecodeNum());
-		MapLocation[] outerCircleLocs = intersectionsBetweenLineAndCircle(bLineSlope, bLineIntercept, bLoc, onePlyLoc, toHere, distToMove + type.bodyRadius);
+		MapLocation[] outerCircleLocs = intersectionsBetweenLineAndCircle(bLineSlope, bLineIntercept, toHere, distToMove + type.bodyRadius);
 		if(outerCircleLocs[0] == null){
 			//case 1: line does not go through circle aka bullet started and ended outside of circle and didn't pass through it
 			if(debug)System.out.println("case 1");
@@ -296,7 +538,6 @@ public class RangedCombat extends Bot {
 			//case 2: bullet passed through circle without starting inside
 			if(debug)System.out.println("case 2");		
 		}
-		//TODO: see if dealing with the edge case of the extensions being outside of the circle is even worth in terms of bytecode/effectiveness
 		else if(bLocInOuterCirc && onePlyLocInOuterCirc){
 			//case 3: bullet started and ended inside circle
 			MapLocation start = bLoc;
@@ -353,7 +594,7 @@ public class RangedCombat extends Bot {
 		}
 		if(debug)rc.setIndicatorLine(toHere, bLoc, 0, 0, 255);
 		if(debug)System.out.println("locs of interest are " + outerCircleLocs[0] + " " + outerCircleLocs[1]);
-		int[] startEndVals = determineStartAndEndVals(outerCircleLocs, scores.length, toHere, targetLoc);
+		int[] startEndVals = determineStartAndEndVals(outerCircleLocs, scores.length, toHere);
 		//MapLocation[] innerCircleLocs = intersectionsBetweenLineAndCircle(bLineSlope, bLineIntercept, bLoc, onePlyLoc, toHere, distToMove);
 		//int lowSafe = scores.length;
 		//int highSafe = 0;
@@ -365,7 +606,7 @@ public class RangedCombat extends Bot {
 		}*/
 		//if(debug)System.out.println("before for loop = " + Clock.getBytecodeNum());
 		if(startEndVals[0] < startEndVals[1]){
-		for(int i = startEndVals[0]; i <= startEndVals[1]; i++){
+			for(int i = startEndVals[0]; i <= startEndVals[1]; i++){
 			if(debug)rc.setIndicatorLine(toHere, toHere.add(options[i], type.strideRadius), 255, 0, 0);
 			scores[i] += dmg;
 			}
@@ -384,10 +625,14 @@ public class RangedCombat extends Bot {
 		return scores;
 	}
 
-	private static int[] determineStartAndEndVals(MapLocation[] outerCircleLocs, int length, MapLocation toHere, MapLocation targetLoc) {
+	private static int[] determineStartAndEndVals(MapLocation[] locsOfInterest, int length, MapLocation toHere) {
 		//int startB = Clock.getBytecodeNum();
-		Direction[] dirs = {toHere.directionTo(outerCircleLocs[0]), toHere.directionTo(outerCircleLocs[1]), toHere.directionTo(targetLoc)};
-		double[] degs = {myDegreesBetween(dirs[2], dirs[0]), myDegreesBetween(dirs[2], dirs[1])};
+		double[] degs = {toHere.directionTo(locsOfInterest[0]).radians * 180 / Math.PI, toHere.directionTo(locsOfInterest[1]).radians * 180 / Math.PI};
+		for(int i = 0; i < degs.length; i++){
+			if(degs[i] < 0){
+				degs[i] = 360 + degs[i];
+			}
+		}
 		if(degs[1] < degs[0] || degs[0] - degs[1] > 180){
 			double temp = degs[1];
 			degs[1] = degs[0];
@@ -399,10 +644,20 @@ public class RangedCombat extends Bot {
 		return new int[]{start,end};
 	}
 
-	private static MapLocation[] intersectionsBetweenLineAndCircle(float bLineSlope, float bLineIntercept, MapLocation bLoc, MapLocation onePlyLoc, MapLocation toHere, float radius){
+	private static boolean lineAndCircleIntersect(float bLineSlope, float bLineIntercept, MapLocation toHere, float radius){
+		float a = 1 + bLineSlope * bLineSlope;
+		float b = 2 * (bLineSlope * bLineIntercept - toHere.x - bLineSlope * toHere.y);
+		float c = toHere.x * toHere.x + bLineIntercept * bLineIntercept + toHere.y * toHere.y - 2 * bLineIntercept * toHere.y - radius * radius;
+		float det = b * b - 4 * a * c;
+		if(det < 0){
+			return false;
+		}
+		return true;
+	}
+	private static MapLocation[] intersectionsBetweenLineAndCircle(float bLineSlope, float bLineIntercept, MapLocation toHere, float radius){
 		//quadratic formula
 		//int startB = Clock.getBytecodeNum();
-		System.out.println("bLineSlope = " + bLineSlope + " bLineIntercept = " + bLineIntercept + "radius = " + radius);
+		//System.out.println("bLineSlope = " + bLineSlope + " bLineIntercept = " + bLineIntercept + "radius = " + radius);
 		MapLocation[] ret = {null, null};
 		float a = 1 + bLineSlope * bLineSlope;
 		float b = 2 * (bLineSlope * bLineIntercept - toHere.x - bLineSlope * toHere.y);
@@ -528,7 +783,7 @@ public class RangedCombat extends Bot {
 				safeDist = -1; //signal we are dealing with a scout
 			}
 			else{
-				safeDist = bestRobot.type.bodyRadius + type.bodyRadius + bestRobot.type.strideRadius + (bestRobot.type == RobotType.LUMBERJACK ? GameConstants.LUMBERJACK_STRIKE_RADIUS - bestRobot.type.bodyRadius : (float)(bestRobot.type.bulletSpeed * (bestRobot.type == RobotType.SCOUT? 1 : 1.5) / 2));//for now kinda hardcode the 1.5 -- more testing on this later
+				safeDist = bestRobot.type.bodyRadius + type.bodyRadius + bestRobot.type.strideRadius + (bestRobot.type == RobotType.LUMBERJACK ? GameConstants.LUMBERJACK_STRIKE_RADIUS - bestRobot.type.bodyRadius : (float)(bestRobot.type.bulletSpeed * (bestRobot.type == RobotType.SCOUT? 1 : 2)));//for now kinda hardcode the 1.5 -- more testing on this later
 			}//System.out.println("Safe dist = " + safeDist);*/
 		}
 		if(bestRobot != null)
@@ -597,7 +852,7 @@ public class RangedCombat extends Bot {
 				break;
 			}
 			if(a.type == RobotType.SOLDIER || a.type == RobotType.TANK){
-				singleValue += 5;
+				singleValue += 10;
 			}
 		}
 		
@@ -695,37 +950,20 @@ public class RangedCombat extends Bot {
 			}
 		}*/
 		int treeMod = rc.getTreeCount() / 4;
-		if (ableToShootPentad && pentadValue + treeMod + (type.attackPower + type.bulletSpeed) * 4 > 126 && (pentadValue > 150 || pentadValue > triadValue)) {
+		if (ableToShootPentad && pentadValue + treeMod + (type.attackPower + type.bulletSpeed) * 4 > 121 && (pentadValue > 145 || pentadValue > triadValue)) {
 			return PENTAD_SHOT;
 		}
-		float twoTurnsMove = targetRobot.type.strideRadius * 2;
-		float twoTurnsParallelToShot = (float)(Math.sqrt(twoTurnsMove*twoTurnsMove - targetRobot.type.bodyRadius * targetRobot.type.bodyRadius));
-		float threeTurnsMove = targetRobot.type.strideRadius * 3;
-		float threeTurnsParallelToShot = (float)(Math.sqrt(threeTurnsMove*threeTurnsMove - targetRobot.type.bodyRadius * targetRobot.type.bodyRadius));
-		float targetDist = here.distanceTo(target.getLocation());
-		float twoDistTheyCanGetAway = targetDist + twoTurnsParallelToShot - type.bodyRadius - targetRobot.type.bodyRadius;
-		float threeDistTheyCanGetAway = targetDist + threeTurnsParallelToShot - type.bodyRadius - targetRobot.type.bodyRadius;
-		if(type == RobotType.TANK){
-			if(type.bulletSpeed * 2 > twoDistTheyCanGetAway && twoDistTheyCanGetAway * Math.tan(Math.PI/12) < targetRobot.type.bodyRadius * 2 + 2)
-				return PENTAD_SHOT;
-			if(type.bulletSpeed * 3 > threeDistTheyCanGetAway && threeDistTheyCanGetAway * Math.tan(Math.PI/12) < targetRobot.type.bodyRadius * 2 + 2)
-				return PENTAD_SHOT;
+		if(type == RobotType.TANK && targetLoc != null && here.distanceTo(targetLoc) < safeDist){
+			return PENTAD_SHOT;
 		}
-		if (ableToShootTriad && triadValue + treeMod + (type.attackPower + type.bulletSpeed) * 4 > 111) {
+		if (ableToShootTriad && triadValue + treeMod + (type.attackPower + type.bulletSpeed) * 4 > 106) {
 			return TRIAD_SHOT;
 		}
 		if(tempSV > 69){
 			return SINGLE_SHOT;
 		}
-		if(type == RobotType.SOLDIER){
-			if(debug)System.out.println(threeDistTheyCanGetAway);
-			if(type.bulletSpeed * 2 > twoDistTheyCanGetAway && twoDistTheyCanGetAway * Math.tan(Math.PI/9) < targetRobot.type.bodyRadius * 2 + 1)
-				return TRIAD_SHOT;
-			if(type.bulletSpeed * 3 > threeDistTheyCanGetAway && threeDistTheyCanGetAway * Math.tan(Math.PI/9) < targetRobot.type.bodyRadius * 2 + 1)
-				return TRIAD_SHOT;
-		}
-		if (singleValue + treeMod + (type.attackPower + type.bulletSpeed) * 4 > 85){
-			return SINGLE_SHOT;
+		if(type == RobotType.SOLDIER && here.distanceTo(targetLoc) < safeDist){
+			return TRIAD_SHOT;
 		}
 		return NO_SHOT;
 
@@ -799,18 +1037,15 @@ public class RangedCombat extends Bot {
 	}
 
 
-	public static boolean willHitLoc(Direction dir, MapLocation loc, float rad){
-		MapLocation leftSide = loc.add(here.directionTo(loc).rotateLeftDegrees(90), rad);
-		MapLocation rightSide = loc.add(here.directionTo(loc).rotateRightDegrees(90), rad);
-		Direction left = here.directionTo(leftSide);
-		Direction right = here.directionTo(rightSide);
-		float degL = Math.abs(left.degreesBetween(dir));
-		float degR = Math.abs(right.degreesBetween(dir));
-		float degT = Math.abs(left.degreesBetween(right));
-		if (degL < degT && degR < degT) {
-			return true;
+	public static boolean willHitLoc(Direction dir, MapLocation loc, float rad) throws GameActionException{
+		Direction directionToHere = here.directionTo(loc);
+		float theta = Math.abs(dir.radiansBetween(directionToHere));
+		if (theta > Math.PI / 2) {
+			return false;
 		}
-		return false;
+		float distToTree = here.distanceTo(loc);
+		float perpendicularDist = (float) (distToTree * Math.sin(theta));
+		return perpendicularDist < rad + .01;
 	}
 	
 	///////////////////// These Might Belong in Util/////////////////////
@@ -845,6 +1080,55 @@ public class RangedCombat extends Bot {
 
 	}
 
+	public static class BulletAura{
+		MapLocation edgeMidA;
+		MapLocation edgeMidB;
+		MapLocation center;
+		float radius;
+		float speed;
+		Direction dir;
+		float xOffset;
+		float yOffset;
+		float ang;
+		float damage;
+		
+		public BulletAura(MapLocation edMA, MapLocation edMB, float rad, float s, Direction d, float dmg){
+			this.edgeMidA = (edMA.x < edMB.x ? edMA : edMB);
+			this.edgeMidB = (edMA.x >= edMB.x ? edMA : edMB);
+			this.center = Util.midpoint(edMA, edMB);
+			this.radius = rad;
+			this.speed = s;
+			this.dir = d;
+			this.setUpRotation();
+			this.damage = dmg;
+		}
+		
+		public float getDamage(){
+			return this.damage;
+		}
+		
+		public boolean bulletWillHitLoc(MapLocation loc){
+			if(loc.distanceTo(edgeMidA) < radius || loc.distanceTo(edgeMidB) < radius)
+				return true;
+			float x = (float) ((loc.x - xOffset) * Math.cos(ang) - (loc.y - yOffset) * Math.sin(ang));
+			float y = (float) ((loc.y - yOffset) * Math.cos(ang) + (loc.x - xOffset) * Math.sin(ang));
+			return Math.abs(x) < speed/2 && Math.abs(y) < radius;
+		}
+		
+		public void incrementTurn(){
+			this.edgeMidA = this.edgeMidA.add(dir, speed);
+			this.edgeMidB = this.edgeMidB.add(dir, speed);
+			this.center = Util.midpoint(edgeMidA, edgeMidB);
+		}
+		
+		private void setUpRotation(){
+			this.ang = center.directionTo(edgeMidB).radians;
+			this.xOffset = center.x;
+			this.yOffset = center.y;	
+		}
+		
+	}
+	
 	/////////// class
 	private static class potentialAttackStats {
 		BodyInfo target;
