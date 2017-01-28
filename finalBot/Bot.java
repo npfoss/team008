@@ -304,15 +304,10 @@ public class Bot {
 	public static boolean tryMoveDirection(Direction dir, boolean makeMove, boolean goBackwards)
 			throws GameActionException {
 		Direction bestDir = dir;
-		int bestDanger = 9999;
+		int bestDanger = tryMove(dir, type.strideRadius, makeMove);
 		int tempDanger = 0;
-		tempDanger = tryMove(dir, type.strideRadius, makeMove);
-		if (tempDanger == 0) {
+		if (bestDanger == 0) {
 			return true;
-		}
-		if (tempDanger < bestDanger) {
-			bestDir = dir;
-			bestDanger = tempDanger;
 		}
 		Direction left = dir.rotateLeftDegrees(30);
 		Direction right = dir.rotateRightDegrees(30);

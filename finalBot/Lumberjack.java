@@ -48,8 +48,6 @@ public class Lumberjack extends Bot {
             }
         }
         if(target != null && !moved){
-            if(rc.canSenseLocation(target) && rc.isLocationOccupiedByTree(target) && rc.canChop(target))
-                bugState = BugState.DIRECT;
             if(clearAroundLoc == null || here.distanceTo(clearAroundLoc) > 5) {
                 goTo(target);
                 moved = true;
@@ -125,7 +123,7 @@ public class Lumberjack extends Bot {
     public float CONTAINS_UNIT_MOD = 10f;
     public float IN_THE_WAY_MOD = 1f;
     public float ENEMY_TREE_MOD = 3f;
-    public float HEALTH_PCT_MOD = 1f;
+    public float HEALTH_PCT_MOD = 2f;
     public float scoreTree(TreeInfo tree){
         return  -DIST_TO_ME_MOD * rc.getLocation().distanceTo(tree.getLocation())
                 -DIST_TO_CA_MOD * (clearAroundLoc != null? clearAroundLoc.distanceTo(tree.getLocation()) : 0)
@@ -140,7 +138,7 @@ public class Lumberjack extends Bot {
     public void goForTrees() throws GameActionException {
 //        int s = Clock.getBytecodeNum();
 //        System.out.println("getting closest " + nearbyNeutralTrees.length + " neutral took " + (Clock.getBytecodeNum() - s));
-        if(debug) rc.setIndicatorDot(rc.getLocation(), 0, 255,0);
+//        if(debug) rc.setIndicatorDot(rc.getLocation(), 0, 255,0);
 
 //        System.out.println("TSA pre-check");
         if(moved && attacked) return;
@@ -152,18 +150,18 @@ public class Lumberjack extends Bot {
         float bestAttackScore = -999999f;
         float score;
         for(int i = 0; i < nearbyTrees.length && Clock.getBytecodesLeft() > WHEN_TO_STOP_SCORING_TREES_AND_MOVE; i++){
-            if(debug) System.out.print("loopy");
-             if(nearbyTrees[i].getTeam() == us) continue;
-             score = scoreTree(nearbyTrees[i]);
-             if(debug) System.out.println("loc: " + nearbyTrees[i].location.x + " " + nearbyTrees[i].location.y + " score: " + score);
-             if(!moved && score > bestMoveScore){
-                 bestMoveScore = score;
-                 moveTo = nearbyTrees[i];
-             }
-             if(!attacked && score > bestAttackScore && rc.getLocation().distanceTo(nearbyTrees[i].location) < GameConstants.LUMBERJACK_STRIKE_RADIUS + nearbyTrees[i].radius){
+//            if(debug) System.out.print("loopy");
+            if(nearbyTrees[i].getTeam() == us) continue;
+            score = scoreTree(nearbyTrees[i]);
+            if(debug) System.out.println("loc: " + nearbyTrees[i].location.x + " " + nearbyTrees[i].location.y + " score: " + score);
+            if(!moved && score > bestMoveScore){
+                bestMoveScore = score;
+                moveTo = nearbyTrees[i];
+            }
+            if(!attacked && score > bestAttackScore && rc.getLocation().distanceTo(nearbyTrees[i].location) < GameConstants.LUMBERJACK_STRIKE_RADIUS + nearbyTrees[i].radius){
                 bestAttackScore = score;
                 attackMe = nearbyTrees[i];
-             }
+            }
         }
 
         if(debug){
@@ -188,7 +186,7 @@ public class Lumberjack extends Bot {
         if(moveTo != null){
             if(moveTo == attackMe){
                 tryMoveDirection(here.directionTo(moveTo.location), false, false);
-                if(here.distanceTo(moveTo.getLocation()) > here.add(calculatedMove).distanceTo(moveTo.getLocation())){
+                if(calculatedMove != null && here.distanceTo(moveTo.getLocation()) > here.add(calculatedMove).distanceTo(moveTo.getLocation())){
                     rc.move(calculatedMove, type.strideRadius);
                 }
             } else {
@@ -368,5 +366,30 @@ public class Lumberjack extends Bot {
         float damageToEnemyTrees = RobotType.LUMBERJACK.attackPower * Util.numBodiesTouchingRadius(nearbyEnemyTrees, loc, GameConstants.LUMBERJACK_STRIKE_RADIUS);
         float damageToAlliedTrees = RobotType.LUMBERJACK.attackPower * Util.numBodiesTouchingRadius(nearbyAlliedTrees, loc, GameConstants.LUMBERJACK_STRIKE_RADIUS);
         return DAMAGE_THEM_MOD * damageToThem - damageToUs + TREE_DAMAGE_MOD * (damageToEnemyTrees - damageToAlliedTrees);
+    }
+
+    public static void goTo(MapLocation dest) throws GameActionException {
+        // this method makes us not try to bug if we can chop the thing in the way
+        if(debug) System.out.println("goin' to " + dest.toString());
+        MapLocation directlyInFront = here.add(here.directionTo(dest), type.strideRadius*2);
+        TreeInfo treeInTheWay = rc.senseTreeAtLocation(directlyInFront);
+        if(treeInTheWay != null) {
+            if(treeInTheWay.team != us){
+                tryMoveDirection(here.directionTo(dest), true, false);
+                moved = true;
+            }
+        } else {
+            RobotInfo botInTheWay = rc.senseRobotAtLocation(directlyInFront);
+            if(botInTheWay != null){
+                if(botInTheWay.team != us){
+                    tryMoveDirection(here.directionTo(dest), true, false);
+                    moved = true;
+                }
+            }
+        }
+        if(!moved){
+//            System.out.println("nope, here!");
+            Bot.goTo(dest);
+        }
     }
 }
