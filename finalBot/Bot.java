@@ -160,14 +160,19 @@ public class Bot {
 						|| rc.getTeamVictoryPoints() + rc.getTeamBullets() / rc.getVictoryPointCost() >= 1000) {
 					rc.donate(((int) (rc.getTeamBullets() / rc.getVictoryPointCost())) * rc.getVictoryPointCost());
 				}
-				shakeNearbyTrees();
-				takeTurn();
-				if (rc.canShake()) {
-					shakeNearbyTrees();
+				if (rc.getTeamBullets() > 1000){
+					rc.donate(rc.getVictoryPointCost());
 				}
-				MapLocation gardenerBuildLoc = Message.GARDENER_BUILD_LOCS.getClosestLocation(here);
-				if(gardenerBuildLoc != null)
-					removeLocIfApplicable(gardenerBuildLoc);
+				shakeNearbyTrees();
+				if(Clock.getBytecodesLeft() > 500){
+					takeTurn();
+					if (rc.canShake()) {
+						shakeNearbyTrees();
+					}
+					MapLocation gardenerBuildLoc = Message.GARDENER_BUILD_LOCS.getClosestLocation(here);
+					if(gardenerBuildLoc != null)
+						removeLocIfApplicable(gardenerBuildLoc);
+				}
 				if (rc.getRoundNum() != roundNum) System.out.println("******SHITSHITSHITSHITSHIT RAN OUT OF BYTECODE******");
 			} catch (Exception e) {
 				System.out.println(rc.getType().toString() + " Exception :(");
@@ -189,9 +194,9 @@ public class Bot {
 			return;
 		}
 		if(
-		(dist < type.sensorRadius -.001 && (!rc.onTheMap(targetLoc) || (rc.canSenseAllOfCircle(targetLoc, type.bodyRadius) && rc.isCircleOccupiedExceptByThisRobot(targetLoc, type.bodyRadius))) 
-		|| (!rc.onTheMap(here.add(here.directionTo(targetLoc), (float)(dist + (type.sensorRadius -.001 - dist < 2 ? type.sensorRadius -.001 - dist : 2))))
-		&& Message.GARDENER_BUILD_LOCS.getLength() > 1))){
+		(!rc.onTheMap(targetLoc)
+		|| rc.isLocationOccupiedByTree(targetLoc) || rc.senseRobotAtLocation(targetLoc) != null && (rc.senseRobotAtLocation(targetLoc).type == RobotType.GARDENER || rc.senseRobotAtLocation(targetLoc).type == RobotType.ARCHON)
+		)){
 			Message.GARDENER_BUILD_LOCS.removeLocation(targetLoc);
 		}
 	}

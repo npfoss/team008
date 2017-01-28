@@ -1,5 +1,4 @@
 package team008.finalBot;
-
 import battlecode.common.*;
 
 public class Gardener extends Bot {
@@ -9,6 +8,7 @@ public class Gardener extends Bot {
 	public static int turnsIHaveBeenTrying;
 	public static boolean tankBuilder;
 	public static int turnsTank;
+    public static float patienceVal;
 
 	public Gardener(RobotController r) throws GameActionException {
 		super(r);
@@ -17,7 +17,9 @@ public class Gardener extends Bot {
 		tankBuilder = false;
 		turnsIHaveBeenTrying = 0;
 		turnsTank = 0;
-		// anything else gardener specific
+        patienceVal = 1;
+
+        // anything else gardener specific
 	}
 
 	private static Direction findOpenSpaces() throws GameActionException {
@@ -92,8 +94,10 @@ public class Gardener extends Bot {
 	}
 	public void updateLocs() throws GameActionException{
 		for(int i = 0; i < 6 ; i++)
-		Message.GARDENER_BUILD_LOCS.addLocation(here.add(new Direction((float) (Math.PI/3 * i)), (float) 8.5));
+		Message.GARDENER_BUILD_LOCS.addLocation(here.add(new Direction((float) (Math.PI/3 * i)), (float) 8.5 / patienceVal));
 	}
+
+
 	public void takeTurn() throws GameActionException {
 		if(debug){
 		if(tankBuilder)
@@ -143,7 +147,7 @@ public class Gardener extends Bot {
 				goTo(dirIAmMoving);
 				boolean farAway = true;
 				for (RobotInfo r : nearbyAlliedRobots) {
-					if (r.type == RobotType.GARDENER || r.type == RobotType.ARCHON) {
+					if (r.type == RobotType.GARDENER || r.type == RobotType.ARCHON) { //shouldnt be hard set
 						farAway = false;
 						break;
 					}
@@ -183,8 +187,9 @@ public class Gardener extends Bot {
 				|| nearbyEnemyRobots.length > 0) {
 			buildSomething();
 		}
-		if(!isExploring && (!updatedLocs || rc.getRoundNum() + rc.getID() % 200 == 0)){
-			updateLocs();
+		if(!isExploring && (!updatedLocs || rc.getRoundNum() + rc.getID() % 100 == 0)){
+            patienceVal *= 1.5;
+            updateLocs();
 			updatedLocs = true;
 		}
 	}
