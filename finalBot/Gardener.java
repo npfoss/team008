@@ -8,7 +8,7 @@ public class Gardener extends Bot {
 	public static int turnsIHaveBeenTrying;
 	public static boolean tankBuilder;
 	public static int turnsTank;
-    public static float patienceVal;
+    public static float myPatience;
 
 	public Gardener(RobotController r) throws GameActionException {
 		super(r);
@@ -17,7 +17,7 @@ public class Gardener extends Bot {
 		tankBuilder = false;
 		turnsIHaveBeenTrying = 0;
 		turnsTank = 0;
-        patienceVal = 1;
+        myPatience = 1;
 
         // anything else gardener specific
 	}
@@ -135,7 +135,18 @@ public class Gardener extends Bot {
 			}
 		}
 		if (isExploring) {
+			myPatience++;
 			MapLocation targetLoc = Message.GARDENER_BUILD_LOCS.getClosestLocation(here);
+
+			if(myPatienceIsUp(targetLoc)){
+				if(notTerribleSpot()){
+					//just sit down
+                    isExploring = false;
+
+				} else {
+					grabAnOpenSpot();
+				}
+			}
 			while (isBadLocation(targetLoc)) {
 				targetLoc = Message.GARDENER_BUILD_LOCS.getClosestLocation(here);
 			}
@@ -187,11 +198,35 @@ public class Gardener extends Bot {
 				|| nearbyEnemyRobots.length > 0) {
 			buildSomething();
 		}
-		if(!isExploring && (!updatedLocs || rc.getRoundNum() + rc.getID() % 100 == 0)){
-            patienceVal *= 1.5;
+		if(!isExploring && (!updatedLocs || rc.getRoundNum() + rc.getID() % 200 == 0)){
             updateLocs();
 			updatedLocs = true;
 		}
+	}
+
+    /**
+     * Dont use broadcasted locations.
+     */
+    private void grabAnOpenSpot() throws GameActionException {
+        goTo(here.directionTo(nearbyAlliedTrees[0].location).opposite());
+    }
+
+    /**
+     * rough metric for a passable spot
+     * @return Boolean true if the spot is decent
+     */
+	private boolean notTerribleSpot() {
+	    return nearbyAlliedRobots.length < 5 && here.distanceTo(nearbyAlliedTrees[0].location) > 3;
+	}
+
+    /**
+     * rough method for checking how long weve been waiting
+     * @param targetLoc
+     * @return
+     */
+	private boolean myPatienceIsUp(MapLocation targetLoc) {
+		if(targetLoc == null) {return myPatience > 120;}
+		return myPatience > 180 || here.distanceTo(targetLoc) > 5;
 	}
 
 	public void waterLowestHealthTree() throws GameActionException {
