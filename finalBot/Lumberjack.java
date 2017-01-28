@@ -18,7 +18,7 @@ public class Lumberjack extends Bot {
     public static boolean attacked = false;
     public static boolean moved = false;
     public static Direction myRandomDirection;
-    public TreeInfo closestNeutralWithUnit;
+//    public TreeInfo closestNeutralWithUnit;
     public MapLocation clearAroundLoc;
     public Message[] messagesToTry = {Message.DISTRESS_SIGNALS, Message.TREES_WITH_UNITS, Message.CLEAR_TREES_PLEASE, Message.ENEMY_TREES, Message.ENEMY_ARCHONS};
     public int[] howFarToGoForMessage = {     25,                       15,                       25,                         20,                  20};
@@ -194,54 +194,6 @@ public class Lumberjack extends Bot {
             }
             moved = true;
         }
-
-        /*if(closestNeutralWithUnit != null){
-            if(!moved){
-                tryMoveDirection(here.directionTo(closestNeutralWithUnit.location), true, false);
-                moved = true;
-            }
-            if(rc.canChop(closestNeutralWithUnit.ID)){ // includes check for having attacked already
-                rc.chop(closestNeutralWithUnit.ID);
-                attacked = true;
-            }
-        }
-        if(nearbyEnemyTrees.length > 0){
-            if(!moved){
-                tryMoveDirection(here.directionTo(nearbyEnemyTrees[0].location), false, false);
-                if(here.distanceTo(nearbyEnemyTrees[0].getLocation()) > here.add(calculatedMove).distanceTo(nearbyEnemyTrees[0].getLocation())){
-                    rc.move(calculatedMove, type.strideRadius);
-                }
-                moved = true;
-            }
-            if(!attacked){
-                if(Util.numBodiesTouchingRadius(nearbyEnemyTrees, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS) > 2
-                        && Util.numBodiesTouchingRadius(nearbyAlliedRobots, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS) == 0){
-                    rc.strike();
-                    attacked = true;
-                } else if (rc.canChop(nearbyEnemyTrees[0].location)){
-                    rc.chop(nearbyEnemyTrees[0].ID);
-                    attacked = true;
-                }
-            }
-        } if(nearbyNeutralTrees.length > 0){
-            if(!moved){
-                tryMoveDirection(here.directionTo(nearbyNeutralTrees[0].location), false, false);
-                if(here.distanceTo(nearbyNeutralTrees[0].getLocation()) > here.add(calculatedMove).distanceTo(nearbyNeutralTrees[0].getLocation())){
-                    rc.move(calculatedMove, type.strideRadius);
-                }
-                moved = true;
-            }
-            if(!attacked){
-                if(Util.numBodiesTouchingRadius(nearbyNeutralTrees, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS) > 2
-                        && Util.numBodiesTouchingRadius(nearbyAlliedRobots, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS) == 0){
-                    rc.strike();
-                    attacked = true;
-                } else if (rc.canChop(nearbyNeutralTrees[0].location)) {
-                    rc.chop(nearbyNeutralTrees[0].ID);
-                    attacked = true;
-                }
-            }
-        }*/
     }
 
     public void doMicro() throws GameActionException {
