@@ -27,25 +27,25 @@ public class RangedCombat extends Bot {
 	 * to call execute, number of enemies must be > 0
 	 */
 	public static void execute() throws GameActionException {
-		safeDist = 0;
+
 	    //if(debug)System.out.println("Instantiation: "+ Clock.getBytecodeNum());
 		potentialAttackStats attack = chooseTargetAndShotType();
 		onlyHarmlessUnitsAround = onlyHarmlessUnitsNearby();
 		//if(debug)System.out.println("Shot Calc:"+Clock.getBytecodeNum());
 		if (attack == null) {
-			RobotInfo bestRobot = nearbyEnemyRobots[0];
-			safeDist = bestRobot.type.bodyRadius + type.bodyRadius + bestRobot.type.strideRadius
-					+ (bestRobot.type == RobotType.LUMBERJACK
-							? GameConstants.LUMBERJACK_STRIKE_RADIUS - bestRobot.type.bodyRadius
-							: bestRobot.type.bulletSpeed);
-			if (bestRobot.type == RobotType.GARDENER)
+			RobotInfo closestRobot = nearbyEnemyRobots[0];
+			safeDist = closestRobot.type.bodyRadius + type.bodyRadius + closestRobot.type.strideRadius
+					+ (closestRobot.type == RobotType.LUMBERJACK
+							? GameConstants.LUMBERJACK_STRIKE_RADIUS - closestRobot.type.bodyRadius
+							: closestRobot.type.bulletSpeed);
+			if (closestRobot.type == RobotType.GARDENER)
 				safeDist = 0;
-			if (!onlyHarmlessUnitsAround || here.distanceTo(bestRobot.location) < 3.5) {
-				Direction moveDir = calcMoveDir(bestRobot);
+			if (!onlyHarmlessUnitsAround || here.distanceTo(closestRobot.location) < 3.5) {
+				Direction moveDir = calcMoveDir(closestRobot);
 				if (moveDir != null && rc.canMove(moveDir, MOVE_DIST))
 					rc.move(moveDir, MOVE_DIST);
 			} else {
-				goTo(bestRobot.location);
+				goTo(closestRobot.location);
 			}
 
 			return;
@@ -192,7 +192,7 @@ public class RangedCombat extends Bot {
 				backupDir = dir;
 			}
 		}
-        //if(debug)System.out.println("Checking for an easy move:"+Clock.getBytecodeNum());
+        if(debug)System.out.println("Checking for an easy move:"+Clock.getBytecodeNum());
 
         //check the other directions
 		int dirsToCheck = 36;
@@ -201,7 +201,7 @@ public class RangedCombat extends Bot {
 		Direction left = dir.rotateLeftDegrees(360/dirsToCheck);
 		Direction right = dir.rotateRightDegrees(360/dirsToCheck);
 		for(int i = 0; i < dirsToCheck/2; i++){
-            //if(debug)System.out.println("Going through directions:"+Clock.getBytecodeNum());
+            if(debug)System.out.println("Going through directions:"+Clock.getBytecodeNum() );
 
             if(rc.canMove(left, type.strideRadius)){
 				MapLocation moveTo = here.add(left, type.strideRadius);
@@ -578,9 +578,10 @@ public class RangedCombat extends Bot {
 			MapLocation eExtendedA = end.add(end.directionTo(toHere).rotateLeftDegrees(90), type.bodyRadius);
 			MapLocation eExtendedB = end.add(end.directionTo(toHere).rotateRightDegrees(90), type.bodyRadius);
 			float degreesBtwnExtensions = Math.abs(toHere.directionTo(eExtendedA).degreesBetween(toHere.directionTo(eExtendedB)));
-			boolean addA = eExtendedA.distanceTo(start) > eExtendedB.distanceTo(start);
-			MapLocation addToArray = eExtendedA.distanceTo(start) > eExtendedB.distanceTo(start) ? eExtendedA: eExtendedB;
-			int index = (Math.abs(outerCircleLocs[0].distanceTo(start) - outerCircleLocs[0].distanceTo(end)
+			//boolean addA = eExtendedA.distanceTo(start) > eExtendedB.distanceTo(start);
+			MapLocation addToArray = eExtendedA.distanceTo(start) < eExtendedB.distanceTo(start) ? eExtendedA: eExtendedB;
+			int index = (Math.abs(outerCircleLocs[0].distanceTo(start)
+                    - outerCircleLocs[0].distanceTo(end)
 					- end.distanceTo(start)) < .01 ? 0 : 1);
 			float degreesBtwnExtensionAndIntersect = Math.abs(toHere.directionTo(addToArray).degreesBetween(toHere.directionTo(outerCircleLocs[index == 0 ?1:0])));
 			if(degreesBtwnExtensions < degreesBtwnExtensionAndIntersect){
@@ -604,7 +605,7 @@ public class RangedCombat extends Bot {
 			lowSafe = innerStartEndVals[0];
 			highSafe = innerStartEndVals[0];
 		}*/
-		//if(debug)System.out.println("before for loop = " + Clock.getBytecodeNum());
+		if(debug)System.out.println("before for loop = " + Clock.getBytecodeNum());
 		if(startEndVals[0] < startEndVals[1]){
 			for(int i = startEndVals[0]; i <= startEndVals[1]; i++){
 			if(debug)rc.setIndicatorLine(toHere, toHere.add(options[i], type.strideRadius), 255, 0, 0);
@@ -621,7 +622,7 @@ public class RangedCombat extends Bot {
 				scores[i] += dmg;
 			}
 		}
-		//if(debug)System.out.println("end of incrementing scores = " + Clock.getBytecodeNum());
+		if(debug)System.out.println("end of incrementing scores = " + Clock.getBytecodeNum());
 		return scores;
 	}
 
@@ -658,6 +659,7 @@ public class RangedCombat extends Bot {
 		//quadratic formula
 		//int startB = Clock.getBytecodeNum();
 		//System.out.println("bLineSlope = " + bLineSlope + " bLineIntercept = " + bLineIntercept + "radius = " + radius);
+		//System.out.println("QUAD " + (Clock.getBytecodeNum()));
 		MapLocation[] ret = {null, null};
 		float a = 1 + bLineSlope * bLineSlope;
 		float b = 2 * (bLineSlope * bLineIntercept - toHere.x - bLineSlope * toHere.y);
