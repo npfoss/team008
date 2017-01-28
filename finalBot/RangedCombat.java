@@ -191,7 +191,7 @@ public class RangedCombat extends Bot {
 				backupDir = dir;
 			}
 		}
-        //if(debug)System.out.println("Checking for an easy move:"+Clock.getBytecodeNum());
+        if(debug)System.out.println("Checking for an easy move:"+Clock.getBytecodeNum());
 
         //check the other directions
 		int dirsToCheck = 36;
@@ -200,7 +200,7 @@ public class RangedCombat extends Bot {
 		Direction left = dir.rotateLeftDegrees(360/dirsToCheck);
 		Direction right = dir.rotateRightDegrees(360/dirsToCheck);
 		for(int i = 0; i < dirsToCheck/2; i++){
-            //if(debug)System.out.println("Going through directions:"+Clock.getBytecodeNum());
+            if(debug)System.out.println("Going through directions:"+Clock.getBytecodeNum() );
 
             if(rc.canMove(left, type.strideRadius)){
 				MapLocation moveTo = here.add(left, type.strideRadius);
@@ -245,7 +245,7 @@ public class RangedCombat extends Bot {
 				continue;
 			int start = Clock.getBytecodeNum();
 			scores = increaseScoresOnePly(b, scores, targetLoc, options);
-			//System.out.println("will collide alternative takes " + (Clock.getBytecodeNum() - start));
+			System.out.println("will collide alternative takes " + (Clock.getBytecodeNum() - start));
 		}
 		int bestScore = scores[0];
 		int bestIndex = 0;
@@ -283,7 +283,7 @@ public class RangedCombat extends Bot {
 	}
 
 	private static int[] increaseScoresLineThroughCircle(float bLineSlope, float bLineIntercept, int[] scores, MapLocation targetLoc, MapLocation bLoc, MapLocation onePlyLoc, MapLocation toHere, float distToMove, float dmg, Direction[] options) throws GameActionException {
-		//if(debug)System.out.println("start of incrementing scores = " + Clock.getBytecodeNum());
+		if(debug)System.out.println("start of incrementing scores = " + Clock.getBytecodeNum());
 		MapLocation[] outerCircleLocs = intersectionsBetweenLineAndCircle(bLineSlope, bLineIntercept, bLoc, onePlyLoc, toHere, distToMove + type.bodyRadius);
 		if(outerCircleLocs[0] == null){
 			//case 1: line does not go through circle aka bullet started and ended outside of circle and didn't pass through it
@@ -337,9 +337,10 @@ public class RangedCombat extends Bot {
 			MapLocation eExtendedA = end.add(end.directionTo(toHere).rotateLeftDegrees(90), type.bodyRadius);
 			MapLocation eExtendedB = end.add(end.directionTo(toHere).rotateRightDegrees(90), type.bodyRadius);
 			float degreesBtwnExtensions = Math.abs(toHere.directionTo(eExtendedA).degreesBetween(toHere.directionTo(eExtendedB)));
-			boolean addA = eExtendedA.distanceTo(start) > eExtendedB.distanceTo(start);
-			MapLocation addToArray = eExtendedA.distanceTo(start) > eExtendedB.distanceTo(start) ? eExtendedA: eExtendedB;
-			int index = (Math.abs(outerCircleLocs[0].distanceTo(start) - outerCircleLocs[0].distanceTo(end)
+			//boolean addA = eExtendedA.distanceTo(start) > eExtendedB.distanceTo(start);
+			MapLocation addToArray = eExtendedA.distanceTo(start) < eExtendedB.distanceTo(start) ? eExtendedA: eExtendedB;
+			int index = (Math.abs(outerCircleLocs[0].distanceTo(start)
+                    - outerCircleLocs[0].distanceTo(end)
 					- end.distanceTo(start)) < .01 ? 0 : 1);
 			float degreesBtwnExtensionAndIntersect = Math.abs(toHere.directionTo(addToArray).degreesBetween(toHere.directionTo(outerCircleLocs[index == 0 ?1:0])));
 			if(degreesBtwnExtensions < degreesBtwnExtensionAndIntersect){
@@ -363,7 +364,7 @@ public class RangedCombat extends Bot {
 			lowSafe = innerStartEndVals[0];
 			highSafe = innerStartEndVals[0];
 		}*/
-		//if(debug)System.out.println("before for loop = " + Clock.getBytecodeNum());
+		if(debug)System.out.println("before for loop = " + Clock.getBytecodeNum());
 		if(startEndVals[0] < startEndVals[1]){
 		for(int i = startEndVals[0]; i <= startEndVals[1]; i++){
 			if(debug)rc.setIndicatorLine(toHere, toHere.add(options[i], type.strideRadius), 255, 0, 0);
@@ -380,7 +381,7 @@ public class RangedCombat extends Bot {
 				scores[i] += dmg;
 			}
 		}
-		//if(debug)System.out.println("end of incrementing scores = " + Clock.getBytecodeNum());
+		if(debug)System.out.println("end of incrementing scores = " + Clock.getBytecodeNum());
 		return scores;
 	}
 
@@ -401,7 +402,8 @@ public class RangedCombat extends Bot {
 
 	private static MapLocation[] intersectionsBetweenLineAndCircle(float bLineSlope, float bLineIntercept, MapLocation bLoc, MapLocation onePlyLoc, MapLocation toHere, float radius){
 		//quadratic formula
-		//int startB = Clock.getBytecodeNum();
+		//System.out.println("QUAD " + (Clock.getBytecodeNum()));
+		int startB = Clock.getBytecodeNum();
 		System.out.println("bLineSlope = " + bLineSlope + " bLineIntercept = " + bLineIntercept + "radius = " + radius);
 		MapLocation[] ret = {null, null};
 		float a = 1 + bLineSlope * bLineSlope;
