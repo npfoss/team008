@@ -1,7 +1,6 @@
 package team008.finalBot;
 
 import battlecode.common.*;
-import sprint.Util;
 
 
 public class RangedCombat extends Bot {
