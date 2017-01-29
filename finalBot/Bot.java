@@ -374,7 +374,7 @@ public class Bot {
 	}
 
 
-	private static int tryMove(Direction dir, float dist, boolean makeMove) throws GameActionException {
+	private static int tryMove(Direction dir, float dist, boolean makeMove, boolean tryBinary) throws GameActionException {
 		if (rc.canMove(dir, dist) && !(type == RobotType.TANK
 				&& rc.isCircleOccupiedExceptByThisRobot(here.add(dir, dist), type.bodyRadius)
 				&& (nearbyTrees.length > 0 && nearbyTrees[0].team == us))) {

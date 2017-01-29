@@ -188,7 +188,7 @@ public class MapAnalysis extends Bot {
 		case RUSH_ENEMY:
 			if (numGardener == 0 ||  
 				    rc.getRoundNum() > 100 && Message.ADAPTATION.getValue() != DEFEND_SOMETHING && 
-				    (double)(rc.getTreeCount()) / numGardener > (rc.getTeamBullets() > roundNum ? 1.5: 3) && numGardener < 8
+				    (double)(rc.getTreeCount()) / numGardener > (rc.getTeamBullets() > roundNum ? 1.5: 2.5) && numGardener < 8
 					&& (numGardener == 1 || rc.getTeamBullets() > 150)) {
 				Message.ARCHON_BUILD_NUM.setValue(1);
 			}
@@ -245,7 +245,7 @@ public class MapAnalysis extends Bot {
 		case CLEAR_TREES:
 			if (numGardener == 0 ||  
 		    	rc.getRoundNum() > 100 && Message.ADAPTATION.getValue() != DEFEND_SOMETHING && 
-		    	(double)(rc.getTreeCount()) / numGardener > (rc.getTeamBullets() > roundNum ? 1.5: 3) && numGardener < 8
+		    	(double)(rc.getTreeCount()) / numGardener > (rc.getTeamBullets() > roundNum ? 1.5: 2.5) && numGardener < 8
 				&& (numGardener == 1 || rc.getTeamBullets() > 150)) {
 				Message.ARCHON_BUILD_NUM.setValue(1);
 			}
@@ -283,7 +283,7 @@ public class MapAnalysis extends Bot {
 		case BUILD_TREES:
 			if (numGardener == 0 ||  
 	    	rc.getRoundNum() > 100 && Message.ADAPTATION.getValue() != DEFEND_SOMETHING && 
-	    	(double)(rc.getTreeCount()) / numGardener > (rc.getTeamBullets() > roundNum ? 1.5: 3) && numGardener < 8
+	    	(double)(rc.getTreeCount()) / numGardener > (rc.getTeamBullets() > roundNum ? 1.5: 2.5) && numGardener < 8
 			&& (numGardener == 1 || rc.getTeamBullets() > 150)) {
 			Message.ARCHON_BUILD_NUM.setValue(1);
 		}
