@@ -1,4 +1,5 @@
-package team008.finalBot;
+package team008.b1_27_0038;
+
 import battlecode.common.*;
 
 public class Gardener extends Bot {
@@ -8,7 +9,6 @@ public class Gardener extends Bot {
 	public static int turnsIHaveBeenTrying;
 	public static boolean tankBuilder;
 	public static int turnsTank;
-    public static float patienceVal;
 
 	public Gardener(RobotController r) throws GameActionException {
 		super(r);
@@ -17,9 +17,7 @@ public class Gardener extends Bot {
 		tankBuilder = false;
 		turnsIHaveBeenTrying = 0;
 		turnsTank = 0;
-        patienceVal = 1;
-
-        // anything else gardener specific
+		// anything else gardener specific
 	}
 
 	private static Direction findOpenSpaces() throws GameActionException {
@@ -38,8 +36,8 @@ public class Gardener extends Bot {
 				}
 			boolean addedTree = false;
 			for (TreeInfo t : nearbyNeutralTrees){
-				if(here.distanceTo(t.location) < 5 + t.radius && !addedTree){
-					Message.CLEAR_TREES_PLEASE.addLocation(here);
+				if(here.distanceTo(t.location) < 6 + t.radius && !addedTree){
+					Message.CLEAR_TREES_PLEASE.addLocation(t.location);
 					addedTree = true;
 				}
 				if (Math.abs(dir.radiansBetween(here.directionTo(t.location))) < Math.PI / 2){
@@ -94,16 +92,14 @@ public class Gardener extends Bot {
 	}
 	public void updateLocs() throws GameActionException{
 		for(int i = 0; i < 6 ; i++)
-		Message.GARDENER_BUILD_LOCS.addLocation(here.add(new Direction((float) (Math.PI/3 * i)), (float) 8.5 / patienceVal));
+		Message.GARDENER_BUILD_LOCS.addLocation(here.add(new Direction((float) (Math.PI/3 * i)), (float) 8.5));
 	}
-
-
 	public void takeTurn() throws GameActionException {
 		if(debug){
-			if(tankBuilder)
-				System.out.println("tank builder");
-			System.out.println("dtc = " + here.distanceTo(MapAnalysis.center));
-			System.out.println("rb = " + Message.DIST_TO_CENTER.getFloatValue());
+		if(tankBuilder)
+			System.out.println("tank builder");
+		System.out.println("dtc = " + here.distanceTo(MapAnalysis.center));
+		System.out.println("rb = " + Message.DIST_TO_CENTER.getFloatValue());
 		}
 		if(tankBuilder && Math.abs(here.distanceTo(MapAnalysis.center) - Message.DIST_TO_CENTER.getFloatValue()) > 0.1){
 			tankBuilder = false;
@@ -147,7 +143,7 @@ public class Gardener extends Bot {
 				goTo(dirIAmMoving);
 				boolean farAway = true;
 				for (RobotInfo r : nearbyAlliedRobots) {
-					if (r.type == RobotType.GARDENER || r.type == RobotType.ARCHON) { //shouldnt be hard set
+					if (r.type == RobotType.GARDENER || r.type == RobotType.ARCHON) {
 						farAway = false;
 						break;
 					}
@@ -187,9 +183,8 @@ public class Gardener extends Bot {
 				|| nearbyEnemyRobots.length > 0) {
 			buildSomething();
 		}
-		if(!isExploring && (!updatedLocs || rc.getRoundNum() + rc.getID() % 100 == 0)){
-            patienceVal *= 1.5;
-            updateLocs();
+		if(!isExploring && (!updatedLocs || rc.getRoundNum() + rc.getID() % 200 == 0)){
+			updateLocs();
 			updatedLocs = true;
 		}
 	}

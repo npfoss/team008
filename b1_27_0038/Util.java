@@ -1,4 +1,4 @@
-package team008.finalBot;
+package team008.b1_27_0038;
 
 import battlecode.common.*;
 
@@ -126,14 +126,10 @@ public class Util extends Bot {
         return !(t == RobotType.ARCHON || t == RobotType.GARDENER);
     }
 
-    public static int numBodiesTouchingRadius(BodyInfo[] trees, MapLocation toHere, float radius) {
-        return numBodiesTouchingRadius(trees, toHere, radius, 9999);
-    }
-
-    public static int numBodiesTouchingRadius(BodyInfo[] trees, MapLocation toHere, float radius, int whenToGiveUp){
+    public static int numBodiesTouchingRadius(BodyInfo[] trees, MapLocation toHere, float radius){
         int count = 0;
-        for (int i = Math.min(whenToGiveUp, trees.length); i-->0;){
-            if (toHere.distanceTo(trees[i].getLocation()) <= radius + trees[i].getRadius()){
+        for (BodyInfo tree : trees){
+            if (toHere.distanceTo(tree.getLocation()) <= radius + tree.getRadius()){
                 count++;
             }
         }
@@ -161,9 +157,5 @@ public class Util extends Bot {
         }
         return new MapLocation(xavg / robots.length, yavg / robots.length);
     }
-
-	public static MapLocation midpoint(MapLocation a, MapLocation b) {
-		return new MapLocation((a.x + b.x)/2, (a.y + b.y)/2);
-	}
 }
 
