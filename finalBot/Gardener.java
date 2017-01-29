@@ -215,7 +215,8 @@ public class Gardener extends Bot {
                 || nearbyEnemyRobots.length > 0) {
             buildSomething();
         }
-        if(!isExploring && (!updatedLocs || rc.getRoundNum() + rc.getID() % 300 == 0)){
+        if(!isExploring &&(!updatedLocs || rc.getRoundNum() + rc.getID() % 300 == 0)){
+            //this should check if we're in a decent spot
             updateLocs();
             updatedLocs = true;
         }
