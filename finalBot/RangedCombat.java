@@ -102,7 +102,7 @@ public class RangedCombat extends Bot {
 		Direction dir = here.directionTo(t);
 		float highDist = type.strideRadius;
 		float lowDist = 0;
-		float midDist = (float)(0.01);
+		float midDist = (float)(type.strideRadius/2);
 		while(highDist - lowDist > .01){
 			midDist = (highDist + lowDist) / 2;
 			if(rc.canMove(dir, midDist)){
@@ -424,6 +424,8 @@ public class RangedCombat extends Bot {
 		for (RobotInfo robot : nearbyEnemyRobots) {
 			if(robot.type == RobotType.ARCHON && nearbyEnemyRobots.length > 1)
 				continue;
+			if(robot.type == RobotType.SCOUT && nearbyEnemyRobots.length > 1)
+				continue;
 			canWeHitThemValue = canWeHitHeuristic(robot);
 			score = (int) (canWeHitThemValue);
 			//if(debug)System.out.println("score = " + score);
@@ -507,7 +509,7 @@ public class RangedCombat extends Bot {
 		if(target.isRobot()){
 			targetRobot = (RobotInfo)target;
 			if(targetRobot.type == RobotType.ARCHON){
-				return (rc.getTreeCount() > 10 || rc.getTeamBullets() > 500 ? SINGLE_SHOT: NO_SHOT);
+				return (nearbyAlliedRobots.length > 5 || rc.getInitialArchonLocations(enemy).length < 2 || rc.getTreeCount() > 10 || rc.getTeamBullets() > 500 ? SINGLE_SHOT: NO_SHOT);
 			}
 		}
 		if(type == RobotType.TANK && targetRobot != null){

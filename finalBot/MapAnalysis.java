@@ -109,13 +109,10 @@ public class MapAnalysis extends Bot {
 		}
 		conflictDist = conflictDistance;
 		int treesToClear = Message.CLEAR_TREES_PLEASE.getLength();
-		float rushHeuristic = 120 - conflictDist - treesToClear * 10;
+		float rushHeuristic = 100 - conflictDist - treesToClear * 10;
 		initialSoldiers = (int)(rushHeuristic < 50 ? 0 : (int)(rushHeuristic / 50));
-		treeToSoldierRatio = (float) (0.50 + conflictDist / 100); 
+		treeToSoldierRatio = (float) (1.50 + conflictDist / 100);
 		if(debug)System.out.println("Rush Heuristic = " + rushHeuristic + " initialSoldiers = " + initialSoldiers + "tree to soldier ratio = " + treeToSoldierRatio);
-		if(rushHeuristic < 15){
-			canBuildScout = true;
-		}
 		if (rushHeuristic > 50) {
 			Message.GENETICS.setValue(RUSH_ENEMY);
 		}	
@@ -138,12 +135,12 @@ public class MapAnalysis extends Bot {
 		int treesToClear = Message.CLEAR_TREES_PLEASE.getLength();
 		if(debug)System.out.println("treesToClear = " + treesToClear);
 		int turnsSinceDistress = roundNum - lastTurnWithDistress;
-		float distressModifier = (float) (turnsSinceDistress * .004 > 2? 2: turnsSinceDistress * .004);
+		float distressModifier = (float) ((turnsSinceDistress - 250) * .004 > 1? 1: (turnsSinceDistress - 250) * .004);
 		if(area != 0){
-			treeToSoldierRatio = (float) (0.50 + distressModifier + area / 2000); 
+			treeToSoldierRatio = (float) (1.50 + distressModifier + area / 4000); 
 		}
 		else{
-			treeToSoldierRatio = (float) (0.50 + distressModifier + conflictDist / 100); 
+			treeToSoldierRatio = (float) (1.50 + distressModifier + conflictDist / 100); 
 		}
 		if(debug)System.out.println("tree to soldier ratio = " + treeToSoldierRatio);
 		if(treesToClear == 0 && Message.GENETICS.getValue() == CLEAR_TREES){
@@ -153,6 +150,7 @@ public class MapAnalysis extends Bot {
 			Message.GENETICS.setValue(CLEAR_TREES);
 		}
 		if(Message.DISTRESS_SIGNALS.getLength() > 0){
+			rc.setIndicatorLine(here, Message.DISTRESS_SIGNALS.getClosestLocation(here), 255, 0, 0);
 			lastTurnWithDistress = roundNum;
 			Message.ADAPTATION.setValue(DEFEND_SOMETHING);
 		}
@@ -190,17 +188,17 @@ public class MapAnalysis extends Bot {
 		case RUSH_ENEMY:
 			if (numGardener == 0 ||  
 				    rc.getRoundNum() > 100 && Message.ADAPTATION.getValue() != DEFEND_SOMETHING && 
-				    rc.getTreeCount() / numGardener > 2 && numGardener < 8
+				    (double)(rc.getTreeCount()) / numGardener > (rc.getTeamBullets() > roundNum ? 1.5: 3) && numGardener < 8
 					&& (numGardener == 1 || rc.getTeamBullets() > 150)) {
 				Message.ARCHON_BUILD_NUM.setValue(1);
 			}
 			switch (adaptation) {
 			case 0:
 			case DEFEND_NOTHING:
-				if (numSoldier < initialSoldiers) {
+				if (numSoldier < initialSoldiers ) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
 					Message.GARDENER_BUILD_NUM.setValue(initialSoldiers - numSoldier);
-				} else if (numLumberjack < treesToClear * ((roundNum - 75) * 0.5 > 1 ? 1: (roundNum - 75) * .05)) {
+				} else if (numLumberjack < treesToClear * ((roundNum - 75) * 0.5 > 1 ? 1: (roundNum - 75) * .05) && numLumberjack < rc.getTreeCount() * 2) {
 					Message.GARDENER_BUILD_ORDERS.setValue(LUMBERJACK);
 					Message.GARDENER_BUILD_NUM.setValue(1);
 				} else if (numSoldier >= initialSoldiers && numSoldier < rc.getTreeCount()/treeToSoldierRatio) {
@@ -247,7 +245,7 @@ public class MapAnalysis extends Bot {
 		case CLEAR_TREES:
 			if (numGardener == 0 ||  
 		    	rc.getRoundNum() > 100 && Message.ADAPTATION.getValue() != DEFEND_SOMETHING && 
-		    	(rc.getTreeCount() / numGardener > 2 && numGardener < 8)
+		    	(double)(rc.getTreeCount()) / numGardener > (rc.getTeamBullets() > roundNum ? 1.5: 3) && numGardener < 8
 				&& (numGardener == 1 || rc.getTeamBullets() > 150)) {
 				Message.ARCHON_BUILD_NUM.setValue(1);
 			}
@@ -257,10 +255,10 @@ public class MapAnalysis extends Bot {
 				if (numSoldier < initialSoldiers) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
 					Message.GARDENER_BUILD_NUM.setValue(initialSoldiers - numSoldier);
-				} else if (numScout < 1 && (canBuildScout || rc.getRoundNum() > 200)) {
+				} else if (numScout < 1) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SCOUT);
 					Message.GARDENER_BUILD_NUM.setValue(1);
-				} else if (numLumberjack < treesToClear * ((roundNum - 75) * 0.5 > 1 ? 1 : (roundNum - 75) * .05)) {
+				} else if (numLumberjack < treesToClear * ((roundNum - 75) * 0.5 > 1 ? 1 : (roundNum - 75) * .05) && numLumberjack < rc.getTreeCount() * 2) {
 					Message.GARDENER_BUILD_ORDERS.setValue(LUMBERJACK);
 					Message.GARDENER_BUILD_NUM.setValue(1);
 				} else if (numScout < 1 && (canBuildScout || rc.getRoundNum() > 200)) {
@@ -268,17 +266,16 @@ public class MapAnalysis extends Bot {
 					Message.GARDENER_BUILD_NUM.setValue(1);
 				} else if (numSoldier >= initialSoldiers && numSoldier < rc.getTreeCount() / treeToSoldierRatio) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
-					Message.GARDENER_BUILD_NUM
-							.setValue((int) (rc.getTreeCount() / treeToSoldierRatio - numSoldier) + 1);
+					Message.GARDENER_BUILD_NUM.setValue((int) (rc.getTreeCount() / treeToSoldierRatio - numSoldier) + 1);
 				}
 				break;
 			case DEFEND_SOMETHING:
 				if (numSoldier < initialSoldiers) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
 					Message.GARDENER_BUILD_NUM.setValue(initialSoldiers - numSoldier);
-				} else if (numSoldier >= initialSoldiers && numSoldier < rc.getTreeCount()/treeToSoldierRatio + 2) {
+				} else if (numSoldier >= initialSoldiers && numSoldier < rc.getTreeCount()/treeToSoldierRatio) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
-					Message.GARDENER_BUILD_NUM.setValue((int) (rc.getTreeCount()/treeToSoldierRatio - numSoldier) + 3);
+					Message.GARDENER_BUILD_NUM.setValue((int) (rc.getTreeCount()/treeToSoldierRatio - numSoldier) + 1);
 				}
 				break;
 			}
@@ -286,7 +283,7 @@ public class MapAnalysis extends Bot {
 		case BUILD_TREES:
 			if (numGardener == 0 ||  
 	    	rc.getRoundNum() > 100 && Message.ADAPTATION.getValue() != DEFEND_SOMETHING && 
-	    	(rc.getTreeCount() + rc.getRobotCount()) / numGardener > 2 && numGardener < 8
+	    	(double)(rc.getTreeCount()) / numGardener > (rc.getTeamBullets() > roundNum ? 1.5: 3) && numGardener < 8
 			&& (numGardener == 1 || rc.getTeamBullets() > 150)) {
 			Message.ARCHON_BUILD_NUM.setValue(1);
 		}
@@ -296,11 +293,11 @@ public class MapAnalysis extends Bot {
 				if (numSoldier < initialSoldiers) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
 					Message.GARDENER_BUILD_NUM.setValue(initialSoldiers - numSoldier);
-				} else if (numLumberjack < treesToClear * ((roundNum - 75) * 0.5 > 1 ? 1 : (roundNum - 75) * .05)) {
-					Message.GARDENER_BUILD_ORDERS.setValue(LUMBERJACK);
-					Message.GARDENER_BUILD_NUM.setValue(1);
-				} else if (numScout < 1 && (canBuildScout || rc.getRoundNum() > 200)) {
+				} else if (numScout < 1) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SCOUT);
+					Message.GARDENER_BUILD_NUM.setValue(1);
+				} else if (numLumberjack < treesToClear * ((roundNum - 75) * 0.5 > 1 ? 1 : (roundNum - 75) * .05) && numLumberjack < rc.getTreeCount() * 2) {
+					Message.GARDENER_BUILD_ORDERS.setValue(LUMBERJACK);
 					Message.GARDENER_BUILD_NUM.setValue(1);
 				} else if (numSoldier >= initialSoldiers && numSoldier < rc.getTreeCount() / treeToSoldierRatio) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
@@ -311,9 +308,9 @@ public class MapAnalysis extends Bot {
 				if (numSoldier < initialSoldiers) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
 					Message.GARDENER_BUILD_NUM.setValue(initialSoldiers - numSoldier);
-				} else if (numSoldier >= initialSoldiers && numSoldier < rc.getTreeCount()/treeToSoldierRatio + 2) {
+				} else if (numSoldier >= initialSoldiers && numSoldier < rc.getTreeCount()/treeToSoldierRatio) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
-					Message.GARDENER_BUILD_NUM.setValue((int) (rc.getTreeCount()/treeToSoldierRatio - numSoldier) + 3);
+					Message.GARDENER_BUILD_NUM.setValue((int) (rc.getTreeCount()/treeToSoldierRatio - numSoldier) + 1);
 				}
 			}
 			break;

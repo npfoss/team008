@@ -72,7 +72,7 @@ public class Gardener extends Bot {
 
     }
     public boolean isBadLocation(MapLocation targetLoc) throws GameActionException{
-        if(targetLoc == null){
+        if(targetLoc == null || here.distanceTo(targetLoc) < type.bodyRadius){
             return false;
         }
         if(turnsIHaveBeenTrying > 70){
@@ -80,15 +80,15 @@ public class Gardener extends Bot {
             Message.GARDENER_BUILD_LOCS.removeLocation(targetLoc);
             return true;
         }
-        if(rc.canSenseLocation(targetLoc) && rc.senseRobotAtLocation(targetLoc) != null && rc.senseRobotAtLocation(targetLoc).type != RobotType.GARDENER && rc.senseRobotAtLocation(targetLoc).type != RobotType.ARCHON || !rc.canSenseLocation(targetLoc)){
+        if(rc.canSenseLocation(targetLoc) && rc.senseRobotAtLocation(targetLoc) != null && rc.senseRobotAtLocation(targetLoc).type != RobotType.GARDENER || !rc.canSenseLocation(targetLoc)){
             turnsIHaveBeenTrying++;
             return false;
         }
         float dist = here.distanceTo(targetLoc);
         if(
-                (dist < type.sensorRadius -.001 && (!rc.onTheMap(targetLoc) || (rc.canSenseAllOfCircle(targetLoc, type.bodyRadius) && rc.isCircleOccupiedExceptByThisRobot(targetLoc, type.bodyRadius)))
-                        || (!rc.onTheMap(here.add(here.directionTo(targetLoc), (float)(dist + (type.sensorRadius -.001 - dist < 2 ? type.sensorRadius -.001 - dist : 2))))
-                        && Message.GARDENER_BUILD_LOCS.getLength() > 1))){
+        (dist < type.sensorRadius -.001 && (!rc.onTheMap(targetLoc))) || rc.senseRobotAtLocation(targetLoc) != null && rc.senseRobotAtLocation(targetLoc).type == RobotType.GARDENER 
+        		|| isCircleOccupiedByTree(targetLoc, 2) || (!rc.onTheMap(here.add(here.directionTo(targetLoc), (float)(dist + (type.sensorRadius -.001 - dist < 2 ? type.sensorRadius -.001 - dist : 2))))
+                && Message.GARDENER_BUILD_LOCS.getLength() > 1)){
             turnsIHaveBeenTrying = 0;
             Message.GARDENER_BUILD_LOCS.removeLocation(targetLoc);
             return true;
@@ -97,8 +97,13 @@ public class Gardener extends Bot {
     }
 
     public void updateLocs() throws GameActionException{
-        for(int i = 0; i < 6 ; i++)
-            Message.GARDENER_BUILD_LOCS.addLocation(here.add(new Direction((float) (Math.PI/3 * i)), (float) 8.5));
+        for(int i = 0; i < 6 ; i++){
+        	Direction dir = new Direction((float) (Math.PI/3 * i));
+        	MapLocation loc = here.add(dir, (float) (type.sensorRadius - .1));
+        	if(rc.onTheMap(loc) && !rc.isLocationOccupiedByTree(loc)){
+        		Message.GARDENER_BUILD_LOCS.addLocation(here.add(dir, (float) 8.5));
+        	}
+        }
     }
 
     public void takeTurn() throws GameActionException {
@@ -169,6 +174,7 @@ public class Gardener extends Bot {
                 if (here.distanceTo(targetLoc) < .5) {
                     if(debug){System.out.println("done exploring");}
                     isExploring = false;
+                    Message.GARDENER_BUILD_LOCS.removeLocation(here);
                 }
                 if(here.distanceTo(targetLoc) > 20){
                     boolean farAway = true;
@@ -187,21 +193,12 @@ public class Gardener extends Bot {
             if (Message.NUM_GARDENERS.getValue() == 1) {
                 isExploring = false;
             }
-            if(!isExploring && Message.NUM_GARDENERS.getValue() > 1){
-                //if(debug)rc.setIndicatorLine(here, MapAnalysis.center, 255, 0, 0);
-                float dtc = Message.DIST_TO_CENTER.getFloatValue();
-                if(here.distanceTo(MapAnalysis.center) < dtc || dtc == 0){
-                    if(debug)System.out.println("tank builder");
-                    tankBuilder = true;
-                    Message.DIST_TO_CENTER.setValue(here.distanceTo(MapAnalysis.center));
-                }
-            }
         }
         if (!isExploring
                 || nearbyEnemyRobots.length > 0) {
             buildSomething();
         }
-        if(!isExploring && noTreesFartherThan2() && (!updatedLocs || rc.getRoundNum() + rc.getID() % 300 == 0)){
+        if(!isExploring && /*noTreesFartherThan2() &&*/ (!updatedLocs || rc.getRoundNum() + rc.getID() % 300 == 0)){
             //this should check if we're in a decent spot
             updateLocs();
             updatedLocs = true;
@@ -227,9 +224,14 @@ public class Gardener extends Bot {
 				return;
 			}
 		}*/
-		if (nearbyEnemyRobots.length == 0  && rc.getRoundNum() > 5 && (rc.readBroadcast(15) == 0 || rc.getRoundNum() < 20 && MapAnalysis.conflictDist > 10) && plantATree())
+		if (nearbyEnemyRobots.length == 0  && rc.getRoundNum() > 5 && (rc.readBroadcast(15) == 0 || rc.getRoundNum() < 40 && MapAnalysis.conflictDist > 10 * rc.getTreeCount()) && plantATree())
 			return;
 		else if (rc.getBuildCooldownTurns() == 0 && (rc.readBroadcast(15) > 0)) {
+			if(!canPlantTree() && rc.senseNearbyTrees(2, us).length < 2 && roundNum < 200){
+				if (buildRobot(RobotType.LUMBERJACK, false)) {
+					return;
+				}
+			}
 			switch (typeToBuild) {
 			case 0:
 				break;
@@ -285,7 +287,7 @@ public class Gardener extends Bot {
      * @return Boolean true if the spot is decent
      */
     private boolean notTerribleSpot() {
-        return nearbyAlliedRobots.length < 5 && nearbyAlliedTrees.length != 0 && here.distanceTo(nearbyAlliedTrees[0].location) > 3;
+        return (nearbyAlliedTrees.length == 0 || here.distanceTo(nearbyAlliedTrees[0].location) > 3);
     }
     
     /**
@@ -363,6 +365,24 @@ public class Gardener extends Bot {
 			if (rc.canPlantTree(dir)) {
 				if (skipped) {
 					rc.plantTree(dir);
+					return true;
+				} else {
+					skipped = true;
+					dir = dir.rotateLeftDegrees(60);
+					i -= 6;
+				}
+			}
+			dir = dir.rotateLeftDegrees(10);
+		}
+		return false;
+	}
+	
+	public boolean canPlantTree() throws GameActionException {
+		Direction dir = here.directionTo(MapAnalysis.center);
+		Boolean skipped = false;
+		for (int i = 36; i-- > 0;) {
+			if (rc.canPlantTree(dir)) {
+				if (skipped) {
 					return true;
 				} else {
 					skipped = true;

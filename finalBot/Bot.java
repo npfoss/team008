@@ -5,7 +5,7 @@ import battlecode.common.*;
 
 public class Bot {
 	// for debugging
-	public static boolean debug = false;
+	public static boolean debug = true;
 
 	// for everyone to use
 	public static RobotController rc;
@@ -170,8 +170,8 @@ public class Bot {
 					rc.donate(rc.getVictoryPointCost());
 				}
 				shakeNearbyTrees();
+				takeTurn();
 				if(Clock.getBytecodesLeft() > 500){
-					takeTurn();
 					if (rc.canShake()) {
 						shakeNearbyTrees();
 					}
@@ -196,17 +196,31 @@ public class Bot {
 
 	public void removeLocIfApplicable(MapLocation targetLoc) throws GameActionException{
 		float dist = here.distanceTo(targetLoc);
-		if(rc.canSenseLocation(targetLoc) && rc.senseRobotAtLocation(targetLoc) != null && rc.senseRobotAtLocation(targetLoc).type != RobotType.ARCHON && rc.senseRobotAtLocation(targetLoc).type != RobotType.GARDENER || !rc.canSenseLocation(targetLoc)){
+		if((rc.canSenseLocation(targetLoc) && rc.senseRobotAtLocation(targetLoc) != null && rc.senseRobotAtLocation(targetLoc).type != RobotType.ARCHON && rc.senseRobotAtLocation(targetLoc).type != RobotType.GARDENER) || !rc.canSenseLocation(targetLoc)){
 			return;
 		}
 		if(
 		(!rc.onTheMap(targetLoc)
-		|| rc.isLocationOccupiedByTree(targetLoc) || rc.senseRobotAtLocation(targetLoc) != null && (rc.senseRobotAtLocation(targetLoc).type == RobotType.GARDENER || rc.senseRobotAtLocation(targetLoc).type == RobotType.ARCHON)
+		|| isCircleOccupiedByTree(targetLoc, 2) || rc.senseRobotAtLocation(targetLoc) != null && ((rc.senseRobotAtLocation(targetLoc).type == RobotType.GARDENER && rc.senseNearbyTrees(targetLoc, (float)(2.5), us).length > 0))
 		)){
 			Message.GARDENER_BUILD_LOCS.removeLocation(targetLoc);
 		}
 	}
 	
+	public boolean isCircleOccupiedByTree(MapLocation targetLoc, float i) throws GameActionException {
+		if(!rc.canSenseAllOfCircle(targetLoc, i)){
+			return rc.isLocationOccupiedByTree(targetLoc);
+		}
+		if(!rc.isCircleOccupied(targetLoc, i))
+			return false;
+		for(TreeInfo t: nearbyTrees){
+			if(t.location.distanceTo(targetLoc) - t.radius < i){
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public void shakeNearbyTrees() throws Exception {
 		for (TreeInfo tree : nearbyNeutralTrees) {
 			if (tree.containedBullets > 0 && rc.canShake(tree.ID)) {
@@ -218,6 +232,9 @@ public class Bot {
 
 	/******** Messaging Notifications *********/
 	public static void assignNewTarget() throws GameActionException {
+		System.out.println(Message.DISTRESS_SIGNALS.getLength());
+		System.out.println(Message.ENEMY_ARMIES.getLength());
+		System.out.println(Message.ISOLATED_ENEMIES.getLength());
 		target = null;
 		MapLocation targetD = Message.DISTRESS_SIGNALS.getClosestLocation(here);
 		if (targetD != null) {
@@ -226,6 +243,7 @@ public class Bot {
 			}		
 		}
 		target = Message.ENEMY_ARMIES.getClosestLocation(here);
+		//System.out.println(target);
 		if ((targetD != null && target == null)
 				|| ((targetD != null && target != null) && here.distanceTo(targetD) < here.distanceTo(target))) {
 			target = targetD;
@@ -241,21 +259,45 @@ public class Bot {
 
 	public static void notifyFriendsOfEnemies(RobotInfo[] enemies) throws GameActionException {
 		RobotInfo closestG = Util.closestSpecificType(nearbyAlliedRobots, here, RobotType.GARDENER);
+		if(isCircleOccupiedbyNeutralTree(enemies[0].location, enemies[0].type.bodyRadius))
+			return;
 		if (closestG != null && closestG.location.distanceTo(enemies[0].location) < (enemies[0].type == RobotType.SCOUT ? 3: 7)) {
 			Message.DISTRESS_SIGNALS.addLocation(Util.midpoint(closestG.location, enemies[0].location));
 		}
 		if(Util.closestSpecificType(nearbyEnemyRobots, here, RobotType.ARCHON) != null){
 			Message.ENEMY_ARCHONS.addLocation(Util.closestSpecificType(nearbyEnemyRobots, here, RobotType.ARCHON).location);
 		}
-		if(enemies.length == 1 && enemies[0].type != RobotType.SCOUT && enemies[0].type != RobotType.ARCHON && enemies[0].type != RobotType.SCOUT){
+		if(enemies.length == 1 && enemies[0].type != RobotType.SCOUT && enemies[0].type != RobotType.ARCHON){
 			Message.ISOLATED_ENEMIES.addLocation(enemies[0].location);
 		} else if (enemies.length > 1) {
 			for(RobotInfo e: nearbyEnemyRobots){
 				if(e.type != RobotType.SCOUT){
 					Message.ENEMY_ARMIES.addLocation(e.location);
+					if(debug){
+						if(debug)rc.setIndicatorLine(here, e.location, 0, 0, 255); 
+						if(debug)System.out.println("adding");
+					}
+					break;
 				}
 			}
 		}
+	}
+
+	private static boolean isCircleOccupiedbyNeutralTree(MapLocation targetLoc, float i) throws GameActionException {
+		if(!rc.canSenseLocation(targetLoc)){
+			return false;
+		}
+		if(!rc.canSenseAllOfCircle(targetLoc, i)){
+			return rc.isLocationOccupiedByTree(targetLoc);
+		}
+		if(!rc.isCircleOccupied(targetLoc, i))
+			return false;
+		for(TreeInfo t: nearbyNeutralTrees){
+			if(t.location.distanceTo(targetLoc) - t.radius < i){
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/******* ALL NAVIGATION METHODS BELOW *******/
@@ -272,6 +314,8 @@ public class Bot {
 	private static Direction bugLookStartDir;
 
 	private static int bugMovesSinceMadeProgress;
+
+	private static int bugStartTurn;
 
 	protected static int dangerRating(MapLocation loc) {
 		float danger = 0;
@@ -298,7 +342,7 @@ public class Bot {
 		return (int) (danger);
 	}
 
-	private static int tryMove(Direction dir, float dist, boolean makeMove) throws GameActionException {
+	private static int tryMove(Direction dir, float dist, boolean makeMove, boolean tryBinary) throws GameActionException {
 		if (rc.canMove(dir, dist) && !(type == RobotType.TANK && rc.isCircleOccupiedExceptByThisRobot(here.add(dir, dist), type.bodyRadius) && (nearbyTrees.length > 0 && nearbyTrees[0].team == us))) {
 			int danger = 0;
 			danger = dangerRating(here.add(dir, dist));
@@ -311,13 +355,45 @@ public class Bot {
 			}
 			return danger;
 		}
+		return (tryBinary ? tryMoveBinary(dir, dist, makeMove) : 9999);
+	}
+	
+	private static int tryMoveBinary(Direction dir, float dist, boolean makeMove) throws GameActionException {
+		float highDist = dist;
+		float lowDist = 0;
+		float midDist = (float)(dist/2);
+		while(highDist - lowDist > .01){
+			midDist = (highDist + lowDist) / 2;
+			if (rc.canMove(dir, midDist) && !(type == RobotType.TANK && rc.isCircleOccupiedExceptByThisRobot(here.add(dir, dist), type.bodyRadius) && (nearbyTrees.length > 0 && nearbyTrees[0].team == us))) {
+				int danger = 0;
+				danger = dangerRating(here.add(dir, midDist));
+				if (danger == 0) {
+					lowDist = midDist;
+				}
+				else{
+					highDist = midDist;
+				}
+			}
+			else{
+				highDist = midDist;
+			}
+		}
+		if(rc.canMove(dir, (float)(midDist - .005))){
+			calculatedMove = dir;
+			if (makeMove) {
+				rc.move(dir, (float)(midDist - .005));
+				here = rc.getLocation();
+			}
+			return 0;
+		}
 		return 9999;
 	}
+
 
 	public static boolean tryMoveDirection(Direction dir, boolean makeMove, boolean goBackwards)
 			throws GameActionException {
 		Direction bestDir = dir;
-		int bestDanger = tryMove(dir, type.strideRadius, makeMove);
+		int bestDanger = tryMove(dir, type.strideRadius, makeMove, false);
 		int tempDanger = 0;
 		if (bestDanger == 0) {
 			return true;
@@ -326,7 +402,7 @@ public class Bot {
 		Direction right = dir.rotateRightDegrees(30);
 		for (int i = 0; i < (goBackwards ? 6 : 3); i++) {
 
-			tempDanger = tryMove(left, type.strideRadius, makeMove);
+			tempDanger = tryMove(left, type.strideRadius, makeMove, false);
 			if (tempDanger == 0) {
 				return true;
 			}
@@ -334,7 +410,7 @@ public class Bot {
 				bestDir = left;
 				bestDanger = tempDanger;
 			}
-			tempDanger = tryMove(right, type.strideRadius, makeMove);
+			tempDanger = tryMove(right, type.strideRadius, makeMove, false);
 			if (tempDanger == 0) {
 				return true;
 			}
@@ -366,15 +442,18 @@ public class Bot {
 	}
 
 	public static void goTo(MapLocation theDest) throws GameActionException {
-		if (rc.getMoveCount() == 1 || here.distanceTo(theDest) < .1) {
-			bugState = BugState.DIRECT;
-			return;
-		}
 		if (theDest == null) {
 			tryMoveDirection(here.directionTo(MapAnalysis.center), true, true);
 			return;
 		}
-		
+		if(here.distanceTo(theDest) < type.strideRadius && rc.canMove(here.directionTo(theDest), here.distanceTo(theDest))){
+			rc.move(here.directionTo(theDest), here.distanceTo(theDest));
+			return;
+		}
+		if (rc.getMoveCount() == 1 || here.distanceTo(theDest) < .1) {
+			bugState = BugState.DIRECT;
+			return;
+		}
 		if(dest == null || !theDest.isWithinDistance(dest, (float) .1)){
 			dest = theDest;
 			bugState = BugState.DIRECT;
@@ -399,7 +478,8 @@ public class Bot {
 			}
 		}
 		if (bugState == BugState.BUG) {
-			//if(debug)System.out.println("still bugging");
+			if(debug)System.out.println("still bugging");
+			if(debug)System.out.println("wall side = " + bugWallSide);
 			bugTurn();
 			bugMovesSinceMadeProgress++;
 		}
@@ -418,29 +498,31 @@ public class Bot {
 	private static Direction findBugMoveDir() throws GameActionException {
 		bugMovesSinceSeenObstacle++;
 		Direction dir = bugLastMoveDir;
-		if(canMove(dir)){
+		if(canMove(dir, false) && roundNum - bugStartTurn > 0 && !rc.canMove(bugWallSide == WallSide.LEFT ? dir.rotateLeftDegrees(100) : dir.rotateRightDegrees(100), type.strideRadius)){
 			//stay on the wall
-			if(debug)System.out.println("staying on the wall");
-			dir = (bugWallSide == WallSide.LEFT ? dir.rotateLeftDegrees(100) : dir.rotateRightDegrees(100));
-			for (int i = 20; i-- > 0;) {
-				if (canMove(dir))
+			//if(debug)System.out.println("staying on the wall");
+			dir = (bugWallSide == WallSide.LEFT ? dir.rotateLeftDegrees(90) : dir.rotateRightDegrees(90));
+			for (int i = 18; i-- > 0;) {
+				if (canMove(dir, true))
 					return dir;
 				dir = (bugWallSide == WallSide.LEFT ? dir.rotateRightDegrees(5) : dir.rotateLeftDegrees(5));
+				if(debug)rc.setIndicatorDot(here.add(dir, type.strideRadius), 255, 0, 0);
 			}
 		}
 		bugMovesSinceSeenObstacle = 0;
 		//see an obstacle
 		for (int i = 72; i-- > 0;) {
-			rc.setIndicatorDot(here.add(dir, type.strideRadius), 255, 0, 0);
+			//if(debug)System.out.println("saw an obstacle");
+			//if(debug)rc.setIndicatorDot(here.add(dir, type.strideRadius), 255, 0, 0);
 			dir = (bugWallSide == WallSide.LEFT ? dir.rotateRightDegrees(5) : dir.rotateLeftDegrees(5));
-			if (canMove(dir))
+			if (canMove(dir, true))
 				return dir;
 		}
 		return null;
 	}
 
 	private static void bugMove(Direction dir) throws GameActionException {
-		if(tryMove(dir, type.strideRadius, true) == 0){
+		if(tryMove(dir, type.strideRadius, true, true) == 0){
 			bugLastMoveDir = dir;
 		}
 		/*
@@ -499,6 +581,7 @@ public class Bot {
 		bugStartDistSq = here.distanceSquaredTo(dest);
 		bugLastMoveDir = here.directionTo(dest);
 		bugLookStartDir = here.directionTo(dest);
+		bugStartTurn = roundNum;
 		bugRotationCount = 0;
 		bugMovesSinceSeenObstacle = 0;
 		bugMovesSinceMadeProgress = 0;
@@ -506,14 +589,14 @@ public class Bot {
 			// try to intelligently choose on which side we will keep the wall
 			Direction leftTryDir = bugLastMoveDir.rotateLeftDegrees(20);
 			for (int i = 0; i < 9; i++) {
-				if (!canMove(leftTryDir))
+				if (!canMove(leftTryDir, true))
 					leftTryDir = leftTryDir.rotateLeftDegrees(20);
 				else
 					break;
 			}
 			Direction rightTryDir = bugLastMoveDir.rotateRightDegrees(20);
 			for (int i = 0; i < 9; i++) {
-				if (!canMove(rightTryDir))
+				if (!canMove(rightTryDir, true))
 					rightTryDir = rightTryDir.rotateRightDegrees(20);
 				else
 					break;
@@ -527,24 +610,24 @@ public class Bot {
 
 	}
 
-	private static boolean canMove(Direction dir) throws GameActionException {
+	private static boolean canMove(Direction dir, boolean fullStride) throws GameActionException {
 		// TODO: add safety
-		return rc.canMove(dir, type.strideRadius) && !(type == RobotType.TANK && rc.isCircleOccupiedExceptByThisRobot(here.add(dir, type.strideRadius), type.bodyRadius) && (nearbyTrees.length > 0 && nearbyTrees[0].team == us));
+		return rc.canMove(dir, fullStride ? type.strideRadius : (float)(0.2)) && !(type == RobotType.TANK && rc.isCircleOccupiedExceptByThisRobot(here.add(dir, type.strideRadius), type.bodyRadius) && (nearbyTrees.length > 0 && nearbyTrees[0].team == us));
 	}
 
 	private static boolean tryMoveDirect() throws GameActionException {
 		Direction dir = here.directionTo(dest);
 		//System.out.println(dest.toString() + here.toString() + dir.toString());
-		if (tryMove(dir, type.strideRadius,true) == 0) {
+		if (tryMove(dir, type.strideRadius, true, false) == 0) {
 			return true;
 		}
 		Direction left = dir.rotateLeftDegrees(15);
 		Direction right = dir.rotateRightDegrees(15);
 		for (int i = 0; i < 3; i++) {
-			if (tryMove(left, type.strideRadius,true) == 0) {
+			if (tryMove(left, type.strideRadius, true, false) == 0) {
 				return true;
 			}
-			if (tryMove(right, type.strideRadius,true) == 0) {
+			if (tryMove(right, type.strideRadius, true, false) == 0) {
 				return true;
 			}
 			left = left.rotateLeftDegrees(15);
