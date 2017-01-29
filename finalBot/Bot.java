@@ -14,6 +14,7 @@ public class Bot {
 	public static Team us;
 	public static MapLocation here;
 	public static Direction calculatedMove;
+	public static float TOLERANCE = .1f;
 
 	// Most units need this
 	public static Direction dirIAmMoving;
@@ -316,6 +317,8 @@ public class Bot {
 
 	public static boolean tryMoveDirection(Direction dir, boolean makeMove, boolean goBackwards)
 			throws GameActionException {
+//		if (debug) System.out.println("trying to move in dir " + dir);
+
 		Direction bestDir = dir;
 		int bestDanger = tryMove(dir, type.strideRadius, makeMove);
 		int tempDanger = 0;

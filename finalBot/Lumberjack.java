@@ -46,6 +46,9 @@ public class Lumberjack extends Bot {
         	if(target == null){
         	    updateTarget(2);
             }
+            if(target == null){
+        	    updateTarget(10);
+            }
         }
         if(target != null && !moved){
             if(clearAroundLoc == null
@@ -137,7 +140,7 @@ public class Lumberjack extends Bot {
                 ;
     }
 
-    public int WHEN_TO_STOP_SCORING_TREES_AND_MOVE = 3000;
+    public int WHEN_TO_STOP_SCORING_TREES_AND_MOVE = 4000;
     public void goForTrees() throws GameActionException {
 //        int s = Clock.getBytecodeNum();
 //        System.out.println("getting closest " + nearbyNeutralTrees.length + " neutral took " + (Clock.getBytecodeNum() - s));
@@ -189,7 +192,8 @@ public class Lumberjack extends Bot {
         if(moveTo != null){
             if(moveTo == attackMe){
                 tryMoveDirection(here.directionTo(moveTo.location), false, false);
-                if(calculatedMove != null && here.distanceTo(moveTo.getLocation()) > here.add(calculatedMove).distanceTo(moveTo.getLocation())){
+                if(debug) rc.setIndicatorDot(here.add(calculatedMove), 0, 0, 255);
+                if(calculatedMove != null && here.distanceTo(moveTo.getLocation()) + TOLERANCE > here.add(calculatedMove).distanceTo(moveTo.getLocation())){
                     rc.move(calculatedMove, type.strideRadius);
                 }
             } else {
@@ -200,6 +204,14 @@ public class Lumberjack extends Bot {
     }
 
     public void doMicro() throws GameActionException {
+        // TODO: make it only go for them under these conditions:
+        /* how about we go for things like this
+            archon/gardener always
+            LJ - within 6
+            scout - within 5
+            soldier -within 4
+            tank -within 5
+        */
         if(debug) rc.setIndicatorDot(here, 255, 0 , 0);
         calculatedMove = null;
         tryMoveDirection(here.directionTo(nearbyEnemyRobots[0].location), false, true);
