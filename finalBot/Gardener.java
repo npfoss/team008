@@ -27,47 +27,47 @@ public class Gardener extends Bot {
     }
 
     private static Direction findOpenSpaces() throws GameActionException {
-        // TODO: make this better
-        Direction dir = new Direction(0);
-        int thingsInTheWay = 0;
-        int bestScore = 10000;
-        Direction bestDir = new Direction(0);
-        for (int i = 0; i < 16; i++) {
-            if (!rc.onTheMap(here.add(dir, (float) (type.sensorRadius - .001)))) {
-                thingsInTheWay += 10;
-            }
-            for (TreeInfo t : nearbyAlliedTrees)
-                if (Math.abs(dir.radiansBetween(here.directionTo(t.location))) < Math.PI / 2) {
-                    thingsInTheWay += 2;
-                }
-            boolean addedTree = false;
-            for (TreeInfo t : nearbyNeutralTrees){
-                if(here.distanceTo(t.location) < 6 + t.radius && !addedTree){
-                    Message.CLEAR_TREES_PLEASE.addLocation(t.location);
-                    addedTree = true;
-                }
-                if (Math.abs(dir.radiansBetween(here.directionTo(t.location))) < Math.PI / 2){
-                    thingsInTheWay += 2;
-                }
-            }
-            for (RobotInfo t : nearbyRobots)
-                if ((t.type == RobotType.ARCHON || t.type == RobotType.GARDENER)
-                        && Math.abs(dir.radiansBetween(here.directionTo(t.location))) < Math.PI / 2) {
-                    thingsInTheWay += (t.type == RobotType.ARCHON ? 2 : 10);
-                }
-            if (thingsInTheWay < bestScore) {
-                bestDir = dir;
-                bestScore = thingsInTheWay;
-            }
-            // rc.setIndicatorDot(here.add(dir), thingsInTheWay*10,
-            // thingsInTheWay*10, thingsInTheWay*10);
-            // System.out.println("ThisScore: " + thingsInTheWay);
-            // System.out.println(dir.toString());
-            dir = dir.rotateLeftDegrees((float) 22.5);
-            thingsInTheWay = 0;
-        }
-        // System.out.println("Best Score: " + bestScore);
-        // System.out.println(bestDir.toString());
+		// TODO: make this better
+		Direction dir = new Direction(0);
+		int thingsInTheWay = 0;
+		int bestScore = 10000;
+		Direction bestDir = new Direction(0);
+		for (int i = 0; i < 16; i++) {
+			if (!rc.onTheMap(here.add(dir, (float) (type.sensorRadius - .001)))) {
+				thingsInTheWay += 10;
+			}
+			for (TreeInfo t : nearbyAlliedTrees)
+				if (Math.abs(dir.radiansBetween(here.directionTo(t.location))) < Math.PI / 2) {
+					thingsInTheWay += 2;
+				}
+			boolean addedTree = false;
+			for (TreeInfo t : nearbyNeutralTrees){
+				if(here.distanceTo(t.location) < 5 + t.radius && !addedTree){
+					Message.CLEAR_TREES_PLEASE.addLocation(here);
+					addedTree = true;
+				}
+				if (Math.abs(dir.radiansBetween(here.directionTo(t.location))) < Math.PI / 2){
+					thingsInTheWay += 2;
+				}
+			}
+			for (RobotInfo t : nearbyRobots)
+				if ((t.type == RobotType.ARCHON || t.type == RobotType.GARDENER)
+						&& Math.abs(dir.radiansBetween(here.directionTo(t.location))) < Math.PI / 2) {
+					thingsInTheWay += (t.type == RobotType.ARCHON ? 2 : 10);
+				}
+			if (thingsInTheWay < bestScore) {
+				bestDir = dir;
+				bestScore = thingsInTheWay;
+			}
+			// rc.setIndicatorDot(here.add(dir), thingsInTheWay*10,
+			// thingsInTheWay*10, thingsInTheWay*10);
+			// System.out.println("ThisScore: " + thingsInTheWay);
+			// System.out.println(dir.toString());
+			dir = dir.rotateLeftDegrees((float) 22.5);
+			thingsInTheWay = 0;
+		}
+		// System.out.println("Best Score: " + bestScore);
+		// System.out.println(bestDir.toString());
 
         return bestDir;
 
@@ -101,6 +101,7 @@ public class Gardener extends Bot {
         for(int i = 0; i < 6 ; i++)
             Message.GARDENER_BUILD_LOCS.addLocation(here.add(new Direction((float) (Math.PI/3 * i)), (float) 8.5));
     }
+
 
 
     public void takeTurn() throws GameActionException {
@@ -215,11 +216,20 @@ public class Gardener extends Bot {
                 || nearbyEnemyRobots.length > 0) {
             buildSomething();
         }
-        if(!isExploring &&(!updatedLocs || rc.getRoundNum() + rc.getID() % 300 == 0)){
+        if(!isExploring && noTreesFartherThan2()&&(!updatedLocs || rc.getRoundNum() + rc.getID() % 300 == 0)){
             //this should check if we're in a decent spot
             updateLocs();
             updatedLocs = true;
         }
+    }
+
+    private boolean noTreesFartherThan2() {
+        for(TreeInfo tree: nearbyAlliedTrees){
+            if(tree.location.distanceTo(here) > 2){
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

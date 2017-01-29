@@ -1,4 +1,4 @@
-package team008.finalBot;
+package team008.b1_28_2024;
 
 import java.util.Random;
 import battlecode.common.*;
