@@ -49,38 +49,41 @@ public class Bot {
 		MapAnalysis.center = MapAnalysis.findCenter();
 		bugState = BugState.DIRECT;
 		nearbyAlliedRobots = rc.senseNearbyRobots(-1, us);
-		switch (type) {
-		case ARCHON:
-			Message.NUM_ARCHONS.setValue(Message.NUM_ARCHONS.getValue() + 1);
-			break;
-		case GARDENER:
-			if (!(nearbyAlliedRobots[0].type == RobotType.ARCHON)) {
-				Message.NUM_GARDENERS.setValue(Message.NUM_GARDENERS.getValue() + 1);
-			}
-			break;
-		case SOLDIER:
-			if (!(nearbyAlliedRobots[0].type == RobotType.GARDENER)) {
-				Message.NUM_SOLDIERS.setValue(Message.NUM_SOLDIERS.getValue() + 1);
-			}
-			break;
-		case TANK:
-			if (!(nearbyAlliedRobots[0].type == RobotType.GARDENER)) {
-				Message.NUM_TANKS.setValue(Message.NUM_TANKS.getValue() + 1);
-			}
-			break;
-		case SCOUT:
-			if (!(nearbyAlliedRobots[0].type == RobotType.GARDENER)) {
-				Message.NUM_SCOUTS.setValue(Message.NUM_SCOUTS.getValue() + 1);
-			}
-			break;
-		case LUMBERJACK:
-			if (!(nearbyAlliedRobots[0].type == RobotType.GARDENER)) {
-				Message.NUM_LUMBERJACKS.setValue(Message.NUM_LUMBERJACKS.getValue() + 1);
-			}
-			break;
-		default:
-			break;
-
+		if(nearbyAlliedRobots.length > 0){
+			RobotInfo closestG = Util.closestSpecificType(nearbyAlliedRobots, here, RobotType.GARDENER);
+			RobotInfo closestA = Util.closestSpecificType(nearbyAlliedRobots, here, RobotType.ARCHON);
+			switch (type) {
+			case ARCHON:
+				Message.NUM_ARCHONS.setValue(Message.NUM_ARCHONS.getValue() + 1);
+				break;
+			case GARDENER:
+				if (closestA == null || here.distanceTo(closestA.location) > type.bodyRadius + RobotType.ARCHON.bodyRadius + 2) {
+					Message.NUM_GARDENERS.setValue(Message.NUM_GARDENERS.getValue() + 1);
+				}
+				break;
+			case SOLDIER:
+				if (closestG == null || here.distanceTo(closestG.location) > type.bodyRadius + RobotType.GARDENER.bodyRadius + 2) {
+					Message.NUM_SOLDIERS.setValue(Message.NUM_SOLDIERS.getValue() + 1);
+				}
+				break;
+			case TANK:
+				if (closestG == null || here.distanceTo(closestG.location) > type.bodyRadius + RobotType.GARDENER.bodyRadius +2) {
+					Message.NUM_TANKS.setValue(Message.NUM_TANKS.getValue() + 1);
+				}
+				break;
+			case SCOUT:
+				if (closestG == null || here.distanceTo(closestG.location) > type.bodyRadius + RobotType.GARDENER.bodyRadius + 2) {
+					Message.NUM_SCOUTS.setValue(Message.NUM_SCOUTS.getValue() + 1);
+				}
+				break;
+			case LUMBERJACK:
+				if (closestG == null || here.distanceTo(closestG.location) < type.bodyRadius + RobotType.GARDENER.bodyRadius + 2) {
+					Message.NUM_LUMBERJACKS.setValue(Message.NUM_LUMBERJACKS.getValue() + 1);
+				}
+				break;
+			default:
+				break;
+		}
 		}
 	}
 
@@ -163,6 +166,9 @@ public class Bot {
 				if (rc.getTeamBullets() > 1000){
 					rc.donate(rc.getVictoryPointCost());
 				}
+				if(Message.GENETICS.getValue() == MapAnalysis.RUSH_VP && rc.getTeamBullets() > 500){
+					rc.donate(rc.getVictoryPointCost());
+				}
 				shakeNearbyTrees();
 				if(Clock.getBytecodesLeft() > 500){
 					takeTurn();
@@ -211,7 +217,7 @@ public class Bot {
 	}
 
 	/******** Messaging Notifications *********/
-	public void assignNewTarget() throws GameActionException {
+	public static void assignNewTarget() throws GameActionException {
 		target = null;
 		MapLocation targetD = Message.DISTRESS_SIGNALS.getClosestLocation(here);
 		if (targetD != null) {
@@ -234,16 +240,21 @@ public class Bot {
 	}
 
 	public static void notifyFriendsOfEnemies(RobotInfo[] enemies) throws GameActionException {
-		if (Util.closestSpecificType(nearbyAlliedRobots, here, RobotType.GARDENER) != null && Util.closestSpecificType(nearbyAlliedRobots, here, RobotType.GARDENER).location.distanceTo(enemies[0].location) < 7) {
-			Message.DISTRESS_SIGNALS.addLocation(enemies[0].location);
+		RobotInfo closestG = Util.closestSpecificType(nearbyAlliedRobots, here, RobotType.GARDENER);
+		if (closestG != null && closestG.location.distanceTo(enemies[0].location) < (enemies[0].type == RobotType.SCOUT ? 3: 7)) {
+			Message.DISTRESS_SIGNALS.addLocation(Util.midpoint(closestG.location, enemies[0].location));
 		}
 		if(Util.closestSpecificType(nearbyEnemyRobots, here, RobotType.ARCHON) != null){
 			Message.ENEMY_ARCHONS.addLocation(Util.closestSpecificType(nearbyEnemyRobots, here, RobotType.ARCHON).location);
 		}
-		if(enemies.length == 1 && enemies[0].type != RobotType.SCOUT && enemies[0].type != RobotType.ARCHON){
+		if(enemies.length == 1 && enemies[0].type != RobotType.SCOUT && enemies[0].type != RobotType.ARCHON && enemies[0].type != RobotType.SCOUT){
 			Message.ISOLATED_ENEMIES.addLocation(enemies[0].location);
 		} else if (enemies.length > 1) {
-			Message.ENEMY_ARMIES.addLocation(Util.centroidOfUnits(enemies));
+			for(RobotInfo e: nearbyEnemyRobots){
+				if(e.type != RobotType.SCOUT){
+					Message.ENEMY_ARMIES.addLocation(e.location);
+				}
+			}
 		}
 	}
 
@@ -381,7 +392,6 @@ public class Bot {
 		if (debug)
 			//System.out.println("bugging");
 		if (bugState == BugState.BUG) {
-			//if(debug)System.out.println("bugging");
 			if (canEndBug()) {
 				bugState = BugState.DIRECT;
 				bugMovesSinceMadeProgress = 0;
@@ -394,6 +404,7 @@ public class Bot {
 			}
 		}
 		if (bugState == BugState.BUG) {
+			//if(debug)System.out.println("still bugging");
 			bugTurn();
 			bugMovesSinceMadeProgress++;
 		}
@@ -412,25 +423,40 @@ public class Bot {
 	private static Direction findBugMoveDir() throws GameActionException {
 		bugMovesSinceSeenObstacle++;
 		Direction dir = bugLastMoveDir;
-		for (int i = 18; i-- > 0;) {
+		if(canMove(dir)){
+			//stay on the wall
+			if(debug)System.out.println("staying on the wall");
+			dir = (bugWallSide == WallSide.LEFT ? dir.rotateLeftDegrees(100) : dir.rotateRightDegrees(100));
+			for (int i = 20; i-- > 0;) {
+				if (canMove(dir))
+					return dir;
+				dir = (bugWallSide == WallSide.LEFT ? dir.rotateRightDegrees(5) : dir.rotateLeftDegrees(5));
+			}
+		}
+		bugMovesSinceSeenObstacle = 0;
+		//see an obstacle
+		for (int i = 72; i-- > 0;) {
+			rc.setIndicatorDot(here.add(dir, type.strideRadius), 255, 0, 0);
+			dir = (bugWallSide == WallSide.LEFT ? dir.rotateRightDegrees(5) : dir.rotateLeftDegrees(5));
 			if (canMove(dir))
 				return dir;
-			dir = (bugWallSide == WallSide.LEFT ? dir.rotateRightDegrees(20) : dir.rotateLeftDegrees(20));
-			if(i < 17)
-				bugMovesSinceSeenObstacle = 0;
 		}
 		return null;
 	}
 
 	private static void bugMove(Direction dir) throws GameActionException {
+		if(tryMove(dir, type.strideRadius, true) == 0){
+			bugLastMoveDir = dir;
+		}
+		/*
 		if (tryMove(dir,type.strideRadius,true) == 0) {
 			bugRotationCount += calculateBugRotation(dir);
-			bugLastMoveDir = dir;
 			if (bugWallSide == WallSide.LEFT)
 				bugLookStartDir = dir.rotateLeftDegrees(90);
 			else
 				bugLookStartDir = dir.rotateRightDegrees(90);
 		}
+		*/
 	}
 
 	private static int calculateBugRotation(Direction moveDir) {
@@ -442,11 +468,15 @@ public class Bot {
 	}
 
 	private static int numRightRotations(Direction start, Direction end) {
-		return ((int) ((end.getAngleDegrees() - start.getAngleDegrees()) + 360) % 360) / 20;
+		int endOrd = (int)((end.getAngleDegrees() > 0 ? end.getAngleDegrees() : 360 + end.getAngleDegrees())) / 20;
+		int startOrd = (int)((start.getAngleDegrees() > 0 ? start.getAngleDegrees() : 360 + end.getAngleDegrees())) / 20;
+		return (endOrd - startOrd + 18) % 18;
 	}
 
 	private static int numLeftRotations(Direction start, Direction end) {
-		return ((int) ((start.getAngleDegrees() - end.getAngleDegrees()) + 360) % 360) / 20;
+		int endOrd = (int)((end.getAngleDegrees() > 0 ? end.getAngleDegrees() : 360 + end.getAngleDegrees())) / 20;
+		int startOrd = (int)((start.getAngleDegrees() > 0 ? start.getAngleDegrees() : 360 + end.getAngleDegrees())) / 20;
+		return (-endOrd + startOrd + 18) % 18;
 	}
 
 	private static boolean move(Direction dir) throws GameActionException {
@@ -529,13 +559,14 @@ public class Bot {
 	}
 
 	private static boolean canEndBug() {
-		if (bugMovesSinceSeenObstacle >= 2)
-			return true;
 		if (debug) {
-			//System.out.println("bug rotation count = " + bugRotationCount);
-			//System.out.println("bugMovesSinceSeenObstacle = " + bugMovesSinceSeenObstacle);
+			System.out.println("bugMovesSinceSeenObstacle = " + bugMovesSinceSeenObstacle);
+			System.out.println("wall side = " + bugWallSide);
 		}
-		return (bugRotationCount <= 0 || bugRotationCount >= 18) && here.distanceSquaredTo(dest) <= bugStartDistSq;
+		return bugMovesSinceSeenObstacle >= 4 && here.distanceSquaredTo(dest) <= bugStartDistSq + 5;
+		//if (bugMovesSinceSeenObstacle >= 4)
+		//	return true;
+		//return (bugRotationCount <= 0 || bugRotationCount >= 18) && here.distanceSquaredTo(dest) <= bugStartDistSq;
 	}
 
 	public static void explore() throws GameActionException {

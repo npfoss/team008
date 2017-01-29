@@ -6,17 +6,17 @@ public class Gardener extends Bot {
 	public static Direction dirIAmMoving;
 	public static boolean updatedLocs;
 	public static int turnsIHaveBeenTrying;
-	public static boolean tankBuilder;
-	public static int turnsTank;
+	//public static boolean tankBuilder;
+	//public static int turnsTank;
     public static float patienceVal;
 
 	public Gardener(RobotController r) throws GameActionException {
 		super(r);
 		isExploring = true;
 		updatedLocs = false;
-		tankBuilder = false;
+		//tankBuilder = false;
 		turnsIHaveBeenTrying = 0;
-		turnsTank = 0;
+		//turnsTank = 0;
         patienceVal = 1;
 
         // anything else gardener specific
@@ -99,11 +99,12 @@ public class Gardener extends Bot {
 
 
 	public void takeTurn() throws GameActionException {
+		/*
 		if(debug){
 		if(tankBuilder)
 			System.out.println("tank builder");
-		System.out.println("dtc = " + here.distanceTo(MapAnalysis.center));
-		System.out.println("rb = " + Message.DIST_TO_CENTER.getFloatValue());
+			System.out.println("dtc = " + here.distanceTo(MapAnalysis.center));
+			System.out.println("rb = " + Message.DIST_TO_CENTER.getFloatValue());
 		}
 		if(tankBuilder && Math.abs(here.distanceTo(MapAnalysis.center) - Message.DIST_TO_CENTER.getFloatValue()) > 0.1){
 			tankBuilder = false;
@@ -115,26 +116,17 @@ public class Gardener extends Bot {
 		if(tankBuilder && turnsTank > 25){
 			tankBuilder = false;
 			Message.DIST_TO_CENTER.setValue((float)(999));
-		}
+		}*/
 		waterLowestHealthTree();
 		if (nearbyEnemyRobots.length > 0) {
 			//System.out.println("sent target d");
 			Message.DISTRESS_SIGNALS.addLocation(nearbyEnemyRobots[0].location);
-			if (rc.getRoundNum() < 200) {
-				switch (nearbyEnemyRobots[0].type) {
-				case SCOUT:
-					Message.ADAPTATION.setValue(MapAnalysis.DEFEND_SCOUT);
-				case LUMBERJACK:
-					Message.ADAPTATION.setValue(MapAnalysis.DEFEND_LUMBERJACK);
-				case SOLDIER:
-					Message.ADAPTATION.setValue(MapAnalysis.DEFEND_SOLDIER);
-				default:
-					break;
-
-				}
-			}
 		}
-		if (isExploring) {
+		if(nearbyBullets.length > 0 && rc.senseNearbyTrees(2, us).length == 0){
+			MapLocation moveTo = here.add(here.directionTo(nearbyBullets[0].location).opposite(), type.strideRadius);
+			RangedCombat.bulletMove(moveTo, true);
+		}
+		else if (isExploring) {
 			MapLocation targetLoc = Message.GARDENER_BUILD_LOCS.getClosestLocation(here);
 			while (isBadLocation(targetLoc)) {
 				targetLoc = Message.GARDENER_BUILD_LOCS.getClosestLocation(here);
@@ -155,7 +147,7 @@ public class Gardener extends Bot {
 				isExploring = !farAway;
 			} else {
 	        	if(debug)rc.setIndicatorLine(here, targetLoc, (us == Team.A ? 255: 0), (us == Team.A ? 0: 255), 0); 
-				goToDangerous(targetLoc);
+				goTo(targetLoc);
 				if (here.distanceTo(targetLoc) < .1) {
 					isExploring = false;
 				}
@@ -173,6 +165,7 @@ public class Gardener extends Bot {
 			if (Message.NUM_GARDENERS.getValue() == 1) {
 				isExploring = false;
 			}
+			/*
 			if(!isExploring && Message.NUM_GARDENERS.getValue() > 1){
 				//if(debug)rc.setIndicatorLine(here, MapAnalysis.center, 255, 0, 0);
 				float dtc = Message.DIST_TO_CENTER.getFloatValue();
@@ -181,7 +174,7 @@ public class Gardener extends Bot {
 					tankBuilder = true;	
 					Message.DIST_TO_CENTER.setValue(here.distanceTo(MapAnalysis.center));
 				}
-			}
+			}*/
 		}
 		if (!isExploring
 				|| nearbyEnemyRobots.length > 0) {
@@ -205,12 +198,14 @@ public class Gardener extends Bot {
 	public void buildSomething() throws GameActionException {
 		int typeToBuild = Message.GARDENER_BUILD_ORDERS.getValue();
 		int myGenetics = Message.GENETICS.getValue();
+		int myAdaptation = Message.ADAPTATION.getValue();
+		/*
 		if(rc.getTeamBullets() > 500 && tankBuilder && (MapAnalysis.numTank + 1) * 4 < MapAnalysis.numSoldier){
 			if(buildRobot(RobotType.TANK, true)){
 				return;
 			}
-		}
-		if ((!(myGenetics == MapAnalysis.RUSH_ENEMY) || rc.getRoundNum() > 100) && nearbyEnemyRobots.length == 0  && rc.getRoundNum() > 5 && (typeToBuild != MapAnalysis.TANK || rc.readBroadcast(15) == 0) && plantATree())
+		}*/
+		if (nearbyEnemyRobots.length == 0  && rc.getRoundNum() > 5 && (rc.readBroadcast(15) == 0 || rc.getRoundNum() < 20 && MapAnalysis.conflictDist > 10) && plantATree())
 			return;
 		else if (rc.getBuildCooldownTurns() == 0 && (rc.readBroadcast(15) > 0)) {
 			switch (typeToBuild) {
@@ -222,6 +217,7 @@ public class Gardener extends Bot {
 				}
 				break;
 			case 2:
+				/*
 				if(tankBuilder && debug)
 					System.out.println("trying to build tank");
 				if (tankBuilder && buildRobot(RobotType.TANK, true)) {
@@ -229,7 +225,7 @@ public class Gardener extends Bot {
 				}
 				else if(tankBuilder && rc.getTeamBullets() > 300){
 					turnsTank++;
-				}
+				}*/
 				break;
 			case 3:
 				if (buildRobot(RobotType.SCOUT, true)) {
@@ -245,7 +241,7 @@ public class Gardener extends Bot {
 				break;
 			}
 		}
-		else if(rc.getBuildCooldownTurns() == 0 && nearbyEnemyRobots.length > 0){
+		else if(rc.getBuildCooldownTurns() == 0 && nearbyEnemyRobots.length > 0 && (nearbyEnemyRobots.length != 1 || nearbyEnemyRobots[0].type != RobotType.ARCHON)){
 			buildRobot(RobotType.SOLDIER, false);
 		}
 	}
@@ -276,9 +272,10 @@ public class Gardener extends Bot {
 			}
 			return true;
 		}
-		Direction left = dir.rotateLeftDegrees(10);
-		Direction right = dir.rotateRightDegrees(10);
-		for (int i = 18; i-- > 0;) {
+		int dirsToCheck = 72;
+		Direction left = dir.rotateLeftDegrees(360/dirsToCheck);
+		Direction right = dir.rotateRightDegrees(360/dirsToCheck);
+		for (int i = dirsToCheck; i-- > 0;) {
 			if (rc.canBuildRobot(type, left)) {
 				rc.buildRobot(type, left);
 				if(dec)
@@ -325,8 +322,8 @@ public class Gardener extends Bot {
 				}
 				return true;
 			}
-			left = left.rotateLeftDegrees(10);
-			right = right.rotateRightDegrees(10);
+			left = left.rotateLeftDegrees(360/dirsToCheck);
+			right = right.rotateRightDegrees(360/dirsToCheck);
 		}
 		return false;
 	}
@@ -341,8 +338,8 @@ public class Gardener extends Bot {
 					return true;
 				} else {
 					skipped = true;
-					dir = dir.rotateLeftDegrees((tankBuilder ? 120: 50));
-					i -= (tankBuilder ? 12 : 5);
+					dir = dir.rotateLeftDegrees(60);
+					i -= 6;
 				}
 			}
 			dir = dir.rotateLeftDegrees(10);

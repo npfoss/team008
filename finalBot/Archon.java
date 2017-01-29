@@ -6,6 +6,7 @@ public class Archon extends Bot {
 
 	public Archon(RobotController r) throws GameActionException {
 		super(r);
+		//System.out.println("here");
 		// anything else archon specific
 	}
 
@@ -14,6 +15,18 @@ public class Archon extends Bot {
 	public static int unitsBuilt = 0;
 	public static boolean inDistress = false;
 	public void takeTurn() throws Exception {
+		if(roundNum == 2 && Message.CLEAR_TREES_PLEASE.getLength() == 0){
+			for(MapLocation m: rc.getInitialArchonLocations(enemy)){
+				Message.ENEMY_ARMIES.addLocation(m);
+			}
+			if(tryMoveDirection(new Direction(0), false, true)){
+				for(TreeInfo t: nearbyNeutralTrees){
+					if(here.distanceTo(t.location) - t.radius < 4)
+						Message.CLEAR_TREES_PLEASE.addLocation(t.location);
+				}
+				//not surrounded
+			}
+		}
 		
 		if(nearbyEnemyRobots.length>0){
 			if(!inDistress){

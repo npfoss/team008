@@ -3,6 +3,7 @@ import battlecode.common.*;
 
 
 public class Soldier extends Bot {
+	private int turnsSinceSeenEnemy;
 
     public Soldier(RobotController r) throws GameActionException{
         super(r);
@@ -11,12 +12,14 @@ public class Soldier extends Bot {
 	public void takeTurn() throws Exception{
         //if(debug)System.out.println("In instantiation:"+Clock.getBytecodeNum());
         if(nearbyEnemyRobots.length > 0){
-            if((rc.getRoundNum() +rc.getID()) % 25 == 0 || target == null){
+            if((rc.getRoundNum() +rc.getID()) % 5 == 0 || target == null){
                 notifyFriendsOfEnemies(nearbyEnemyRobots);
             }
             RangedCombat.execute();
+            turnsSinceSeenEnemy = 0;
             return;
         }
+        turnsSinceSeenEnemy++;
         if(target == null || (rc.getRoundNum() + rc.getID()) % 10 == 0){
             assignNewTarget();
         }
@@ -27,7 +30,7 @@ public class Soldier extends Bot {
         			dirToMove = here.directionTo(nearbyAlliedRobots[0].location);
         		RangedCombat.bulletMove(here.add(dirToMove, type.strideRadius), true);
         	}
-        	else if (target != null && (rc.getLocation().distanceTo(target) < 6 && nearbyEnemyRobots.length == 0 || (nearbyEnemyRobots.length == 1 && nearbyEnemyRobots[0].type == RobotType.ARCHON))) {
+        	else if (target != null && ((here.distanceTo(target) < 3 || rc.canSenseLocation(target) && rc.isLocationOccupiedByTree(target)) && turnsSinceSeenEnemy > 5)) {
 				Message.ENEMY_ARMIES.removeLocation(target);
 				Message.ISOLATED_ENEMIES.removeLocation(target);
 				Message.DISTRESS_SIGNALS.removeLocation(target);
@@ -40,7 +43,11 @@ public class Soldier extends Bot {
 				goTo(target);
 			} 
 			else {
-				goTo(here.directionTo(Util.rc.getInitialArchonLocations(enemy)[0]));
+				if(nearbyAlliedRobots.length > 0 && here.distanceTo(nearbyAlliedRobots[0].location) > 4)
+					tryMoveDirection(here.directionTo(nearbyAlliedRobots[0].location), true, true);
+				else{
+					tryMoveDirection(here.directionTo(MapAnalysis.center), true, true);
+				}
 			}
 		}
 	}

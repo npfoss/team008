@@ -35,7 +35,7 @@ public class Lumberjack extends Bot {
 
         if(nearbyEnemyRobots.length > 0) {
             //Notify allies of enemies
-            if((rc.getRoundNum() +rc.getID()) % 25 == 0 || target == null){
+            if((rc.getRoundNum() +rc.getID()) % 5 == 0 || target == null){
                 notifyFriendsOfEnemies(nearbyEnemyRobots);
             }
 
@@ -89,7 +89,7 @@ public class Lumberjack extends Bot {
             }
         }
 
-        if (target != null && rc.getLocation().distanceTo(target) < 5){
+        if (target != null && rc.getLocation().distanceTo(target) < 3){
             //if(debug)System.out.println("thinking about removing");
             if( nearbyEnemyRobots.length == 0 &&
                     Message.ENEMY_ARCHONS.removeLocation(target))

@@ -109,7 +109,7 @@ public class Util extends Bot {
     
     public static RobotInfo closestSpecificType(RobotInfo[] robots, MapLocation toHere, RobotType type) {
         RobotInfo closest = null;
-        for (int i = robots.length; i-- > 0;) {
+        for (int i = 0; i < robots.length; i++) {
             if (robots[i].type == type) {
             	closest = robots[i];
                 break;

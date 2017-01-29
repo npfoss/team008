@@ -39,13 +39,18 @@ public class Scout extends Bot {
 				moveToHarass();
 			}
 		}*/
-		
-		if (!dealWithNearbyTrees()){
+		if(nearbyBullets.length > 0){
+			MapLocation m = here.add(here.directionTo(MapAnalysis.center), type.strideRadius);
+			if(nearbyEnemyRobots.length > 0)
+				m = nearbyEnemyRobots[0].location;
+			RangedCombat.bulletMove(m, true);
+		}
+		else if (!dealWithNearbyTrees()){
 			explore();
 		}
 
 		// rc.setIndicatorDot(here,0,255,0);
-		if (nearbyEnemyRobots.length > 0 && (rc.getRoundNum() + rc.getID()) % 25 == 0) {
+		if (nearbyEnemyRobots.length > 0) {
 			// rc.setIndicatorDot(enemies[0].location, 255, 0, 0);
 			notifyFriendsOfEnemies(nearbyEnemyRobots);
 		}
