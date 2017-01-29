@@ -19,7 +19,7 @@ public class Lumberjack extends Bot {
     public static boolean moved = false;
     public static Direction myRandomDirection;
 //    public TreeInfo closestNeutralWithUnit;
-    public MapLocation clearAroundLoc;
+    static MapLocation clearAroundLoc;
     public Message[] messagesToTry = {Message.DISTRESS_SIGNALS, Message.TREES_WITH_UNITS, Message.CLEAR_TREES_PLEASE, Message.ENEMY_TREES, Message.ENEMY_ARCHONS};
     public int[] howFarToGoForMessage = {     25,                       15,                       25,                         20,                  20};
 //    public boolean[] checkEnemiesToRemove = { true,                     false,                    false,               true};
@@ -46,9 +46,14 @@ public class Lumberjack extends Bot {
         	if(target == null){
         	    updateTarget(2);
             }
+            if(target == null){
+        	    updateTarget(10);
+            }
         }
         if(target != null && !moved){
-            if(clearAroundLoc == null || here.distanceTo(clearAroundLoc) > 5) {
+            if(clearAroundLoc == null
+                    || here.distanceTo(clearAroundLoc) > 5
+                    || nearbyNeutralTrees.length > 0 && clearAroundLoc.distanceTo(nearbyNeutralTrees[0].location) > 6 + nearbyNeutralTrees[0].radius) {
                 goTo(target);
                 moved = true;
             }
@@ -95,26 +100,27 @@ public class Lumberjack extends Bot {
             }
         }
 
-        if (target != null && rc.getLocation().distanceTo(target) < 3){
-            //if(debug)System.out.println("thinking about removing");
-            if (clearAroundLoc != null && here.distanceTo(clearAroundLoc) < 5
-                    && (Util.numBodiesTouchingRadius(nearbyNeutralTrees, clearAroundLoc, 5, 18) == 0) &&
-                    Message.CLEAR_TREES_PLEASE.removeLocation(target)) {
+        if (clearAroundLoc != null && here.distanceTo(clearAroundLoc) < 5
+                && (Util.numBodiesTouchingRadius(nearbyNeutralTrees, clearAroundLoc, 5, 18) == 0) &&
+                Message.CLEAR_TREES_PLEASE.removeLocation(clearAroundLoc)) {
+            target = null;
+            clearAroundLoc = null;
+        }
+        if (target != null && rc.getLocation().distanceTo(target) < 3) {
+            if (nearbyEnemyRobots.length == 0 &&
+                    Message.ENEMY_ARCHONS.removeLocation(target)) {
+                //if(debug)System.out.println("thinking about removing");
                 target = null;
-                clearAroundLoc = null;
+            } else if (nearbyEnemyTrees.length == 0 &&
+                    Message.ENEMY_TREES.removeLocation(target)) {
+                target = null;
+            } else if (here.distanceTo(target) < 1.5 &&
+                    Message.TREES_WITH_UNITS.removeLocation(target)) {
+                target = null;
+            } else if (nearbyEnemyRobots.length == 0 &&
+                    Message.DISTRESS_SIGNALS.removeLocation(target)) {
+                target = null;
             }
-            else if( nearbyEnemyRobots.length == 0 &&
-                    Message.ENEMY_ARCHONS.removeLocation(target))
-                target = null;
-            else if (nearbyEnemyTrees.length == 0 &&
-                    Message.ENEMY_TREES.removeLocation(target))
-                target = null;
-            else if (here.distanceTo(target) < 1.5 &&
-                    Message.TREES_WITH_UNITS.removeLocation(target))
-                target = null;
-            else if (nearbyEnemyRobots.length == 0 &&
-                    Message.DISTRESS_SIGNALS.removeLocation(target))
-                target = null;
         }
     }
 
@@ -134,7 +140,7 @@ public class Lumberjack extends Bot {
                 ;
     }
 
-    public int WHEN_TO_STOP_SCORING_TREES_AND_MOVE = 3000;
+    public int WHEN_TO_STOP_SCORING_TREES_AND_MOVE = 4000;
     public void goForTrees() throws GameActionException {
 //        int s = Clock.getBytecodeNum();
 //        System.out.println("getting closest " + nearbyNeutralTrees.length + " neutral took " + (Clock.getBytecodeNum() - s));
@@ -186,7 +192,8 @@ public class Lumberjack extends Bot {
         if(moveTo != null){
             if(moveTo == attackMe){
                 tryMoveDirection(here.directionTo(moveTo.location), false, false);
-                if(calculatedMove != null && here.distanceTo(moveTo.getLocation()) > here.add(calculatedMove).distanceTo(moveTo.getLocation())){
+                if(debug) rc.setIndicatorDot(here.add(calculatedMove), 0, 0, 255);
+                if(calculatedMove != null && here.distanceTo(moveTo.getLocation()) + TOLERANCE > here.add(calculatedMove).distanceTo(moveTo.getLocation())){
                     rc.move(calculatedMove, type.strideRadius);
                 }
             } else {
@@ -197,6 +204,14 @@ public class Lumberjack extends Bot {
     }
 
     public void doMicro() throws GameActionException {
+        // TODO: make it only go for them under these conditions:
+        /* how about we go for things like this
+            archon/gardener always
+            LJ - within 6
+            scout - within 5
+            soldier -within 4
+            tank -within 5
+        */
         if(debug) rc.setIndicatorDot(here, 255, 0 , 0);
         calculatedMove = null;
         tryMoveDirection(here.directionTo(nearbyEnemyRobots[0].location), false, true);
@@ -323,8 +338,15 @@ public class Lumberjack extends Bot {
     public static void goTo(MapLocation dest) throws GameActionException {
         // this method makes us not try to bug if we can chop the thing in the way
         if(debug) System.out.println("goin' to " + dest.toString());
-        MapLocation directlyInFront = here.add(here.directionTo(dest), type.strideRadius*2);
+        Direction dir = here.directionTo(dest);
+        MapLocation directlyInFront = here.add(dir, type.strideRadius*2);
+        MapLocation left = here.add(dir.rotateLeftDegrees(30), type.strideRadius*2);
+        MapLocation right = here.add(dir.rotateRightDegrees(30), type.strideRadius*2);
         TreeInfo treeInTheWay = rc.senseTreeAtLocation(directlyInFront);
+        if(treeInTheWay == null)
+            treeInTheWay = rc.senseTreeAtLocation(left);
+        if(treeInTheWay == null)
+            treeInTheWay = rc.senseTreeAtLocation(right);
         if(treeInTheWay != null) {
             if(treeInTheWay.team != us){
                 tryMoveDirection(here.directionTo(dest), true, false);
@@ -332,6 +354,10 @@ public class Lumberjack extends Bot {
             }
         } else {
             RobotInfo botInTheWay = rc.senseRobotAtLocation(directlyInFront);
+            if(botInTheWay == null)
+                botInTheWay = rc.senseRobotAtLocation(left);
+            if(botInTheWay == null)
+                botInTheWay = rc.senseRobotAtLocation(right);
             if(botInTheWay != null){
                 if(botInTheWay.team != us){
                     tryMoveDirection(here.directionTo(dest), true, false);
@@ -340,8 +366,10 @@ public class Lumberjack extends Bot {
             }
         }
         if(!moved){
-//            System.out.println("nope, here!");
+//            if(clearAroundLoc != null && here.distanceTo(clearAroundLoc) < 10)
+//                bugState = BugState.DIRECT;
             Bot.goTo(dest);
+            moved = true;
         }
     }
 }
