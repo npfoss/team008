@@ -38,6 +38,12 @@ public class Archon extends Bot {
 			unitsBuilt++;
 		}
 
+		clearRoom();
+
+	}
+
+	private void clearRoom() throws GameActionException {
+	    explore();
 	}
 
 	public void hireGardener() throws GameActionException {
