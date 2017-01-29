@@ -37,7 +37,8 @@ public class Bot {
 	public static BugState bugState;
 	private static WallSide bugWallSide = null;
 
-	public Bot() {}
+	public Bot() {
+	}
 
 	public Bot(RobotController r) throws GameActionException {
 		rc = r;
@@ -50,7 +51,7 @@ public class Bot {
 		MapAnalysis.center = MapAnalysis.findCenter();
 		bugState = BugState.DIRECT;
 		nearbyAlliedRobots = rc.senseNearbyRobots(-1, us);
-		if(nearbyAlliedRobots.length > 0){
+		if (nearbyAlliedRobots.length > 0) {
 			RobotInfo closestG = Util.closestSpecificType(nearbyAlliedRobots, here, RobotType.GARDENER);
 			RobotInfo closestA = Util.closestSpecificType(nearbyAlliedRobots, here, RobotType.ARCHON);
 			switch (type) {
@@ -58,33 +59,38 @@ public class Bot {
 				Message.NUM_ARCHONS.setValue(Message.NUM_ARCHONS.getValue() + 1);
 				break;
 			case GARDENER:
-				if (closestA == null || here.distanceTo(closestA.location) > type.bodyRadius + RobotType.ARCHON.bodyRadius + 2) {
+				if (closestA == null
+						|| here.distanceTo(closestA.location) > type.bodyRadius + RobotType.ARCHON.bodyRadius + 2) {
 					Message.NUM_GARDENERS.setValue(Message.NUM_GARDENERS.getValue() + 1);
 				}
 				break;
 			case SOLDIER:
-				if (closestG == null || here.distanceTo(closestG.location) > type.bodyRadius + RobotType.GARDENER.bodyRadius + 2) {
+				if (closestG == null
+						|| here.distanceTo(closestG.location) > type.bodyRadius + RobotType.GARDENER.bodyRadius + 2) {
 					Message.NUM_SOLDIERS.setValue(Message.NUM_SOLDIERS.getValue() + 1);
 				}
 				break;
 			case TANK:
-				if (closestG == null || here.distanceTo(closestG.location) > type.bodyRadius + RobotType.GARDENER.bodyRadius +2) {
+				if (closestG == null
+						|| here.distanceTo(closestG.location) > type.bodyRadius + RobotType.GARDENER.bodyRadius + 2) {
 					Message.NUM_TANKS.setValue(Message.NUM_TANKS.getValue() + 1);
 				}
 				break;
 			case SCOUT:
-				if (closestG == null || here.distanceTo(closestG.location) > type.bodyRadius + RobotType.GARDENER.bodyRadius + 2) {
+				if (closestG == null
+						|| here.distanceTo(closestG.location) > type.bodyRadius + RobotType.GARDENER.bodyRadius + 2) {
 					Message.NUM_SCOUTS.setValue(Message.NUM_SCOUTS.getValue() + 1);
 				}
 				break;
 			case LUMBERJACK:
-				if (closestG == null || here.distanceTo(closestG.location) < type.bodyRadius + RobotType.GARDENER.bodyRadius + 2) {
+				if (closestG == null
+						|| here.distanceTo(closestG.location) < type.bodyRadius + RobotType.GARDENER.bodyRadius + 2) {
 					Message.NUM_LUMBERJACKS.setValue(Message.NUM_LUMBERJACKS.getValue() + 1);
 				}
 				break;
 			default:
 				break;
-		}
+			}
 		}
 	}
 
@@ -164,23 +170,24 @@ public class Bot {
 						|| rc.getTeamVictoryPoints() + rc.getTeamBullets() / rc.getVictoryPointCost() >= 1000) {
 					rc.donate(((int) (rc.getTeamBullets() / rc.getVictoryPointCost())) * rc.getVictoryPointCost());
 				}
-				if (rc.getTeamBullets() > 1000){
+				if (rc.getTeamBullets() > 1000) {
 					rc.donate(rc.getVictoryPointCost());
 				}
-				if(Message.GENETICS.getValue() == MapAnalysis.RUSH_VP && rc.getTeamBullets() > 500){
+				if (Message.GENETICS.getValue() == MapAnalysis.RUSH_VP && rc.getTeamBullets() > 500) {
 					rc.donate(rc.getVictoryPointCost());
 				}
 				shakeNearbyTrees();
-				if(Clock.getBytecodesLeft() > 500){
+				if (Clock.getBytecodesLeft() > 500) {
 					takeTurn();
 					if (rc.canShake()) {
 						shakeNearbyTrees();
 					}
 					MapLocation gardenerBuildLoc = Message.GARDENER_BUILD_LOCS.getClosestLocation(here);
-					if(gardenerBuildLoc != null)
+					if (gardenerBuildLoc != null)
 						removeLocIfApplicable(gardenerBuildLoc);
 				}
-				if (rc.getRoundNum() != roundNum) System.out.println("******SHITSHITSHITSHITSHIT RAN OUT OF BYTECODE******");
+				if (rc.getRoundNum() != roundNum)
+					System.out.println("******SHITSHITSHITSHITSHIT RAN OUT OF BYTECODE******");
 			} catch (Exception e) {
 				System.out.println(rc.getType().toString() + " Exception :(");
 				e.printStackTrace();
@@ -195,19 +202,21 @@ public class Bot {
 		return;
 	}
 
-	public void removeLocIfApplicable(MapLocation targetLoc) throws GameActionException{
+	public void removeLocIfApplicable(MapLocation targetLoc) throws GameActionException {
 		float dist = here.distanceTo(targetLoc);
-		if(rc.canSenseLocation(targetLoc) && rc.senseRobotAtLocation(targetLoc) != null && rc.senseRobotAtLocation(targetLoc).type != RobotType.ARCHON && rc.senseRobotAtLocation(targetLoc).type != RobotType.GARDENER || !rc.canSenseLocation(targetLoc)){
+		if (rc.canSenseLocation(targetLoc) && rc.senseRobotAtLocation(targetLoc) != null
+				&& rc.senseRobotAtLocation(targetLoc).type != RobotType.ARCHON
+				&& rc.senseRobotAtLocation(targetLoc).type != RobotType.GARDENER || !rc.canSenseLocation(targetLoc)) {
 			return;
 		}
-		if(
-		(!rc.onTheMap(targetLoc)
-		|| rc.isLocationOccupiedByTree(targetLoc) || rc.senseRobotAtLocation(targetLoc) != null && (rc.senseRobotAtLocation(targetLoc).type == RobotType.GARDENER || rc.senseRobotAtLocation(targetLoc).type == RobotType.ARCHON)
-		)){
+		if ((!rc.onTheMap(targetLoc) || rc.isLocationOccupiedByTree(targetLoc)
+				|| rc.senseRobotAtLocation(targetLoc) != null
+						&& (rc.senseRobotAtLocation(targetLoc).type == RobotType.GARDENER
+								|| rc.senseRobotAtLocation(targetLoc).type == RobotType.ARCHON))) {
 			Message.GARDENER_BUILD_LOCS.removeLocation(targetLoc);
 		}
 	}
-	
+
 	public void shakeNearbyTrees() throws Exception {
 		for (TreeInfo tree : nearbyNeutralTrees) {
 			if (tree.containedBullets > 0 && rc.canShake(tree.ID)) {
@@ -223,8 +232,8 @@ public class Bot {
 		MapLocation targetD = Message.DISTRESS_SIGNALS.getClosestLocation(here);
 		if (targetD != null) {
 			if (debug) {
-				//System.out.println("got target D");
-			}		
+				// System.out.println("got target D");
+			}
 		}
 		target = Message.ENEMY_ARMIES.getClosestLocation(here);
 		if ((targetD != null && target == null)
@@ -242,17 +251,20 @@ public class Bot {
 
 	public static void notifyFriendsOfEnemies(RobotInfo[] enemies) throws GameActionException {
 		RobotInfo closestG = Util.closestSpecificType(nearbyAlliedRobots, here, RobotType.GARDENER);
-		if (closestG != null && closestG.location.distanceTo(enemies[0].location) < (enemies[0].type == RobotType.SCOUT ? 3: 7)) {
+		if (closestG != null
+				&& closestG.location.distanceTo(enemies[0].location) < (enemies[0].type == RobotType.SCOUT ? 3 : 7)) {
 			Message.DISTRESS_SIGNALS.addLocation(Util.midpoint(closestG.location, enemies[0].location));
 		}
-		if(Util.closestSpecificType(nearbyEnemyRobots, here, RobotType.ARCHON) != null){
-			Message.ENEMY_ARCHONS.addLocation(Util.closestSpecificType(nearbyEnemyRobots, here, RobotType.ARCHON).location);
+		if (Util.closestSpecificType(nearbyEnemyRobots, here, RobotType.ARCHON) != null) {
+			Message.ENEMY_ARCHONS
+					.addLocation(Util.closestSpecificType(nearbyEnemyRobots, here, RobotType.ARCHON).location);
 		}
-		if(enemies.length == 1 && enemies[0].type != RobotType.SCOUT && enemies[0].type != RobotType.ARCHON && enemies[0].type != RobotType.SCOUT){
+		if (enemies.length == 1 && enemies[0].type != RobotType.SCOUT && enemies[0].type != RobotType.ARCHON
+				&& enemies[0].type != RobotType.SCOUT) {
 			Message.ISOLATED_ENEMIES.addLocation(enemies[0].location);
 		} else if (enemies.length > 1) {
-			for(RobotInfo e: nearbyEnemyRobots){
-				if(e.type != RobotType.SCOUT){
+			for (RobotInfo e : nearbyEnemyRobots) {
+				if (e.type != RobotType.SCOUT) {
 					Message.ENEMY_ARMIES.addLocation(e.location);
 				}
 			}
@@ -261,7 +273,7 @@ public class Bot {
 
 	/******* ALL NAVIGATION METHODS BELOW *******/
 	private static MapLocation dest = null;
-//	private static boolean isBugging = false;
+	// private static boolean isBugging = false;
 	private static int bugRotationCount;
 
 	private static float bugStartDistSq;
@@ -282,25 +294,49 @@ public class Bot {
 			}
 		}
 		boolean enemiesNearby = nearbyEnemyRobots.length > 0;
-		for (RobotInfo l : nearbyRobots) {
-			if (l.team == enemy && type != RobotType.LUMBERJACK && l.type == RobotType.LUMBERJACK) {
-				if (loc.distanceTo(l.location) < 3.51 + type.bodyRadius + (type == RobotType.SCOUT?2:0)) {
-					danger += (10.0 - loc.distanceTo(l.location));
-				}
-			} else if (l.team == us && enemiesNearby) {
-				if (l.type == RobotType.LUMBERJACK) {
-					if (loc.distanceTo(l.location) < 2.1 + type.bodyRadius) {
-						danger += (10.0 - loc.distanceTo(l.location));
+		if (type == RobotType.SCOUT) {
+			for (RobotInfo l : nearbyRobots) {
+				if (l.team == us && l.type != RobotType.LUMBERJACK || l.type == RobotType.ARCHON
+						|| l.type == RobotType.GARDENER) {
+
+				} else if (l.type == RobotType.LUMBERJACK) {
+					if (loc.distanceTo(l.location) < RobotType.LUMBERJACK.bodyRadius + RobotType.LUMBERJACK.strideRadius
+							+ 1.1 + RobotType.SCOUT.bodyRadius) {
+						danger += (10.0 - loc.distanceTo(l.location)) * 10;
+					}
+
+				} else {
+					if (loc.distanceTo(l.location) < l.type.bodyRadius + l.type.strideRadius + l.type.bulletSpeed
+							+ RobotType.SCOUT.bodyRadius) {
+
+						danger += (10.0 - loc.distanceTo(l.location)) * 10.0 * l.type.attackPower;
 					}
 				}
 
+			}
+		} else {
+			for (RobotInfo l : nearbyRobots) {
+				if (l.team == enemy && type != RobotType.LUMBERJACK && l.type == RobotType.LUMBERJACK) {
+					if (loc.distanceTo(l.location) < 3.51 + type.bodyRadius + (type == RobotType.SCOUT ? 2 : 0)) {
+						danger += (10.0 - loc.distanceTo(l.location));
+					}
+				} else if (l.team == us && enemiesNearby) {
+					if (l.type == RobotType.LUMBERJACK) {
+						if (loc.distanceTo(l.location) < 2.1 + type.bodyRadius) {
+							danger += (10.0 - loc.distanceTo(l.location));
+						}
+					}
+
+				}
 			}
 		}
 		return (int) (danger);
 	}
 
 	private static int tryMove(Direction dir, float dist, boolean makeMove) throws GameActionException {
-		if (rc.canMove(dir, dist) && !(type == RobotType.TANK && rc.isCircleOccupiedExceptByThisRobot(here.add(dir, dist), type.bodyRadius) && (nearbyTrees.length > 0 && nearbyTrees[0].team == us))) {
+		if (rc.canMove(dir, dist) && !(type == RobotType.TANK
+				&& rc.isCircleOccupiedExceptByThisRobot(here.add(dir, dist), type.bodyRadius)
+				&& (nearbyTrees.length > 0 && nearbyTrees[0].team == us))) {
 			int danger = 0;
 			danger = dangerRating(here.add(dir, dist));
 			if (danger == 0) {
@@ -353,7 +389,7 @@ public class Bot {
 			bestDir = null;
 			bestDanger = tempDanger;
 		}
-		if(bestDir != null){
+		if (bestDir != null) {
 			calculatedMove = bestDir;
 		}
 		if (bestDir != null && makeMove) {
@@ -377,8 +413,8 @@ public class Bot {
 			tryMoveDirection(here.directionTo(MapAnalysis.center), true, true);
 			return;
 		}
-		
-		if(dest == null || !theDest.isWithinDistance(dest, (float) .1)){
+
+		if (dest == null || !theDest.isWithinDistance(dest, (float) .1)) {
 			dest = theDest;
 			bugState = BugState.DIRECT;
 			bugMovesSinceMadeProgress = 0;
@@ -388,13 +424,13 @@ public class Bot {
 
 	private static void bugMove() throws GameActionException {
 		if (debug)
-			//System.out.println("bugging");
-		if (bugState == BugState.BUG) {
+			// System.out.println("bugging");
+			if (bugState == BugState.BUG) {
 			if (canEndBug()) {
-				bugState = BugState.DIRECT;
-				bugMovesSinceMadeProgress = 0;
+			bugState = BugState.DIRECT;
+			bugMovesSinceMadeProgress = 0;
 			}
-		}
+			}
 		if (bugState == BugState.DIRECT) {
 			if (!tryMoveDirect()) {
 				bugState = BugState.BUG;
@@ -402,7 +438,7 @@ public class Bot {
 			}
 		}
 		if (bugState == BugState.BUG) {
-			//if(debug)System.out.println("still bugging");
+			// if(debug)System.out.println("still bugging");
 			bugTurn();
 			bugMovesSinceMadeProgress++;
 		}
@@ -421,9 +457,10 @@ public class Bot {
 	private static Direction findBugMoveDir() throws GameActionException {
 		bugMovesSinceSeenObstacle++;
 		Direction dir = bugLastMoveDir;
-		if(canMove(dir)){
-			//stay on the wall
-			if(debug)System.out.println("staying on the wall");
+		if (canMove(dir)) {
+			// stay on the wall
+			if (debug)
+				System.out.println("staying on the wall");
 			dir = (bugWallSide == WallSide.LEFT ? dir.rotateLeftDegrees(100) : dir.rotateRightDegrees(100));
 			for (int i = 20; i-- > 0;) {
 				if (canMove(dir))
@@ -432,7 +469,7 @@ public class Bot {
 			}
 		}
 		bugMovesSinceSeenObstacle = 0;
-		//see an obstacle
+		// see an obstacle
 		for (int i = 72; i-- > 0;) {
 			rc.setIndicatorDot(here.add(dir, type.strideRadius), 255, 0, 0);
 			dir = (bugWallSide == WallSide.LEFT ? dir.rotateRightDegrees(5) : dir.rotateLeftDegrees(5));
@@ -443,18 +480,15 @@ public class Bot {
 	}
 
 	private static void bugMove(Direction dir) throws GameActionException {
-		if(tryMove(dir, type.strideRadius, true) == 0){
+		if (tryMove(dir, type.strideRadius, true) == 0) {
 			bugLastMoveDir = dir;
 		}
 		/*
-		if (tryMove(dir,type.strideRadius,true) == 0) {
-			bugRotationCount += calculateBugRotation(dir);
-			if (bugWallSide == WallSide.LEFT)
-				bugLookStartDir = dir.rotateLeftDegrees(90);
-			else
-				bugLookStartDir = dir.rotateRightDegrees(90);
-		}
-		*/
+		 * if (tryMove(dir,type.strideRadius,true) == 0) { bugRotationCount +=
+		 * calculateBugRotation(dir); if (bugWallSide == WallSide.LEFT)
+		 * bugLookStartDir = dir.rotateLeftDegrees(90); else bugLookStartDir =
+		 * dir.rotateRightDegrees(90); }
+		 */
 	}
 
 	private static int calculateBugRotation(Direction moveDir) {
@@ -466,19 +500,23 @@ public class Bot {
 	}
 
 	private static int numRightRotations(Direction start, Direction end) {
-		int endOrd = (int)((end.getAngleDegrees() > 0 ? end.getAngleDegrees() : 360 + end.getAngleDegrees())) / 20;
-		int startOrd = (int)((start.getAngleDegrees() > 0 ? start.getAngleDegrees() : 360 + end.getAngleDegrees())) / 20;
+		int endOrd = (int) ((end.getAngleDegrees() > 0 ? end.getAngleDegrees() : 360 + end.getAngleDegrees())) / 20;
+		int startOrd = (int) ((start.getAngleDegrees() > 0 ? start.getAngleDegrees() : 360 + end.getAngleDegrees()))
+				/ 20;
 		return (endOrd - startOrd + 18) % 18;
 	}
 
 	private static int numLeftRotations(Direction start, Direction end) {
-		int endOrd = (int)((end.getAngleDegrees() > 0 ? end.getAngleDegrees() : 360 + end.getAngleDegrees())) / 20;
-		int startOrd = (int)((start.getAngleDegrees() > 0 ? start.getAngleDegrees() : 360 + end.getAngleDegrees())) / 20;
+		int endOrd = (int) ((end.getAngleDegrees() > 0 ? end.getAngleDegrees() : 360 + end.getAngleDegrees())) / 20;
+		int startOrd = (int) ((start.getAngleDegrees() > 0 ? start.getAngleDegrees() : 360 + end.getAngleDegrees()))
+				/ 20;
 		return (-endOrd + startOrd + 18) % 18;
 	}
 
 	private static boolean move(Direction dir) throws GameActionException {
-		if (rc.canMove(dir, type.strideRadius) && !(type == RobotType.TANK && rc.isCircleOccupiedExceptByThisRobot(here.add(dir, type.strideRadius), type.bodyRadius) && (nearbyTrees.length > 0 && nearbyTrees[0].team == us))) {
+		if (rc.canMove(dir, type.strideRadius) && !(type == RobotType.TANK
+				&& rc.isCircleOccupiedExceptByThisRobot(here.add(dir, type.strideRadius), type.bodyRadius)
+				&& (nearbyTrees.length > 0 && nearbyTrees[0].team == us))) {
 			rc.move(dir);
 			return true;
 		}
@@ -532,22 +570,25 @@ public class Bot {
 
 	private static boolean canMove(Direction dir) throws GameActionException {
 		// TODO: add safety
-		return rc.canMove(dir, type.strideRadius) && !(type == RobotType.TANK && rc.isCircleOccupiedExceptByThisRobot(here.add(dir, type.strideRadius), type.bodyRadius) && (nearbyTrees.length > 0 && nearbyTrees[0].team == us));
+		return rc.canMove(dir, type.strideRadius) && !(type == RobotType.TANK
+				&& rc.isCircleOccupiedExceptByThisRobot(here.add(dir, type.strideRadius), type.bodyRadius)
+				&& (nearbyTrees.length > 0 && nearbyTrees[0].team == us));
 	}
 
 	private static boolean tryMoveDirect() throws GameActionException {
 		Direction dir = here.directionTo(dest);
-		//System.out.println(dest.toString() + here.toString() + dir.toString());
-		if (tryMove(dir, type.strideRadius,true) == 0) {
+		// System.out.println(dest.toString() + here.toString() +
+		// dir.toString());
+		if (tryMove(dir, type.strideRadius, true) == 0) {
 			return true;
 		}
 		Direction left = dir.rotateLeftDegrees(15);
 		Direction right = dir.rotateRightDegrees(15);
 		for (int i = 0; i < 3; i++) {
-			if (tryMove(left, type.strideRadius,true) == 0) {
+			if (tryMove(left, type.strideRadius, true) == 0) {
 				return true;
 			}
-			if (tryMove(right, type.strideRadius,true) == 0) {
+			if (tryMove(right, type.strideRadius, true) == 0) {
 				return true;
 			}
 			left = left.rotateLeftDegrees(15);
@@ -562,33 +603,37 @@ public class Bot {
 			System.out.println("wall side = " + bugWallSide);
 		}
 		return bugMovesSinceSeenObstacle >= 4 && here.distanceSquaredTo(dest) <= bugStartDistSq + 5;
-		//if (bugMovesSinceSeenObstacle >= 4)
-		//	return true;
-		//return (bugRotationCount <= 0 || bugRotationCount >= 18) && here.distanceSquaredTo(dest) <= bugStartDistSq;
+		// if (bugMovesSinceSeenObstacle >= 4)
+		// return true;
+		// return (bugRotationCount <= 0 || bugRotationCount >= 18) &&
+		// here.distanceSquaredTo(dest) <= bugStartDistSq;
 	}
 
 	public static void explore() throws GameActionException {
 		if (dirIAmMoving == null) {
 			dirIAmMoving = here.directionTo(MapAnalysis.center);
 		}
-//		if (nearbyAlliedRobots != null) {
-//			for (RobotInfo r : nearbyAlliedRobots) {
-//				if (r.type == RobotType.SCOUT && dirIAmMoving.degreesBetween(here.directionTo(r.location)) < 45) {
-//					dirIAmMoving = dirIAmMoving.opposite();
-//					break;
-//				}
-//			}
-//		}
-		if (myRand.nextFloat() < 0.1 || !rc.onTheMap(here.add(dirIAmMoving, (float) (type.sensorRadius-.1)))) {
+		// if (nearbyAlliedRobots != null) {
+		// for (RobotInfo r : nearbyAlliedRobots) {
+		// if (r.type == RobotType.SCOUT &&
+		// dirIAmMoving.degreesBetween(here.directionTo(r.location)) < 45) {
+		// dirIAmMoving = dirIAmMoving.opposite();
+		// break;
+		// }
+		// }
+		// }
+		if (myRand.nextFloat() < 0.1 || !rc.onTheMap(here.add(dirIAmMoving, (float) (type.sensorRadius - .1)))) {
 			// System.out.println(dirIAmMoving);
 			dirIAmMoving = dirIAmMoving.rotateLeftDegrees(100);
 		}
-		goTo(dirIAmMoving);
+		tryMoveDirection(dirIAmMoving,true,true);
 	}
 
 	/////////////////////////////// Dangerous Nav///////////////////////////////
 	public static void goToDangerous(MapLocation loc) throws GameActionException {
-		if (here.distanceTo(loc) < type.strideRadius && rc.canMove(loc) && !(type == RobotType.TANK && rc.isCircleOccupiedExceptByThisRobot(loc, type.bodyRadius) && (nearbyTrees.length > 0 && nearbyTrees[0].team == us))) {
+		if (here.distanceTo(loc) < type.strideRadius && rc.canMove(loc)
+				&& !(type == RobotType.TANK && rc.isCircleOccupiedExceptByThisRobot(loc, type.bodyRadius)
+						&& (nearbyTrees.length > 0 && nearbyTrees[0].team == us))) {
 			rc.move(loc);
 			here = rc.getLocation();
 			return;
@@ -616,7 +661,9 @@ public class Bot {
 	}
 
 	private static boolean tryMoveDangerous(Direction dir, float dist) throws GameActionException {
-		if (rc.canMove(dir, dist) && !(type == RobotType.TANK && rc.isCircleOccupiedExceptByThisRobot(here.add(dir, type.strideRadius), type.bodyRadius) && (nearbyTrees.length > 0 && nearbyTrees[0].team == us))) {
+		if (rc.canMove(dir, dist) && !(type == RobotType.TANK
+				&& rc.isCircleOccupiedExceptByThisRobot(here.add(dir, type.strideRadius), type.bodyRadius)
+				&& (nearbyTrees.length > 0 && nearbyTrees[0].team == us))) {
 			rc.move(dir, dist);
 			here = rc.getLocation();
 			return true;
@@ -628,10 +675,10 @@ public class Bot {
 	public static boolean willCollide(BulletInfo bullet, MapLocation loc) {
 		Direction directionToRobot = bullet.location.directionTo(loc);
 		float theta = Math.abs(bullet.dir.radiansBetween(directionToRobot));
-		if (theta > Math.PI / 2) {
+		float distToRobot = bullet.location.distanceTo(loc);
+		if (theta > Math.PI / 2 && distToRobot > type.bodyRadius+.01) {
 			return false;
 		}
-		float distToRobot = bullet.location.distanceTo(loc);
 		float perpendicularDist = (float) (distToRobot * Math.sin(theta));
 		return (perpendicularDist < type.bodyRadius + .01 && (distToRobot - type.bodyRadius < bullet.speed + .01));
 	}

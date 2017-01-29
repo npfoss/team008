@@ -39,13 +39,13 @@ public class Scout extends Bot {
 				moveToHarass();
 			}
 		}*/
-		if(nearbyBullets.length > 0){
-			MapLocation m = here.add(here.directionTo(MapAnalysis.center), type.strideRadius);
-			if(nearbyEnemyRobots.length > 0)
-				m = nearbyEnemyRobots[0].location;
-			RangedCombat.bulletMove(m, true);
-		}
-		else if (!dealWithNearbyTrees()){
+//		if(nearbyBullets.length > 0){
+//			MapLocation m = here.add(here.directionTo(MapAnalysis.center), type.strideRadius);
+//			if(nearbyEnemyRobots.length > 0)
+//				m = nearbyEnemyRobots[0].location;
+//			RangedCombat.bulletMove(m, true);
+//		}
+		if (!dealWithNearbyTrees()){
 			explore();
 		}
 
@@ -173,7 +173,7 @@ public class Scout extends Bot {
 		for (int i = 0; i < Math.min(nearbyTrees.length, giveUp); i++) {
 			if (nearbyTrees[i].team == Team.NEUTRAL){
                 if(nearbyTrees[i].containedBullets > 0 && !moved) {
-                    goTo(nearbyTrees[i].location);
+                	tryMoveDirection(here.directionTo(nearbyTrees[i].location), true, true);
                     moved = true;
                 }
                 if(nearbyTrees[i].containedRobot != null){
