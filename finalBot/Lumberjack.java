@@ -326,8 +326,15 @@ public class Lumberjack extends Bot {
     public static void goTo(MapLocation dest) throws GameActionException {
         // this method makes us not try to bug if we can chop the thing in the way
         if(debug) System.out.println("goin' to " + dest.toString());
-        MapLocation directlyInFront = here.add(here.directionTo(dest), type.strideRadius*2);
+        Direction dir = here.directionTo(dest);
+        MapLocation directlyInFront = here.add(dir, type.strideRadius*2);
+        MapLocation left = here.add(dir.rotateLeftDegrees(30), type.strideRadius*2);
+        MapLocation right = here.add(dir.rotateRightDegrees(30), type.strideRadius*2);
         TreeInfo treeInTheWay = rc.senseTreeAtLocation(directlyInFront);
+        if(treeInTheWay == null)
+            treeInTheWay = rc.senseTreeAtLocation(left);
+        if(treeInTheWay == null)
+            treeInTheWay = rc.senseTreeAtLocation(right);
         if(treeInTheWay != null) {
             if(treeInTheWay.team != us){
                 tryMoveDirection(here.directionTo(dest), true, false);
@@ -335,6 +342,10 @@ public class Lumberjack extends Bot {
             }
         } else {
             RobotInfo botInTheWay = rc.senseRobotAtLocation(directlyInFront);
+            if(botInTheWay == null)
+                botInTheWay = rc.senseRobotAtLocation(left);
+            if(botInTheWay == null)
+                botInTheWay = rc.senseRobotAtLocation(right);
             if(botInTheWay != null){
                 if(botInTheWay.team != us){
                     tryMoveDirection(here.directionTo(dest), true, false);
