@@ -3,6 +3,7 @@ package team008.finalBot;
 import battlecode.common.*;
 
 public class Archon extends Bot {
+	private static int turnsTryingToReach = 0;
 
 	public Archon(RobotController r) throws GameActionException {
 		super(r);
@@ -28,7 +29,7 @@ public class Archon extends Bot {
 			}
 		}
 		
-		if(nearbyEnemyRobots.length>0){
+		if(nearbyEnemyRobots.length > 0 && !(nearbyEnemyRobots.length == 1 && (nearbyEnemyRobots[0].type == RobotType.GARDENER || nearbyEnemyRobots[0].type == RobotType.ARCHON))){
 			if(!inDistress){
 			Message.ARCHON_DISTRESS_NUM.setValue(Message.ARCHON_DISTRESS_NUM.getValue()+1);
 			inDistress = true;
@@ -37,26 +38,36 @@ public class Archon extends Bot {
 		}
 		else{
 			if(inDistress){
-
 				Message.ARCHON_DISTRESS_NUM.setValue(Message.ARCHON_DISTRESS_NUM.getValue()-1);
 				inDistress = false;
 			}
 		}
 		if (Message.ARCHON_BUILD_NUM.getValue() > 0 && rc.getTeamBullets() > (100 + 
 				(inDistress ? 
-						((Message.ARCHON_DISTRESS_NUM.getValue() < MapAnalysis.initialAlliedArchonLocations.length) ? 
+						((Message.ARCHON_DISTRESS_NUM.getValue() < Message.NUM_ARCHONS.getValue()) ? 
 								10 : nearbyEnemyRobots.length)
 						: (MapAnalysis.initialAlliedArchonLocations.length == 1 ? 0 : unitsBuilt * 2)))) {
 			hireGardener();
 			unitsBuilt++;
 		}
-
-		clearRoom();
-
+		if(rc.getMoveCount() == 0){
+			clearRoom();
+		}
 	}
 
 	private void clearRoom() throws GameActionException {
-	    explore();
+	    if(Message.GARDENER_BUILD_LOCS.getLength() > 0){
+	    	MapLocation closestLoc = Message.GARDENER_BUILD_LOCS.getClosestLocation(here);
+	    	if(debug)rc.setIndicatorLine(here, closestLoc, 255, 0, 0);
+	    	target = closestLoc.add(closestLoc.directionTo(here), (float) (type.bodyRadius + RobotType.GARDENER.bodyRadius + 0.01));
+	    	if(here.distanceTo(target) > 0.01 && Util.closestSpecificType(rc.senseNearbyRobots(closestLoc, 7, us), here, RobotType.GARDENER) == null){
+	    		goTo(target);
+	    		turnsTryingToReach++;
+	    	}
+	    }
+	    else{
+	    	explore();
+	    }
 	}
 
 	public void hireGardener() throws GameActionException {
@@ -64,6 +75,9 @@ public class Archon extends Bot {
 		MapLocation gardenerBuildLoc = Message.GARDENER_BUILD_LOCS.getClosestLocation(here);
 		if(gardenerBuildLoc != null)
 			dir = here.directionTo(Message.GARDENER_BUILD_LOCS.getClosestLocation(here));
+		else if(nearbyTrees.length > 0){
+			dir = here.directionTo(nearbyTrees[0].location).opposite();
+		}
 		if (rc.canHireGardener(dir)) {
 			rc.hireGardener(dir);
 			Message.ARCHON_BUILD_NUM.setValue(Message.ARCHON_BUILD_NUM.getValue()-1);
