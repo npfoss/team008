@@ -1,4 +1,4 @@
-package team008.finalBot;
+package team008.b1_27_0038;
 
 import battlecode.common.*;
 
@@ -10,18 +10,17 @@ public class Lumberjack extends Bot {
     public Lumberjack(RobotController r) throws GameActionException{
         super(r);
         myRandomDirection = Util.randomDirection();
-        debug = true;
-        DAMAGE_THEM_MOD = 2f; // tested and determined to be better than 2.5
+//        debug = true;
+        DAMAGE_THEM_MOD = 2f;
         TREE_DAMAGE_MOD = .2f;
     }
 
     public static boolean attacked = false;
     public static boolean moved = false;
     public static Direction myRandomDirection;
-//    public TreeInfo closestNeutralWithUnit;
-    public MapLocation clearAroundLoc;
+    public TreeInfo closestNeutralWithUnit;
     public Message[] messagesToTry = {Message.DISTRESS_SIGNALS, Message.TREES_WITH_UNITS, Message.CLEAR_TREES_PLEASE, Message.ENEMY_TREES, Message.ENEMY_ARCHONS};
-    public int[] howFarToGoForMessage = {     25,                       15,                       25,                         20,                  20};
+    public int[] howFarToGoForMessage = {     30,                       25,                       25,                         20,                  20};
 //    public boolean[] checkEnemiesToRemove = { true,                     false,                    false,               true};
 
     public void takeTurn() throws Exception{
@@ -31,12 +30,12 @@ public class Lumberjack extends Bot {
             myRandomDirection = Util.randomDirection();
         }
 
-//        closestNeutralWithUnit = Util.closestTree(nearbyNeutralTrees, rc.getLocation(), true, 50, true);
-//        if(debug && closestNeutralWithUnit != null) rc.setIndicatorLine(here, closestNeutralWithUnit.getLocation(), 0, 0, 255);
+        closestNeutralWithUnit = Util.closestTree(nearbyNeutralTrees, rc.getLocation(), true, 50, true);
+        if(debug && closestNeutralWithUnit != null) rc.setIndicatorLine(here, closestNeutralWithUnit.getLocation(), 0, 0, 255);
 
         if(nearbyEnemyRobots.length > 0) {
             //Notify allies of enemies
-            if((rc.getRoundNum() +rc.getID()) % 5 == 0 || target == null){
+            if((rc.getRoundNum() +rc.getID()) % 25 == 0 || target == null){
                 notifyFriendsOfEnemies(nearbyEnemyRobots);
             }
 
@@ -48,11 +47,10 @@ public class Lumberjack extends Bot {
             }
         }
         if(target != null && !moved){
-            if(clearAroundLoc == null || here.distanceTo(clearAroundLoc) > 5) {
-                goTo(target);
-                moved = true;
-            }
-            // else go for trees will take care of movement
+            if(rc.canSenseLocation(target) && rc.isLocationOccupiedByTree(target) && rc.canChop(target))
+                bugState = BugState.DIRECT;
+            goTo(target);
+            moved = true;
         }
 
 //        int start = Clock.getBytecodeNum();
@@ -79,8 +77,7 @@ public class Lumberjack extends Bot {
     		//if(debug)System.out.println("changing");
     		target = null;
     	}*/
-//        target = (closestNeutralWithUnit == null ? null : closestNeutralWithUnit.getLocation());
-        target = null;
+        target = (closestNeutralWithUnit == null ? null : closestNeutralWithUnit.getLocation());
         MapLocation targetD;
 
         for(int i = 0; i < messagesToTry.length; i++){
@@ -89,21 +86,12 @@ public class Lumberjack extends Bot {
             if (targetD != null && here.distanceTo(targetD) < howFarToGoForMessage[i]*howDesperate && (target == null || (here.distanceTo(targetD) < here.distanceTo(target) && here.distanceTo(targetD) < 7))) {
                 //if(debug)System.out.println("targetD = " + targetD);
                 target = targetD;
-                if (messagesToTry[i] == Message.CLEAR_TREES_PLEASE){
-                    clearAroundLoc = target;
-                }
             }
         }
 
-        if (target != null && rc.getLocation().distanceTo(target) < 3){
+        if (target != null && rc.getLocation().distanceTo(target) < 5){
             //if(debug)System.out.println("thinking about removing");
-            if (clearAroundLoc != null && here.distanceTo(clearAroundLoc) < 5
-                    && (Util.numBodiesTouchingRadius(nearbyNeutralTrees, clearAroundLoc, 5, 18) == 0) &&
-                    Message.CLEAR_TREES_PLEASE.removeLocation(target)) {
-                target = null;
-                clearAroundLoc = null;
-            }
-            else if( nearbyEnemyRobots.length == 0 &&
+            if( nearbyEnemyRobots.length == 0 &&
                     Message.ENEMY_ARCHONS.removeLocation(target))
                 target = null;
             else if (nearbyEnemyTrees.length == 0 &&
@@ -115,84 +103,55 @@ public class Lumberjack extends Bot {
             else if (nearbyEnemyRobots.length == 0 &&
                     Message.DISTRESS_SIGNALS.removeLocation(target))
                 target = null;
+            else if (here.distanceTo(target) < 1.5 && (nearbyNeutralTrees.length == 0 || target.distanceTo(nearbyNeutralTrees[0].getLocation()) > 2 )&&
+                    Message.CLEAR_TREES_PLEASE.removeLocation(target))
+                target = null;
         }
     }
 
-    public float DIST_TO_ME_MOD = .3f;
-    public float DIST_TO_CA_MOD = 1f;
-    public float CONTAINS_UNIT_MOD = 10f;
-    public float IN_THE_WAY_MOD = 1f;
-    public float ENEMY_TREE_MOD = 3f;
-    public float HEALTH_PCT_MOD = 2f;
-    public float scoreTree(TreeInfo tree){
-        return  -DIST_TO_ME_MOD * rc.getLocation().distanceTo(tree.getLocation())
-                -DIST_TO_CA_MOD * (clearAroundLoc != null? clearAroundLoc.distanceTo(tree.getLocation()) : 0)
-                +                 (tree.containedRobot == null ? 0 : CONTAINS_UNIT_MOD )
-                -IN_THE_WAY_MOD * (target == null? 0 : rc.getLocation().distanceTo(tree.getLocation()) + tree.getLocation().distanceTo(target) - rc.getLocation().distanceTo(target))
-                +                 (tree.getTeam() == enemy? ENEMY_TREE_MOD : 0)
-                -HEALTH_PCT_MOD * (tree.health / tree.maxHealth)
-                ;
-    }
-
-    public int WHEN_TO_STOP_SCORING_TREES_AND_MOVE = 3000;
     public void goForTrees() throws GameActionException {
 //        int s = Clock.getBytecodeNum();
 //        System.out.println("getting closest " + nearbyNeutralTrees.length + " neutral took " + (Clock.getBytecodeNum() - s));
-//        if(debug) rc.setIndicatorDot(rc.getLocation(), 0, 255,0);
-
-//        System.out.println("TSA pre-check");
-        if(moved && attacked) return;
-//        System.out.println("TSA post-check" + Clock.getBytecodesLeft());
-
-        TreeInfo moveTo = null;
-        TreeInfo attackMe = null;
-        float bestMoveScore = -99999f;
-        float bestAttackScore = -999999f;
-        float score;
-        for(int i = 0; i < nearbyTrees.length && Clock.getBytecodesLeft() > WHEN_TO_STOP_SCORING_TREES_AND_MOVE; i++){
-//            if(debug) System.out.print("loopy");
-            if(nearbyTrees[i].getTeam() == us) continue;
-            score = scoreTree(nearbyTrees[i]);
-            if(debug) System.out.println("loc: " + nearbyTrees[i].location.x + " " + nearbyTrees[i].location.y + " score: " + score);
-            if(!moved && score > bestMoveScore){
-                bestMoveScore = score;
-                moveTo = nearbyTrees[i];
+        if(closestNeutralWithUnit != null){
+            if(!moved){
+                tryMoveDirection(here.directionTo(closestNeutralWithUnit.location), true, false);
+                moved = true;
             }
-            if(!attacked && score > bestAttackScore && rc.getLocation().distanceTo(nearbyTrees[i].location) < GameConstants.LUMBERJACK_STRIKE_RADIUS + nearbyTrees[i].radius){
-                bestAttackScore = score;
-                attackMe = nearbyTrees[i];
-            }
-        }
-
-        if(debug){
-            if(attackMe != null){
-                rc.setIndicatorLine(rc.getLocation(), attackMe.location, 255, 255, 255);
-                rc.setIndicatorDot(attackMe.location, 255, 255, 255);
-            }
-            if(moveTo != null) rc.setIndicatorLine(rc.getLocation(), moveTo.location, 0, 0, 0);
-        }
-
-        if(attackMe != null){
-            if(Util.numBodiesTouchingRadius(nearbyAlliedRobots, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS) == 0
-                    && Util.numBodiesTouchingRadius(nearbyNeutralTrees, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS, 5)
-                    + Util.numBodiesTouchingRadius(nearbyEnemyTrees, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS, 5) > 2){
-                rc.strike();
-                attacked = true;
-            } else {
-                rc.chop(attackMe.ID);
+            if(rc.canChop(closestNeutralWithUnit.ID)){ // includes check for having attacked already
+                rc.chop(closestNeutralWithUnit.ID);
                 attacked = true;
             }
         }
-        if(moveTo != null){
-            if(moveTo == attackMe){
-                tryMoveDirection(here.directionTo(moveTo.location), false, false);
-                if(calculatedMove != null && here.distanceTo(moveTo.getLocation()) > here.add(calculatedMove).distanceTo(moveTo.getLocation())){
-                    rc.move(calculatedMove, type.strideRadius);
+        if(nearbyEnemyTrees.length > 0){
+            if(!moved){
+                tryMoveDirection(here.directionTo(nearbyEnemyTrees[0].location), true, false);
+                moved = true;
+            }
+            if(!attacked){
+                if(Util.numBodiesTouchingRadius(nearbyEnemyTrees, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS) > 2
+                        && Util.numBodiesTouchingRadius(nearbyAlliedRobots, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS) == 0){
+                    rc.strike();
+                    attacked = true;
+                } else if (rc.canChop(nearbyEnemyTrees[0].location)){
+                    rc.chop(nearbyEnemyTrees[0].ID);
+                    attacked = true;
                 }
-            } else {
-                goTo(moveTo.location);
             }
-            moved = true;
+        } if(nearbyNeutralTrees.length > 0){
+            if(!moved){
+                tryMoveDirection(here.directionTo(nearbyNeutralTrees[0].location), true, false);
+                moved = true;
+            }
+            if(!attacked){
+                if(Util.numBodiesTouchingRadius(nearbyNeutralTrees, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS) > 2
+                        && Util.numBodiesTouchingRadius(nearbyAlliedRobots, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS) == 0){
+                    rc.strike();
+                    attacked = true;
+                } else if (rc.canChop(nearbyNeutralTrees[0].location)) {
+                    rc.chop(nearbyNeutralTrees[0].ID);
+                    attacked = true;
+                }
+            }
         }
     }
 
@@ -318,30 +277,5 @@ public class Lumberjack extends Bot {
         float damageToEnemyTrees = RobotType.LUMBERJACK.attackPower * Util.numBodiesTouchingRadius(nearbyEnemyTrees, loc, GameConstants.LUMBERJACK_STRIKE_RADIUS);
         float damageToAlliedTrees = RobotType.LUMBERJACK.attackPower * Util.numBodiesTouchingRadius(nearbyAlliedTrees, loc, GameConstants.LUMBERJACK_STRIKE_RADIUS);
         return DAMAGE_THEM_MOD * damageToThem - damageToUs + TREE_DAMAGE_MOD * (damageToEnemyTrees - damageToAlliedTrees);
-    }
-
-    public static void goTo(MapLocation dest) throws GameActionException {
-        // this method makes us not try to bug if we can chop the thing in the way
-        if(debug) System.out.println("goin' to " + dest.toString());
-        MapLocation directlyInFront = here.add(here.directionTo(dest), type.strideRadius*2);
-        TreeInfo treeInTheWay = rc.senseTreeAtLocation(directlyInFront);
-        if(treeInTheWay != null) {
-            if(treeInTheWay.team != us){
-                tryMoveDirection(here.directionTo(dest), true, false);
-                moved = true;
-            }
-        } else {
-            RobotInfo botInTheWay = rc.senseRobotAtLocation(directlyInFront);
-            if(botInTheWay != null){
-                if(botInTheWay.team != us){
-                    tryMoveDirection(here.directionTo(dest), true, false);
-                    moved = true;
-                }
-            }
-        }
-        if(!moved){
-//            System.out.println("nope, here!");
-            Bot.goTo(dest);
-        }
     }
 }

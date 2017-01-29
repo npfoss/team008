@@ -2,27 +2,30 @@ package team008.finalBot;
 import battlecode.common.*;
 
 public class Gardener extends Bot {
-	public boolean isExploring;
-	public static Direction dirIAmMoving;
-	public static boolean updatedLocs;
-	public static int turnsIHaveBeenTrying;
-	//public static boolean tankBuilder;
-	//public static int turnsTank;
-    public static float patienceVal;
+    public boolean isExploring;
+    public static Direction dirIAmMoving;
+    public static boolean updatedLocs;
+    public static int turnsIHaveBeenTrying;
+    public static boolean tankBuilder;
+    public static int turnsTank;
+    public static float myPatience;
+    public static float dLastTurn;
+    public static MapLocation targetLoc;
 
-	public Gardener(RobotController r) throws GameActionException {
-		super(r);
-		isExploring = true;
-		updatedLocs = false;
-		//tankBuilder = false;
-		turnsIHaveBeenTrying = 0;
-		//turnsTank = 0;
-        patienceVal = 1;
-
+    public Gardener(RobotController r) throws GameActionException {
+        super(r);
+        isExploring = true;
+        updatedLocs = false;
+        //tankBuilder = false;
+        turnsIHaveBeenTrying = 0;
+       // turnsTank = 0;
+        myPatience = 1;
+        dLastTurn = 1;
+        targetLoc = Message.GARDENER_BUILD_LOCS.getClosestLocation(here);
         // anything else gardener specific
-	}
+    }
 
-	private static Direction findOpenSpaces() throws GameActionException {
+    private static Direction findOpenSpaces() throws GameActionException {
 		// TODO: make this better
 		Direction dir = new Direction(0);
 		int thingsInTheWay = 0;
@@ -38,8 +41,8 @@ public class Gardener extends Bot {
 				}
 			boolean addedTree = false;
 			for (TreeInfo t : nearbyNeutralTrees){
-				if(here.distanceTo(t.location) < 6 + t.radius && !addedTree){
-					Message.CLEAR_TREES_PLEASE.addLocation(t.location);
+				if(here.distanceTo(t.location) < 5 + t.radius && !addedTree){
+					Message.CLEAR_TREES_PLEASE.addLocation(here);
 					addedTree = true;
 				}
 				if (Math.abs(dir.radiansBetween(here.directionTo(t.location))) < Math.PI / 2){
@@ -65,135 +68,154 @@ public class Gardener extends Bot {
 		// System.out.println("Best Score: " + bestScore);
 		// System.out.println(bestDir.toString());
 
-		return bestDir;
+        return bestDir;
 
-	}
-	public boolean isBadLocation(MapLocation targetLoc) throws GameActionException{
-		if(targetLoc == null){
-			return false;
-		}
-		if(turnsIHaveBeenTrying > 30){
-			turnsIHaveBeenTrying = 0;
-			Message.GARDENER_BUILD_LOCS.removeLocation(targetLoc);
-			return true;
-		}
-		if(rc.canSenseLocation(targetLoc) && rc.senseRobotAtLocation(targetLoc) != null && rc.senseRobotAtLocation(targetLoc).type != RobotType.GARDENER && rc.senseRobotAtLocation(targetLoc).type != RobotType.ARCHON || !rc.canSenseLocation(targetLoc)){
-			turnsIHaveBeenTrying++;
-			return false;
-		}
-		float dist = here.distanceTo(targetLoc);
-		if(
-		(dist < type.sensorRadius -.001 && (!rc.onTheMap(targetLoc) || (rc.canSenseAllOfCircle(targetLoc, type.bodyRadius) && rc.isCircleOccupiedExceptByThisRobot(targetLoc, type.bodyRadius))) 
-		|| (!rc.onTheMap(here.add(here.directionTo(targetLoc), (float)(dist + (type.sensorRadius -.001 - dist < 2 ? type.sensorRadius -.001 - dist : 2))))
-		&& Message.GARDENER_BUILD_LOCS.getLength() > 1))){
-			turnsIHaveBeenTrying = 0;
-			Message.GARDENER_BUILD_LOCS.removeLocation(targetLoc);
-			return true;
-		}
-		return false;
-	}
-	public void updateLocs() throws GameActionException{
-		for(int i = 0; i < 6 ; i++)
-		Message.GARDENER_BUILD_LOCS.addLocation(here.add(new Direction((float) (Math.PI/3 * i)), (float) 8.5 / patienceVal));
-	}
+    }
+    public boolean isBadLocation(MapLocation targetLoc) throws GameActionException{
+        if(targetLoc == null){
+            return false;
+        }
+        if(turnsIHaveBeenTrying > 70){
+            turnsIHaveBeenTrying = 0;
+            Message.GARDENER_BUILD_LOCS.removeLocation(targetLoc);
+            return true;
+        }
+        if(rc.canSenseLocation(targetLoc) && rc.senseRobotAtLocation(targetLoc) != null && rc.senseRobotAtLocation(targetLoc).type != RobotType.GARDENER && rc.senseRobotAtLocation(targetLoc).type != RobotType.ARCHON || !rc.canSenseLocation(targetLoc)){
+            turnsIHaveBeenTrying++;
+            return false;
+        }
+        float dist = here.distanceTo(targetLoc);
+        if(
+                (dist < type.sensorRadius -.001 && (!rc.onTheMap(targetLoc) || (rc.canSenseAllOfCircle(targetLoc, type.bodyRadius) && rc.isCircleOccupiedExceptByThisRobot(targetLoc, type.bodyRadius)))
+                        || (!rc.onTheMap(here.add(here.directionTo(targetLoc), (float)(dist + (type.sensorRadius -.001 - dist < 2 ? type.sensorRadius -.001 - dist : 2))))
+                        && Message.GARDENER_BUILD_LOCS.getLength() > 1))){
+            turnsIHaveBeenTrying = 0;
+            Message.GARDENER_BUILD_LOCS.removeLocation(targetLoc);
+            return true;
+        }
+        return false;
+    }
 
+    public void updateLocs() throws GameActionException{
+        for(int i = 0; i < 6 ; i++)
+            Message.GARDENER_BUILD_LOCS.addLocation(here.add(new Direction((float) (Math.PI/3 * i)), (float) 8.5));
+    }
 
-	public void takeTurn() throws GameActionException {
-		/*
-		if(debug){
-		if(tankBuilder)
-			System.out.println("tank builder");
-			System.out.println("dtc = " + here.distanceTo(MapAnalysis.center));
-			System.out.println("rb = " + Message.DIST_TO_CENTER.getFloatValue());
-		}
-		if(tankBuilder && Math.abs(here.distanceTo(MapAnalysis.center) - Message.DIST_TO_CENTER.getFloatValue()) > 0.1){
-			tankBuilder = false;
-			if(debug)System.out.println("not tank builder");
-		}
-		if(tankBuilder && rc.getHealth() < 9){//announce my death
-			Message.DIST_TO_CENTER.setValue((float)(999));
-		}
-		if(tankBuilder && turnsTank > 25){
-			tankBuilder = false;
-			Message.DIST_TO_CENTER.setValue((float)(999));
-		}*/
-		waterLowestHealthTree();
-		if (nearbyEnemyRobots.length > 0) {
-			//System.out.println("sent target d");
-			Message.DISTRESS_SIGNALS.addLocation(nearbyEnemyRobots[0].location);
-		}
-		if(nearbyBullets.length > 0 && rc.senseNearbyTrees(2, us).length == 0){
-			MapLocation moveTo = here.add(here.directionTo(nearbyBullets[0].location).opposite(), type.strideRadius);
-			RangedCombat.bulletMove(moveTo, true);
-		}
-		else if (isExploring) {
-			MapLocation targetLoc = Message.GARDENER_BUILD_LOCS.getClosestLocation(here);
-			while (isBadLocation(targetLoc)) {
-				targetLoc = Message.GARDENER_BUILD_LOCS.getClosestLocation(here);
-			}
-			if (targetLoc == null) {
-				if (dirIAmMoving == null || myRand.nextDouble() < .5
-						+ (double) (-rc.getRoundNum()) / (double) (2 * rc.getRoundLimit())) {
-					dirIAmMoving = findOpenSpaces();
-				}
-				goTo(dirIAmMoving);
-				boolean farAway = true;
-				for (RobotInfo r : nearbyAlliedRobots) {
-					if (r.type == RobotType.GARDENER || r.type == RobotType.ARCHON) { //shouldnt be hard set
-						farAway = false;
-						break;
-					}
-				}
-				isExploring = !farAway;
-			} else {
-	        	if(debug)rc.setIndicatorLine(here, targetLoc, (us == Team.A ? 255: 0), (us == Team.A ? 0: 255), 0); 
-				goTo(targetLoc);
-				if (here.distanceTo(targetLoc) < .1) {
-					isExploring = false;
-				}
-				if(here.distanceTo(targetLoc) > 20){
-					boolean farAway = true;
-					for (RobotInfo r : nearbyAlliedRobots) {
-						if (r.type == RobotType.GARDENER || r.type == RobotType.ARCHON) {
-							farAway = false;
-							break;
-						}
-					}
-					isExploring = !farAway;
-				}
-			}
-			if (Message.NUM_GARDENERS.getValue() == 1) {
-				isExploring = false;
-			}
-			/*
-			if(!isExploring && Message.NUM_GARDENERS.getValue() > 1){
-				//if(debug)rc.setIndicatorLine(here, MapAnalysis.center, 255, 0, 0);
-				float dtc = Message.DIST_TO_CENTER.getFloatValue();
-				if(here.distanceTo(MapAnalysis.center) < dtc || dtc == 0){
-					if(debug)System.out.println("tank builder");
-					tankBuilder = true;	
-					Message.DIST_TO_CENTER.setValue(here.distanceTo(MapAnalysis.center));
-				}
-			}*/
-		}
-		if (!isExploring
-				|| nearbyEnemyRobots.length > 0) {
-			buildSomething();
-		}
-		if(!isExploring && (!updatedLocs || rc.getRoundNum() + rc.getID() % 100 == 0)){
-            patienceVal *= 1.5;
+    public void takeTurn() throws GameActionException {
+    	/*
+        if(debug){
+            if(tankBuilder)
+                System.out.println("tank builder");
+            System.out.println("dtc = " + here.distanceTo(MapAnalysis.center));
+            System.out.println("rb = " + Message.DIST_TO_CENTER.getFloatValue());
+        }
+        if(tankBuilder && Math.abs(here.distanceTo(MapAnalysis.center) - Message.DIST_TO_CENTER.getFloatValue()) > 0.1){
+            tankBuilder = false;
+            if(debug)System.out.println("not tank builder");
+        }
+        if(tankBuilder && rc.getHealth() < 9){//announce my death
+            Message.DIST_TO_CENTER.setValue((float)(999));
+        }
+        if(tankBuilder && turnsTank > 25){
+            tankBuilder = false;
+            Message.DIST_TO_CENTER.setValue((float)(999));
+        }*/
+        waterLowestHealthTree();
+        if (nearbyEnemyRobots.length > 0) {
+            //System.out.println("sent target d");
+            Message.DISTRESS_SIGNALS.addLocation(nearbyEnemyRobots[0].location);
+        }
+        if (isExploring) {
+            myPatience++;
+
+            if(targetLoc == null || (here.distanceTo(targetLoc) - dLastTurn < -.5)) {
+                targetLoc = Message.GARDENER_BUILD_LOCS.getClosestLocation(here);
+            }
+
+            if(myPatienceIsUp(targetLoc)){
+                if(debug){System.out.println("GOD DAMNIT I NEED TO SIT");}
+                if(notTerribleSpot()){
+                    //just sit down
+                    isExploring = false;
+
+                } else {
+                    grabAnOpenSpot();
+                }
+            }
+            while (isBadLocation(targetLoc)) {
+                System.out.println(isBadLocation(targetLoc));
+                targetLoc = Message.GARDENER_BUILD_LOCS.getClosestLocation(here);
+            }
+            if (targetLoc == null) {
+                if (dirIAmMoving == null || myRand.nextDouble() < .5
+                        + (double) (-rc.getRoundNum()) / (double) (2 * rc.getRoundLimit())) {
+                    dirIAmMoving = findOpenSpaces();
+                }
+                goTo(dirIAmMoving);
+                boolean farAway = true;
+                for (RobotInfo r : nearbyAlliedRobots) {
+                    if (r.type == RobotType.GARDENER || r.type == RobotType.ARCHON) { //shouldnt be hard set
+                        farAway = false;
+                        break;
+                    }
+                }
+                isExploring = !farAway;
+            } else {
+                if(debug)rc.setIndicatorLine(here, targetLoc, (us == Team.A ? 255: 0), (us == Team.A ? 0: 255), 0);
+                if(debug){System.out.println("going to target");}
+                if(debug){System.out.println(here.distanceTo(targetLoc));}
+
+                goToDangerous(targetLoc);
+                if (here.distanceTo(targetLoc) < .5) {
+                    if(debug){System.out.println("done exploring");}
+                    isExploring = false;
+                }
+                if(here.distanceTo(targetLoc) > 20){
+                    boolean farAway = true;
+                    for (RobotInfo r : nearbyAlliedRobots) {
+                        if (r.type == RobotType.GARDENER || r.type == RobotType.ARCHON) {
+                            farAway = false;
+                            break;
+                        }
+                    }
+                    isExploring = !farAway;
+                }
+
+                dLastTurn = here.distanceTo(targetLoc);
+
+            }
+            if (Message.NUM_GARDENERS.getValue() == 1) {
+                isExploring = false;
+            }
+            if(!isExploring && Message.NUM_GARDENERS.getValue() > 1){
+                //if(debug)rc.setIndicatorLine(here, MapAnalysis.center, 255, 0, 0);
+                float dtc = Message.DIST_TO_CENTER.getFloatValue();
+                if(here.distanceTo(MapAnalysis.center) < dtc || dtc == 0){
+                    if(debug)System.out.println("tank builder");
+                    tankBuilder = true;
+                    Message.DIST_TO_CENTER.setValue(here.distanceTo(MapAnalysis.center));
+                }
+            }
+        }
+        if (!isExploring
+                || nearbyEnemyRobots.length > 0) {
+            buildSomething();
+        }
+        if(!isExploring && noTreesFartherThan2() && (!updatedLocs || rc.getRoundNum() + rc.getID() % 300 == 0)){
+            //this should check if we're in a decent spot
             updateLocs();
-			updatedLocs = true;
-		}
-	}
+            updatedLocs = true;
+        }
+    }
 
-	public void waterLowestHealthTree() throws GameActionException {
-		TreeInfo[] treesToWater = nearbyAlliedTrees;
-		TreeInfo treeToHeal = Util.leastHealth(treesToWater, true);
-		if (treeToHeal != null) {
-			rc.water(treeToHeal.getID());
-		}
-	}
+    private boolean noTreesFartherThan2() {
+        for(TreeInfo tree: nearbyAlliedTrees){
+            if(tree.location.distanceTo(here) > 2){
+                return false;
+            }
+        }
+        return true;
+    }
 
 	public void buildSomething() throws GameActionException {
 		int typeToBuild = Message.GARDENER_BUILD_ORDERS.getValue();
@@ -246,6 +268,36 @@ public class Gardener extends Bot {
 		}
 	}
 
+	/**
+     * Dont use broadcasted locations.
+     */
+    private void grabAnOpenSpot() throws GameActionException {
+        if(nearbyAlliedTrees.length >= 1) {
+            goTo(here.directionTo(nearbyAlliedTrees[0].location).opposite());
+        }
+        if(nearbyAlliedRobots.length >= 1) {
+            goTo(here.directionTo(nearbyAlliedRobots[0].location).opposite());
+        }
+    }
+
+    /**
+     * rough metric for a passable spot
+     * @return Boolean true if the spot is decent
+     */
+    private boolean notTerribleSpot() {
+        return nearbyAlliedRobots.length < 5 && nearbyAlliedTrees.length != 0 && here.distanceTo(nearbyAlliedTrees[0].location) > 3;
+    }
+    
+    /**
+     * rough method for checking how long weve been waiting
+     * @param targetLoc
+     * @return
+     */
+    private boolean myPatienceIsUp(MapLocation targetLoc) {
+        if(targetLoc == null) {return myPatience > 120;}
+        return myPatience > 180 && here.distanceTo(targetLoc) > 5;
+    }
+	
 	public boolean buildRobot(RobotType type, boolean dec) throws GameActionException {
 		if (rc.getTeamBullets() < type.bulletCost)
 			return false;
@@ -281,30 +333,6 @@ public class Gardener extends Bot {
 				if(dec)
 					rc.broadcast(15, rc.readBroadcast(15) - 1);
 				switch (type) {
-
-				case SOLDIER:
-					Message.NUM_SOLDIERS.setValue(Message.NUM_SOLDIERS.getValue() + 1);
-					break;
-				case TANK:
-					Message.NUM_TANKS.setValue(Message.NUM_TANKS.getValue() + 1);
-					break;
-				case SCOUT:
-					Message.NUM_SCOUTS.setValue(Message.NUM_SCOUTS.getValue() + 1);
-					break;
-				case LUMBERJACK:
-					Message.NUM_LUMBERJACKS.setValue(Message.NUM_LUMBERJACKS.getValue() + 1);
-					break;
-				default:
-					break;
-				}
-				return true;
-			}
-			if (rc.canBuildRobot(type, right)) {
-				rc.buildRobot(type, right);
-				if(dec)
-					rc.broadcast(15, rc.readBroadcast(15) - 1);
-				switch (type) {
-
 				case SOLDIER:
 					Message.NUM_SOLDIERS.setValue(Message.NUM_SOLDIERS.getValue() + 1);
 					break;
@@ -347,4 +375,11 @@ public class Gardener extends Bot {
 		return false;
 	}
 
+    public void waterLowestHealthTree() throws GameActionException {
+        TreeInfo[] treesToWater = nearbyAlliedTrees;
+        TreeInfo treeToHeal = Util.leastHealth(treesToWater, true);
+        if (treeToHeal != null) {
+            rc.water(treeToHeal.getID());
+        }
+    }
 }

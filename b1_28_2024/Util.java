@@ -1,4 +1,4 @@
-package team008.finalBot;
+package team008.b1_28_2024;
 
 import battlecode.common.*;
 
@@ -109,7 +109,7 @@ public class Util extends Bot {
     
     public static RobotInfo closestSpecificType(RobotInfo[] robots, MapLocation toHere, RobotType type) {
         RobotInfo closest = null;
-        for (int i = 0; i < robots.length; i++) {
+        for (int i = robots.length; i-- > 0;) {
             if (robots[i].type == type) {
             	closest = robots[i];
                 break;

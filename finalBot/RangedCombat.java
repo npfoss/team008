@@ -2,7 +2,6 @@ package team008.finalBot;
 
 import battlecode.common.*;
 
-
 public class RangedCombat extends Bot {
 
 	//Finals
