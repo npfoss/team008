@@ -1,11 +1,11 @@
-package team008.finalBot;
+package team008.b1_27_0038;
 
 import java.util.Random;
 import battlecode.common.*;
 
 public class Bot {
 	// for debugging
-	public static boolean debug = false;
+	public static boolean debug = true;
 
 	// for everyone to use
 	public static RobotController rc;
@@ -164,15 +164,13 @@ public class Bot {
 					rc.donate(rc.getVictoryPointCost());
 				}
 				shakeNearbyTrees();
-				if(Clock.getBytecodesLeft() > 500){
-					takeTurn();
-					if (rc.canShake()) {
-						shakeNearbyTrees();
-					}
-					MapLocation gardenerBuildLoc = Message.GARDENER_BUILD_LOCS.getClosestLocation(here);
-					if(gardenerBuildLoc != null)
-						removeLocIfApplicable(gardenerBuildLoc);
+				takeTurn();
+				if (rc.canShake()) {
+					shakeNearbyTrees();
 				}
+				MapLocation gardenerBuildLoc = Message.GARDENER_BUILD_LOCS.getClosestLocation(here);
+				if(gardenerBuildLoc != null)
+					removeLocIfApplicable(gardenerBuildLoc);
 				if (rc.getRoundNum() != roundNum) System.out.println("******SHITSHITSHITSHITSHIT RAN OUT OF BYTECODE******");
 			} catch (Exception e) {
 				System.out.println(rc.getType().toString() + " Exception :(");
@@ -194,9 +192,9 @@ public class Bot {
 			return;
 		}
 		if(
-		(!rc.onTheMap(targetLoc)
-		|| rc.isLocationOccupiedByTree(targetLoc) || rc.senseRobotAtLocation(targetLoc) != null && (rc.senseRobotAtLocation(targetLoc).type == RobotType.GARDENER || rc.senseRobotAtLocation(targetLoc).type == RobotType.ARCHON)
-		)){
+		(dist < type.sensorRadius -.001 && (!rc.onTheMap(targetLoc) || (rc.canSenseAllOfCircle(targetLoc, type.bodyRadius) && rc.isCircleOccupiedExceptByThisRobot(targetLoc, type.bodyRadius))) 
+		|| (!rc.onTheMap(here.add(here.directionTo(targetLoc), (float)(dist + (type.sensorRadius -.001 - dist < 2 ? type.sensorRadius -.001 - dist : 2))))
+		&& Message.GARDENER_BUILD_LOCS.getLength() > 1))){
 			Message.GARDENER_BUILD_LOCS.removeLocation(targetLoc);
 		}
 	}
@@ -306,10 +304,15 @@ public class Bot {
 	public static boolean tryMoveDirection(Direction dir, boolean makeMove, boolean goBackwards)
 			throws GameActionException {
 		Direction bestDir = dir;
-		int bestDanger = tryMove(dir, type.strideRadius, makeMove);
+		int bestDanger = 9999;
 		int tempDanger = 0;
-		if (bestDanger == 0) {
+		tempDanger = tryMove(dir, type.strideRadius, makeMove);
+		if (tempDanger == 0) {
 			return true;
+		}
+		if (tempDanger < bestDanger) {
+			bestDir = dir;
+			bestDanger = tempDanger;
 		}
 		Direction left = dir.rotateLeftDegrees(30);
 		Direction right = dir.rotateRightDegrees(30);
