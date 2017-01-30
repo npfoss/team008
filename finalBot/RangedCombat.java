@@ -19,6 +19,7 @@ public class RangedCombat extends Bot {
 	private static float safeDist = 0;
 	private static boolean bulletSafe;
 	private static boolean onlyHarmlessUnitsAround;
+	private static BulletInfo bulletTarget;
 	
 
 	/**
@@ -472,10 +473,41 @@ public class RangedCombat extends Bot {
 		}
 		if(bestRobot != null)
 			return new potentialAttackStats(bestRobot, calculateShotType(bestRobot, shotValue), shotValue);
-		return null;
+
+        if(debug)System.out.println("Before bullet estimate" + Clock.getBytecodeNum());
+        if(suspiciousNumberOfBullets()){
+		    return new potentialAttackStats(bulletTarget, calculateShotType(bulletTarget,0), 0);
+        }
+        if(debug)System.out.println("After bullet estimate" + Clock.getBytecodeNum());
+
+        return null;
 	}
 
-	private static float calcSafeDist(RobotInfo bestRobot) throws GameActionException {
+    /**
+     * Hopefully this mean we're getting shot at but might not see them
+     * @return
+     */
+    private static boolean suspiciousNumberOfBullets() {
+        int threshold = 0;
+	    if(nearbyBullets.length>10){
+	        for(BulletInfo bullet: nearbyBullets){
+	            if(threshold>3){
+	                return true;
+                }
+                if( (Math.abs(here.directionTo(bullet.getLocation()).radiansBetween( bullet.getDir())) - Math.PI/2 )< Math.PI/6){
+	                threshold++;
+	                bulletTarget = bullet;
+                }
+
+
+            }
+        }
+        return false;
+    }
+
+
+
+    private static float calcSafeDist(RobotInfo bestRobot) throws GameActionException {
 		if(bestRobot.type == RobotType.SCOUT && rc.canSenseLocation(bestRobot.location) && rc.isLocationOccupiedByTree(bestRobot.location)){//edge case for scouts in trees
 			return -1; //signal we are dealing with a scout
 		}
@@ -524,6 +556,10 @@ public class RangedCombat extends Bot {
 	 */
 	public static String calculateShotType(BodyInfo target, int singleValue) throws GameActionException {
 		//Cast body info if its a robot
+		if(target.isBullet()){
+		    return PENTAD_SHOT;
+        }
+
 		if(target == null || (rc.getTeamVictoryPoints() > 1000 - rc.getTreeCount() * 5 && rc.getTeamVictoryPoints() - rc.getOpponentVictoryPoints() < 50))
 			return NO_SHOT;
 		if(safeDist == -1){
