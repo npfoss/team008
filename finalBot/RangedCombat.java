@@ -538,7 +538,7 @@ public class RangedCombat extends Bot {
 				if(targetRobot.health < 10 && (Message.ENEMY_ARCHONS_KILLED.getClosestLocation(targetRobot.location) == null || Message.ENEMY_ARCHONS_KILLED.getClosestLocation(targetRobot.location).distanceTo(targetRobot.location) > 2)){
 					Message.ENEMY_ARCHONS_KILLED.addLocation(targetRobot.location);
 				}
-				return (nearbyAlliedRobots.length > 5 || rc.getInitialArchonLocations(enemy).length < 2 || rc.getTreeCount() > 10 || rc.getTeamBullets() > 500 ? SINGLE_SHOT: NO_SHOT);
+				return (nearbyAlliedRobots.length > 5 || (rc.getInitialArchonLocations(enemy).length - Message.ENEMY_ARCHONS_KILLED.getLength() < 2 && Message.GENETICS.getValue() != MapAnalysis.RUSH_ENEMY && rc.getTeamBullets() > 100) || rc.getTreeCount() > 10 || rc.getTeamBullets() > 500 ? SINGLE_SHOT: NO_SHOT);
 			}
 		}
 		if(type == RobotType.TANK && targetRobot != null){
