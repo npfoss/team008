@@ -36,9 +36,12 @@ public class Lumberjack extends Bot {
 
         if(nearbyEnemyRobots.length > 0) {
             //Notify allies of enemies
-            if((rc.getRoundNum() +rc.getID()) % 5 == 0 || target == null){
+            if ((rc.getRoundNum() + rc.getID()) % 5 == 0 || target == null) {
                 notifyFriendsOfEnemies(nearbyEnemyRobots);
             }
+        }
+        if(nearbyEnemyRobots.length > 0){
+
 
             doMicro();
         } else {
@@ -204,14 +207,6 @@ public class Lumberjack extends Bot {
     }
 
     public void doMicro() throws GameActionException {
-        // TODO: make it only go for them under these conditions:
-        /* how about we go for things like this
-            archon/gardener always
-            LJ - within 6
-            scout - within 5
-            soldier -within 4
-            tank -within 5
-        */
         if(debug) rc.setIndicatorDot(here, 255, 0 , 0);
         calculatedMove = null;
         tryMoveDirection(here.directionTo(nearbyEnemyRobots[0].location), false, true);
