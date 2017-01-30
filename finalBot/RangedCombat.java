@@ -443,10 +443,11 @@ public class RangedCombat extends Bot {
 		int canWeHitThemValue;
 		int robotsToCalculate = 5;
 		int calculated = 0;
-		for (RobotInfo robot : nearbyEnemyRobots) {
-			if(robot.type == RobotType.ARCHON && nearbyEnemyRobots.length > 1)
+		for (int i = 0; i < nearbyEnemyRobots.length; i++) {
+			RobotInfo robot = nearbyEnemyRobots[i];
+			if(robot.type == RobotType.ARCHON && nearbyEnemyRobots.length > i + 1)
 				continue;
-			if(robot.type == RobotType.SCOUT && nearbyEnemyRobots.length > 1)
+			if(robot.type == RobotType.SCOUT && nearbyEnemyRobots.length > i + 1)
 				continue;
 			canWeHitThemValue = canWeHitHeuristic(robot);
 			score = (int) (canWeHitThemValue);
@@ -534,7 +535,7 @@ public class RangedCombat extends Bot {
 		if(target.isRobot()){
 			targetRobot = (RobotInfo)target;
 			if(targetRobot.type == RobotType.ARCHON){
-				if(targetRobot.health < 10 && Message.ENEMY_ARCHONS_KILLED.getClosestLocation(targetRobot.location) == null || Message.ENEMY_ARCHONS_KILLED.getClosestLocation(targetRobot.location).distanceTo(targetRobot.location) > 2){
+				if(targetRobot.health < 10 && (Message.ENEMY_ARCHONS_KILLED.getClosestLocation(targetRobot.location) == null || Message.ENEMY_ARCHONS_KILLED.getClosestLocation(targetRobot.location).distanceTo(targetRobot.location) > 2)){
 					Message.ENEMY_ARCHONS_KILLED.addLocation(targetRobot.location);
 				}
 				return (nearbyAlliedRobots.length > 5 || rc.getInitialArchonLocations(enemy).length < 2 || rc.getTreeCount() > 10 || rc.getTeamBullets() > 500 ? SINGLE_SHOT: NO_SHOT);

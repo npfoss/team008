@@ -13,13 +13,13 @@ public class Soldier extends Bot {
     
 	public void takeTurn() throws Exception{
         //if(debug)System.out.println("In instantiation:"+Clock.getBytecodeNum());
-		if(!containing && MapAnalysis.initialEnemyArchonLocations.length - Message.ENEMY_ARCHONS_KILLED.getLength() < 2 && nearbyEnemyRobots.length == 1 && here.distanceTo(nearbyEnemyRobots[0].location) < 5 && nearbyEnemyRobots[0].type == RobotType.ARCHON && nearbyAlliedRobots.length < (MapAnalysis.numSoldier > 4 ? 2 : 1)){
+		if(!containing && (MapAnalysis.initialEnemyArchonLocations.length - Message.ENEMY_ARCHONS_KILLED.getLength() < 2 || nearbyAlliedRobots.length > 5) && (nearbyEnemyRobots.length == 1 || nearbyEnemyRobots.length == 2 && nearbyEnemyRobots[1].type == RobotType.ARCHON) && here.distanceTo(nearbyEnemyRobots[0].location) < 5 && nearbyEnemyRobots[0].type == RobotType.ARCHON){
     		containing = true;
     	}
 		if(nearbyEnemyRobots.length == 0){
 			containing = false;
 		}
-        if(nearbyEnemyRobots.length > 0 && (containing || !(nearbyEnemyRobots.length == 1 && nearbyEnemyRobots[0].type == RobotType.ARCHON && here.distanceTo(nearbyEnemyRobots[0].location) < 5))){
+        if(nearbyEnemyRobots.length > 0 && (containing || !(nearbyEnemyRobots.length == 1 && nearbyEnemyRobots[0].type == RobotType.ARCHON))){
             notifyFriendsOfEnemies(nearbyEnemyRobots);
             RangedCombat.execute();
             turnsSinceSeenEnemy = 0;
