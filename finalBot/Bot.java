@@ -135,7 +135,7 @@ public class Bot {
 				if (isLeader) {
 					MapAnalysis.makeDecisions();
 				}
-				if (!isDead && rc.getHealth() < 9) {
+				if (!isDead && rc.getHealth() < (type == RobotType.SCOUT ? 3 : 9)) {
 					if (isLeader) {
 						isLeader = false;
 						Message.DECISION_MAKER.setValue(0);
