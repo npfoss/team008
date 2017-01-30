@@ -3,9 +3,11 @@ import battlecode.common.*;
 
 public class Archon extends Bot {
 	private static int turnsTryingToReach = 0;
+	private static boolean initialBuilder;
 
 	public Archon(RobotController r) throws GameActionException {
 		super(r);
+		initialBuilder = false;
 		//System.out.println("here");
 		// anything else archon specific
 	}
@@ -15,6 +17,20 @@ public class Archon extends Bot {
 	public static int unitsBuilt = 0;
 	public static boolean inDistress = false;
 	public void takeTurn() throws Exception {
+		if(roundNum == 1){
+			float myConflictDist = here.distanceTo(Util.closestLocation(MapAnalysis.initialEnemyArchonLocations));
+			if(Math.abs(myConflictDist - MapAnalysis.conflictDist) < 0.1){
+				initialBuilder = true;
+			}
+		}
+		
+		if(initialBuilder){
+			Message.INITIAL_BUILDER_HERE.setValue(roundNum);
+		}
+		else if (Message.INITIAL_BUILDER_HERE.getValue() - roundNum > 2){
+			initialBuilder = true;
+			Message.INITIAL_BUILDER_HERE.setValue(roundNum);
+		}
 		
 		if(nearbyEnemyRobots.length > 0 && !(nearbyEnemyRobots.length == 1 && (nearbyEnemyRobots[0].type == RobotType.GARDENER || nearbyEnemyRobots[0].type == RobotType.ARCHON))){
 			if(!inDistress){
@@ -34,12 +50,12 @@ public class Archon extends Bot {
 		if(rc.getMoveCount() == 0){
 			clearRoom();
 		}
-		if (roundNum == 1 && Message.NUM_GARDENERS.getValue() == 0 || 
+		if (initialBuilder && (roundNum == 1 && Message.NUM_GARDENERS.getValue() == 0 || 
 				(Message.ARCHON_BUILD_NUM.getValue() > 0 && rc.getTeamBullets() > (100 + 
 				(inDistress ? 
 						((Message.ARCHON_DISTRESS_NUM.getValue() < Message.NUM_ARCHONS.getValue()) ? 
 								10 : nearbyEnemyRobots.length)
-						: (MapAnalysis.initialAlliedArchonLocations.length == 1 ? 0 : unitsBuilt * 2))))) {
+						: (MapAnalysis.initialAlliedArchonLocations.length == 1 ? 0 : unitsBuilt * 2)))))) {
 			if(!willTrapOurselvesIn() || roundNum > 50){
 				hireGardener();
 				unitsBuilt++;

@@ -165,5 +165,17 @@ public class Util extends Bot {
 	public static MapLocation midpoint(MapLocation a, MapLocation b) {
 		return new MapLocation((a.x + b.x)/2, (a.y + b.y)/2);
 	}
+
+	public static MapLocation closestLocation(MapLocation[] locs) {
+		float closestDist = 9999;
+		MapLocation closestLoc = null;
+		for(MapLocation loc: locs){
+			if(here.distanceTo(loc) < closestDist){
+				closestLoc = loc;
+				closestDist = here.distanceTo(loc);
+			}
+		}
+		return closestLoc;
+	}
 }
 

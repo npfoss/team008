@@ -255,9 +255,9 @@ public class Bot {
 
 	/******** Messaging Notifications *********/
 	public static void assignNewTarget() throws GameActionException {
-		System.out.println(Message.DISTRESS_SIGNALS.getLength());
-		System.out.println(Message.ENEMY_ARMIES.getLength());
-		System.out.println(Message.ISOLATED_ENEMIES.getLength());
+		if(debug)System.out.println(Message.DISTRESS_SIGNALS.getLength());
+		if(debug)System.out.println(Message.ENEMY_ARMIES.getLength());
+		if(debug)System.out.println(Message.ISOLATED_ENEMIES.getLength());
 		target = null;
 		MapLocation targetD = Message.DISTRESS_SIGNALS.getClosestLocation(here);
 		if (targetD != null) {
@@ -284,7 +284,7 @@ public class Bot {
 		RobotInfo closestG = Util.closestSpecificType(nearbyAlliedRobots, here, RobotType.GARDENER);
 		if(isCircleOccupiedbyNeutralTree(enemies[0].location, enemies[0].type.bodyRadius))
 			return;
-		if (closestG != null && closestG.location.distanceTo(enemies[0].location) < (enemies[0].type == RobotType.SCOUT ? 3: 7)) {
+		if (closestG != null && enemies[0].type != RobotType.ARCHON && closestG.location.distanceTo(enemies[0].location) < (enemies[0].type == RobotType.SCOUT ? 4: 7)) {
 			Message.DISTRESS_SIGNALS.addLocation(Util.midpoint(closestG.location, enemies[0].location));
 		}
 		if (Util.closestSpecificType(nearbyEnemyRobots, here, RobotType.ARCHON) != null) {
