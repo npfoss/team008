@@ -74,6 +74,9 @@ public class Gardener extends Bot {
         if(targetLoc == null || here.distanceTo(targetLoc) < type.bodyRadius){
             return false;
         }
+        if(here.distanceTo(targetLoc) > 25){
+        	return true;
+        }
         if(turnsIHaveBeenTrying > 70){
             turnsIHaveBeenTrying = 0;
             Message.GARDENER_BUILD_LOCS.removeLocation(targetLoc);
@@ -140,7 +143,8 @@ public class Gardener extends Bot {
         waterLowestHealthTree();
         if (nearbyEnemyRobots.length > 0) {
             //System.out.println("sent target d");
-            Message.DISTRESS_SIGNALS.addLocation(nearbyEnemyRobots[0].location);
+        	if(nearbyEnemyRobots[0].type != RobotType.ARCHON && nearbyEnemyRobots[0].type != RobotType.GARDENER)
+        		Message.DISTRESS_SIGNALS.addLocation(nearbyEnemyRobots[0].location);
         }
         if (isExploring) {
             myPatience++;
