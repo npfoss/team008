@@ -29,18 +29,38 @@ public class Archon extends Bot {
 				inDistress = false;
 			}
 		}
+		if(willTrapOurselvesIn())
+			runAway();
+		if(rc.getMoveCount() == 0){
+			clearRoom();
+		}
 		if (roundNum == 1 && Message.NUM_GARDENERS.getValue() == 0 || 
 				(Message.ARCHON_BUILD_NUM.getValue() > 0 && rc.getTeamBullets() > (100 + 
 				(inDistress ? 
 						((Message.ARCHON_DISTRESS_NUM.getValue() < Message.NUM_ARCHONS.getValue()) ? 
 								10 : nearbyEnemyRobots.length)
 						: (MapAnalysis.initialAlliedArchonLocations.length == 1 ? 0 : unitsBuilt * 2))))) {
-			hireGardener();
-			unitsBuilt++;
+			if(!willTrapOurselvesIn() || roundNum > 50){
+				hireGardener();
+				unitsBuilt++;
+			}
 		}
-		if(rc.getMoveCount() == 0){
-			clearRoom();
+	}
+
+	private boolean willTrapOurselvesIn() throws GameActionException {
+		int directionsWereScrewedIn = 0;
+		Direction dir = new Direction(0);
+		for(int i = 0; i < 4; i++){
+			MapLocation edge = Scout.checkForEdge(here, dir);
+			if(edge != null){
+				float edgeDist = here.distanceTo(edge);
+				if(edgeDist < 4){
+					directionsWereScrewedIn++;
+				}
+			}
+			dir = dir.rotateLeftDegrees(90);
 		}
+		return directionsWereScrewedIn > 1;
 	}
 
 	private void clearRoom() throws GameActionException {

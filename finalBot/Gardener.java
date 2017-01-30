@@ -94,7 +94,8 @@ public class Gardener extends Bot {
         		|| isCircleOccupiedByTree(targetLoc, 2) || (!rc.onTheMap(here.add(here.directionTo(targetLoc), (float)(dist + (type.sensorRadius -.001 - dist < 2 ? type.sensorRadius -.001 - dist : 2))))
                 && Message.GARDENER_BUILD_LOCS.getLength() > 1)){
             if(isCircleOccupiedByTree(targetLoc, 2)){
-            	Message.CLEAR_TREES_PLEASE.addLocation(targetLoc);
+            	if(nearbyNeutralTrees.length > 0)
+            		Message.CLEAR_TREES_PLEASE.addLocation(targetLoc);
             }
         	turnsIHaveBeenTrying = 0;
             Message.GARDENER_BUILD_LOCS.removeLocation(targetLoc);
@@ -111,7 +112,7 @@ public class Gardener extends Bot {
         	if(rc.onTheMap(loc) && !rc.isLocationOccupiedByTree(loc)){
         		Message.GARDENER_BUILD_LOCS.addLocation(here.add(dir, (float) 8.5));
         	}
-        	else if(rc.isLocationOccupiedByTree(loc)){
+        	else if(rc.isLocationOccupiedByTree(loc) && nearbyNeutralTrees.length > 0){
         		Message.CLEAR_TREES_PLEASE.addLocation(loc);
         	}
         }
@@ -247,7 +248,7 @@ public class Gardener extends Bot {
 		if (nearbyEnemyRobots.length == 0  && rc.getRoundNum() > 5 && (rc.readBroadcast(15) == 0 || rc.getRoundNum() < 40 && MapAnalysis.conflictDist > 10 * rc.getTreeCount()) && plantATree())
 			return;
 		else if (rc.getBuildCooldownTurns() == 0 && (rc.readBroadcast(15) > 0)) {
-			if((!canPlantTree() && rc.senseNearbyTrees(2, us).length < 2 && roundNum < 200) || (nearbyNeutralTrees.length > 10 && myGenetics != MapAnalysis.RUSH_VP)){
+			if((!canPlantTree() && rc.senseNearbyTrees(2, us).length < 2 && roundNum < 200) || (nearbyNeutralTrees.length > 10 && myGenetics != MapAnalysis.RUSH_VP && (myGenetics != MapAnalysis.RUSH_ENEMY))){
 				if (buildRobot(RobotType.LUMBERJACK, false)) {
 					return;
 				}
