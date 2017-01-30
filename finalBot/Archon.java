@@ -45,7 +45,7 @@ public class Archon extends Bot {
 				inDistress = false;
 			}
 		}
-		if(willTrapOurselvesIn())
+		if(rc.getMoveCount() == 0 && willTrapOurselvesIn())
 			runAway();
 		if(rc.getMoveCount() == 0){
 			clearRoom();
@@ -67,12 +67,8 @@ public class Archon extends Bot {
 		int directionsWereScrewedIn = 0;
 		Direction dir = new Direction(0);
 		for(int i = 0; i < 4; i++){
-			MapLocation edge = Scout.checkForEdge(here, dir);
-			if(edge != null){
-				float edgeDist = here.distanceTo(edge);
-				if(edgeDist < 4){
+			if(rc.onTheMap(here.add(dir,4))){
 					directionsWereScrewedIn++;
-				}
 			}
 			dir = dir.rotateLeftDegrees(90);
 		}
