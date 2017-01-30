@@ -21,7 +21,7 @@ public class Lumberjack extends Bot {
 //    public TreeInfo closestNeutralWithUnit;
     static MapLocation clearAroundLoc;
     public Message[] messagesToTry = {Message.DISTRESS_SIGNALS, Message.TREES_WITH_UNITS, Message.CLEAR_TREES_PLEASE, Message.ENEMY_TREES, Message.ENEMY_ARCHONS};
-    public int[] howFarToGoForMessage = {     25,                       15,                       25,                         20,                  20};
+    public int[] howFarToGoForMessage = {     5,                        10,                       15,                         10,                  10};
 //    public boolean[] checkEnemiesToRemove = { true,                     false,                    false,               true};
 
     public void takeTurn() throws Exception{
@@ -46,12 +46,6 @@ public class Lumberjack extends Bot {
             doMicro();
         } else {
         	updateTarget(1);
-        	if(target == null){
-        	    updateTarget(2);
-            }
-            if(target == null){
-        	    updateTarget(10);
-            }
         }
         if(target != null && !moved){
             if(clearAroundLoc == null
@@ -124,6 +118,13 @@ public class Lumberjack extends Bot {
                     Message.DISTRESS_SIGNALS.removeLocation(target)) {
                 target = null;
             }
+        }
+
+        // may have to be less strict
+        if(target == null && howDesperate == 1) {
+            updateTarget(2);
+        } else if(target == null && howDesperate == 2){
+            updateTarget(10);
         }
     }
 
