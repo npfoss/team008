@@ -14,6 +14,7 @@ public class Gardener extends Bot {
 
     public Gardener(RobotController r) throws GameActionException {
         super(r);
+        debug = true;
         isExploring = true;
         updatedLocs = false;
         //tankBuilder = false;
@@ -82,7 +83,12 @@ public class Gardener extends Bot {
             turnsIHaveBeenTrying++;
             return false;
         }
+
         float dist = here.distanceTo(targetLoc);
+        if( dist < type.sensorRadius && edgesOfSpotAreOffMap(targetLoc)){
+            Message.GARDENER_BUILD_LOCS.removeLocation(targetLoc);
+        }
+
         if(
         (dist < type.sensorRadius -.001 && (!rc.onTheMap(targetLoc))) || rc.senseRobotAtLocation(targetLoc) != null && rc.senseRobotAtLocation(targetLoc).type == RobotType.GARDENER 
         		|| isCircleOccupiedByTree(targetLoc, 2) || (!rc.onTheMap(here.add(here.directionTo(targetLoc), (float)(dist + (type.sensorRadius -.001 - dist < 2 ? type.sensorRadius -.001 - dist : 2))))
@@ -95,6 +101,7 @@ public class Gardener extends Bot {
             return true;
         }
         return false;
+
     }
 
     public void updateLocs() throws GameActionException{
@@ -151,16 +158,23 @@ public class Gardener extends Bot {
                     grabAnOpenSpot();
                 }
             }
+
+
             while (isBadLocation(targetLoc)) {
+
                 System.out.println(isBadLocation(targetLoc));
                 targetLoc = Message.GARDENER_BUILD_LOCS.getClosestLocation(here);
             }
+
             if (targetLoc == null) {
+
                 if (dirIAmMoving == null || myRand.nextDouble() < .5
                         + (double) (-rc.getRoundNum()) / (double) (2 * rc.getRoundLimit())) {
                     dirIAmMoving = findOpenSpaces();
                 }
-                goTo(dirIAmMoving);
+                if(!rc.hasMoved()) {
+                    goTo(dirIAmMoving);
+                }
                 boolean farAway = true;
                 for (RobotInfo r : nearbyAlliedRobots) {
                     if (r.type == RobotType.GARDENER || r.type == RobotType.ARCHON) { //shouldnt be hard set
@@ -169,6 +183,7 @@ public class Gardener extends Bot {
                     }
                 }
                 isExploring = !farAway;
+
             } else {
                 if(debug)rc.setIndicatorLine(here, targetLoc, (us == Team.A ? 255: 0), (us == Team.A ? 0: 255), 0);
                 if(debug){System.out.println("going to target");}
@@ -279,12 +294,16 @@ public class Gardener extends Bot {
      * Dont use broadcasted locations.
      */
     private void grabAnOpenSpot() throws GameActionException {
+        targetLoc = Message.GARDENER_BUILD_LOCS.getClosestLocation(here);
+
         if(nearbyAlliedTrees.length >= 1) {
             goTo(here.directionTo(nearbyAlliedTrees[0].location).opposite());
+        } else if(targetLoc != null){
+            goTo(targetLoc);
         }
-        if(nearbyAlliedRobots.length >= 1) {
-            goTo(here.directionTo(nearbyAlliedRobots[0].location).opposite());
-        }
+//        if(nearbyAlliedRobots.length >= 1) {
+//            goTo(here.directionTo(nearbyAlliedRobots[0].location).opposite());
+//        }
     }
 
     /**
@@ -301,8 +320,8 @@ public class Gardener extends Bot {
      * @return
      */
     private boolean myPatienceIsUp(MapLocation targetLoc) {
-        if(targetLoc == null) {return myPatience > 120;}
-        return myPatience > 180 && here.distanceTo(targetLoc) > 5;
+        if(targetLoc == null) {return myPatience > 150;}
+        return myPatience > 200 && here.distanceTo(targetLoc) > 5;
     }
 	
 	public boolean buildRobot(RobotType type, boolean dec) throws GameActionException {
