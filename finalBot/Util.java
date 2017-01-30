@@ -151,11 +151,11 @@ public class Util extends Bot {
         return combo;
     }
 
-    public static MapLocation centroidOfUnits(RobotInfo[] robots) {
+    public static MapLocation centroidOfUnits(BodyInfo[] robots) {
         float xavg = 0, yavg = 0;
         MapLocation loc;
-        for (RobotInfo bot : robots) {
-            loc = bot.location;
+        for (BodyInfo bot : robots) {
+            loc = bot.getLocation();
             xavg += loc.x;
             yavg += loc.y;
         }
