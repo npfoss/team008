@@ -30,7 +30,8 @@ public class Archon extends Bot {
 				inDistress = false;
 			}
 		}
-		if ((Message.ARCHON_BUILD_NUM.getValue() > 0 && rc.getTeamBullets() > (100 + 
+		if (roundNum == 1 && Message.NUM_GARDENERS.getValue() == 0 || 
+				(Message.ARCHON_BUILD_NUM.getValue() > 0 && rc.getTeamBullets() > (100 + 
 				(inDistress ? 
 						((Message.ARCHON_DISTRESS_NUM.getValue() < Message.NUM_ARCHONS.getValue()) ? 
 								10 : nearbyEnemyRobots.length)
@@ -63,8 +64,8 @@ public class Archon extends Bot {
 		MapLocation gardenerBuildLoc = Message.GARDENER_BUILD_LOCS.getClosestLocation(here);
 		if(gardenerBuildLoc != null)
 			dir = here.directionTo(Message.GARDENER_BUILD_LOCS.getClosestLocation(here));
-		else if(nearbyTrees.length > 0){
-			dir = here.directionTo(nearbyTrees[0].location).opposite();
+		else{
+			dir = determineInitialBuildDir();
 		}
 		if (rc.canHireGardener(dir)) {
 			rc.hireGardener(dir);
@@ -91,6 +92,71 @@ public class Archon extends Bot {
 			left = left.rotateLeftDegrees(10);
 			right = right.rotateRightDegrees(10);
 		}
+	}
+
+	private Direction determineInitialBuildDir() throws GameActionException {
+		Direction bestDir = closestCardinalDirection(here.directionTo(MapAnalysis.center));
+		Direction dir = bestDir;
+		float distToObstacle = calcDistToObstacle(dir);
+		float highestDistToObstacle = distToObstacle;
+		Direction left = dir.rotateLeftDegrees(45);
+		Direction right = dir.rotateRightDegrees(45);
+	    for(int i = 0; i < 8; i++){
+	    	distToObstacle = calcDistToObstacle(left);
+	    	if(distToObstacle > highestDistToObstacle){
+	    		highestDistToObstacle = distToObstacle;
+	    		bestDir = left;
+	    	}
+	    	left = left.rotateLeftDegrees(45);
+	    	distToObstacle = calcDistToObstacle(right);
+	    	if(distToObstacle > highestDistToObstacle){
+	    		highestDistToObstacle = distToObstacle;
+	    		bestDir = right;
+	    	}
+	    	right = right.rotateRightDegrees(45);
+	    }
+	    return bestDir;
+	}
+
+	private Direction closestCardinalDirection(Direction dir) throws GameActionException {
+		Direction ret = new Direction(((int)(dir.getAngleDegrees()) / 45) * 45);
+		return ret;
+	}
+
+	private float calcDistToObstacle(Direction dir) throws GameActionException {
+		MapLocation spawnLoc = here.add(dir, type.bodyRadius + RobotType.GARDENER.bodyRadius);
+		float distToEdge = calcEdgeDist(spawnLoc) - (float)(0.5);
+		TreeInfo[] trees = rc.senseNearbyTrees(spawnLoc, -1, Team.NEUTRAL);
+		float distToTree = -1;
+		if(trees.length > 0)
+			distToTree = trees[0].location.distanceTo(spawnLoc);
+		if(distToEdge > 9000 && distToTree == -1){
+			return 999;
+		}
+		else if (distToEdge > 9000){
+			return distToTree;
+		}
+		else if (distToTree == -1){
+			return distToEdge;
+		}
+		return (distToEdge < distToTree ? distToEdge: distToTree);
+	}
+
+	private float calcEdgeDist(MapLocation spawnLoc) throws GameActionException {
+		Direction dir = new Direction(0);
+		float bestEdgeDist = 9001;
+		float edgeDist;
+		for(int i = 0; i < 4; i++){
+			MapLocation edge = Scout.checkForEdge(spawnLoc, dir);
+			if(edge != null){
+				edgeDist = spawnLoc.distanceTo(edge);
+				if(edgeDist <  bestEdgeDist){
+					bestEdgeDist = edgeDist;
+				}
+			}
+			dir = dir.rotateLeftDegrees(90);
+		}
+		return bestEdgeDist;
 	}
 
 	public static void runAway() throws GameActionException{

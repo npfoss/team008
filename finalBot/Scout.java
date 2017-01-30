@@ -68,7 +68,7 @@ public class Scout extends Bot {
 			if (rc.readBroadcast(17) == 1) {
 				foundMinX = true;
 			} else {
-				MapLocation edge = checkForEdge(Direction.getWest());
+				MapLocation edge = checkForEdge(here, Direction.getWest());
 				if (edge != null) {
 					Message.MIN_X.setValue(edge.x);
 					foundMinX = true;
@@ -82,7 +82,7 @@ public class Scout extends Bot {
 				foundMaxX = true;
 			} 
 			else{
-				MapLocation edge = checkForEdge(Direction.getEast());
+				MapLocation edge = checkForEdge(here, Direction.getEast());
 				if(edge != null){
 					Message.MAX_X.setValue(edge.x);
 					foundMaxX = true;
@@ -96,7 +96,7 @@ public class Scout extends Bot {
 				foundMinY = true;
 			} 
 			else{
-				MapLocation edge = checkForEdge(Direction.getSouth());
+				MapLocation edge = checkForEdge(here, Direction.getSouth());
 				if(edge != null){
 					Message.MIN_Y.setValue(edge.y);
 					foundMinY = true;
@@ -110,7 +110,7 @@ public class Scout extends Bot {
 				foundMaxY = true;
 			} 
 			else{
-				MapLocation edge = checkForEdge(Direction.getNorth());
+				MapLocation edge = checkForEdge(here, Direction.getNorth());
 				if(edge != null){
 					Message.MAX_Y.setValue(edge.y);
 					foundMaxY = true;
@@ -129,21 +129,21 @@ public class Scout extends Bot {
 		}
 	}
 
-	private MapLocation checkForEdge(Direction dir) throws GameActionException {
+	public static MapLocation checkForEdge(MapLocation m, Direction dir) throws GameActionException {
 		float highDist = type.sensorRadius - type.bodyRadius * 2;
-		if(rc.onTheMap(here.add(dir,highDist - (float)(0.01))))
+		if(rc.onTheMap(m.add(dir,highDist - (float)(0.01))))
 			return null;
 		float lowDist = type.bodyRadius;
 		while(highDist - lowDist > .01){
 			float midDist = (highDist + lowDist) / 2;
-			if(rc.onTheMap(here.add(dir,midDist))){
+			if(rc.onTheMap(m.add(dir,midDist))){
 				lowDist = midDist;
 			}
 			else{
 				highDist = midDist;
 			}	
 		}
-		return here.add(dir,highDist);
+		return m.add(dir,highDist);
 	}
 
 	public static void moveToHarass() throws GameActionException {

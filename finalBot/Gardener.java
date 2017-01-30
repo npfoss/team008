@@ -39,11 +39,9 @@ public class Gardener extends Bot {
 				if (Math.abs(dir.radiansBetween(here.directionTo(t.location))) < Math.PI / 2) {
 					thingsInTheWay += 2;
 				}
-			boolean addedTree = false;
 			for (TreeInfo t : nearbyNeutralTrees){
-				if(here.distanceTo(t.location) < 5 + t.radius && !addedTree){
+				if(here.distanceTo(t.location) < 5 + t.radius){
 					Message.CLEAR_TREES_PLEASE.addLocation(here);
-					addedTree = true;
 				}
 				if (Math.abs(dir.radiansBetween(here.directionTo(t.location))) < Math.PI / 2){
 					thingsInTheWay += 2;
@@ -89,7 +87,10 @@ public class Gardener extends Bot {
         (dist < type.sensorRadius -.001 && (!rc.onTheMap(targetLoc))) || rc.senseRobotAtLocation(targetLoc) != null && rc.senseRobotAtLocation(targetLoc).type == RobotType.GARDENER 
         		|| isCircleOccupiedByTree(targetLoc, 2) || (!rc.onTheMap(here.add(here.directionTo(targetLoc), (float)(dist + (type.sensorRadius -.001 - dist < 2 ? type.sensorRadius -.001 - dist : 2))))
                 && Message.GARDENER_BUILD_LOCS.getLength() > 1)){
-            turnsIHaveBeenTrying = 0;
+            if(isCircleOccupiedByTree(targetLoc, 2)){
+            	Message.CLEAR_TREES_PLEASE.addLocation(targetLoc);
+            }
+        	turnsIHaveBeenTrying = 0;
             Message.GARDENER_BUILD_LOCS.removeLocation(targetLoc);
             return true;
         }
@@ -102,6 +103,9 @@ public class Gardener extends Bot {
         	MapLocation loc = here.add(dir, (float) (type.sensorRadius - .1));
         	if(rc.onTheMap(loc) && !rc.isLocationOccupiedByTree(loc)){
         		Message.GARDENER_BUILD_LOCS.addLocation(here.add(dir, (float) 8.5));
+        	}
+        	else if(rc.isLocationOccupiedByTree(loc)){
+        		Message.CLEAR_TREES_PLEASE.addLocation(loc);
         	}
         }
     }
@@ -228,7 +232,7 @@ public class Gardener extends Bot {
 		if (nearbyEnemyRobots.length == 0  && rc.getRoundNum() > 5 && (rc.readBroadcast(15) == 0 || rc.getRoundNum() < 40 && MapAnalysis.conflictDist > 10 * rc.getTreeCount()) && plantATree())
 			return;
 		else if (rc.getBuildCooldownTurns() == 0 && (rc.readBroadcast(15) > 0)) {
-			if(!canPlantTree() && rc.senseNearbyTrees(2, us).length < 2 && roundNum < 200){
+			if((!canPlantTree() && rc.senseNearbyTrees(2, us).length < 2 && roundNum < 200) || (nearbyNeutralTrees.length > 10 && myGenetics != MapAnalysis.RUSH_VP)){
 				if (buildRobot(RobotType.LUMBERJACK, false)) {
 					return;
 				}
@@ -305,6 +309,15 @@ public class Gardener extends Bot {
 		if (rc.getTeamBullets() < type.bulletCost)
 			return false;
 		Direction dir = here.directionTo(MapAnalysis.center);
+		if(type == RobotType.LUMBERJACK){
+			MapLocation closestTree = Message.CLEAR_TREES_PLEASE.getClosestLocation(here);
+			if(closestTree != null){
+				dir = here.directionTo(closestTree);
+			}
+			else if(nearbyNeutralTrees.length > 0){
+				dir = here.directionTo(nearbyNeutralTrees[0].location);
+			}
+		}
 		if (rc.canBuildRobot(type, dir)) {
 			rc.buildRobot(type, dir);
 			if(dec)

@@ -138,6 +138,7 @@ public class MapAnalysis extends Bot {
 
 	public static void makeDecisions() throws GameActionException {
 		updateUnitCount();
+		int numUnitTrees = Message.TREES_WITH_UNITS.getLength();
 		if (!startedGame && rc.getRoundNum() < 5) {
 			determineInitialStrategy();
 		}
@@ -210,7 +211,7 @@ public class MapAnalysis extends Bot {
 				if (numSoldier < initialSoldiers ) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
 					Message.GARDENER_BUILD_NUM.setValue(initialSoldiers - numSoldier);
-				} else if (numLumberjack < treesToClear * ((roundNum - 75) * 0.5 > 1 ? 1: (roundNum - 75) * .05) && numLumberjack < rc.getTreeCount() * 2) {
+				} else if ((numLumberjack * 2 < treesToClear || numLumberjack * 5 < numUnitTrees) && numLumberjack < rc.getTreeCount()) {
 					Message.GARDENER_BUILD_ORDERS.setValue(LUMBERJACK);
 					Message.GARDENER_BUILD_NUM.setValue(1);
 				} else if (numSoldier >= initialSoldiers && numSoldier < rc.getTreeCount()/treeToSoldierRatio) {
@@ -270,7 +271,7 @@ public class MapAnalysis extends Bot {
 				} else if (numScout < 1) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SCOUT);
 					Message.GARDENER_BUILD_NUM.setValue(1);
-				} else if (numLumberjack < treesToClear * ((roundNum - 75) * 0.5 > 1 ? 1 : (roundNum - 75) * .05) && numLumberjack < rc.getTreeCount() * 2) {
+				} else if ((numLumberjack * 2 < treesToClear || numLumberjack * 5 < numUnitTrees) && numLumberjack < rc.getTreeCount()) {
 					Message.GARDENER_BUILD_ORDERS.setValue(LUMBERJACK);
 					Message.GARDENER_BUILD_NUM.setValue(1);
 				} else if (numScout < 1 && (canBuildScout || rc.getRoundNum() > 200)) {
@@ -308,7 +309,7 @@ public class MapAnalysis extends Bot {
 				} else if (numScout < 1) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SCOUT);
 					Message.GARDENER_BUILD_NUM.setValue(1);
-				} else if (numLumberjack < treesToClear * ((roundNum - 75) * 0.5 > 1 ? 1 : (roundNum - 75) * .05) && numLumberjack < rc.getTreeCount() * 2) {
+				} else if ((numLumberjack * 2 < treesToClear + numUnitTrees / 5) && numLumberjack < rc.getTreeCount()) {
 					Message.GARDENER_BUILD_ORDERS.setValue(LUMBERJACK);
 					Message.GARDENER_BUILD_NUM.setValue(1);
 				} else if (numSoldier >= initialSoldiers && numSoldier < rc.getTreeCount() / treeToSoldierRatio) {

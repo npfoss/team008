@@ -84,7 +84,7 @@ public class Bot {
 				break;
 			case LUMBERJACK:
 				if (closestG == null
-						|| here.distanceTo(closestG.location) < type.bodyRadius + RobotType.GARDENER.bodyRadius + 2) {
+						|| here.distanceTo(closestG.location) > type.bodyRadius + RobotType.GARDENER.bodyRadius + 2) {
 					Message.NUM_LUMBERJACKS.setValue(Message.NUM_LUMBERJACKS.getValue() + 1);
 				}
 				break;
