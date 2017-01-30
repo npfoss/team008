@@ -92,6 +92,18 @@ public class MapAnalysis extends Bot {
 	}
 
 	public static void determineInitialStrategy() throws GameActionException {
+		if(Message.CLEAR_TREES_PLEASE.getLength() == 0){
+			for(MapLocation m: rc.getInitialArchonLocations(enemy)){
+				Message.ENEMY_ARMIES.addLocation(m);
+			}
+			if(tryMoveDirection(new Direction(0), false, true)){
+				for(TreeInfo t: nearbyNeutralTrees){
+					if(here.distanceTo(t.location) - t.radius < 4)
+						Message.CLEAR_TREES_PLEASE.addLocation(t.location);
+				}
+				//not surrounded
+			}
+		}
 		startedGame = true;
 		//float combinedRadii = 0;
 		//for(TreeInfo t: nearbyNeutralTrees){
@@ -126,7 +138,7 @@ public class MapAnalysis extends Bot {
 
 	public static void makeDecisions() throws GameActionException {
 		updateUnitCount();
-		if (!startedGame && rc.getRoundNum() == 3) {
+		if (!startedGame && rc.getRoundNum() < 5) {
 			determineInitialStrategy();
 		}
 		if(rc.getTreeCount() > 20 && Message.ADAPTATION.getValue() == DEFEND_NOTHING){
@@ -212,7 +224,7 @@ public class MapAnalysis extends Bot {
 					Message.GARDENER_BUILD_NUM.setValue(initialSoldiers - numSoldier);
 				} else if (numSoldier >= initialSoldiers && numSoldier < rc.getTreeCount()/treeToSoldierRatio + 2) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
-					Message.GARDENER_BUILD_NUM.setValue((int) (rc.getTreeCount()/treeToSoldierRatio - numSoldier) + 1);
+					Message.GARDENER_BUILD_NUM.setValue((int) (rc.getTreeCount()/treeToSoldierRatio - numSoldier) + 3);
 				} 
 				break;
 			/*not in use

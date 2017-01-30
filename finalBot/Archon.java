@@ -16,18 +16,6 @@ public class Archon extends Bot {
 	public static int unitsBuilt = 0;
 	public static boolean inDistress = false;
 	public void takeTurn() throws Exception {
-		if(roundNum == 2 && Message.CLEAR_TREES_PLEASE.getLength() == 0){
-			for(MapLocation m: rc.getInitialArchonLocations(enemy)){
-				Message.ENEMY_ARMIES.addLocation(m);
-			}
-			if(tryMoveDirection(new Direction(0), false, true)){
-				for(TreeInfo t: nearbyNeutralTrees){
-					if(here.distanceTo(t.location) - t.radius < 4)
-						Message.CLEAR_TREES_PLEASE.addLocation(t.location);
-				}
-				//not surrounded
-			}
-		}
 		
 		if(nearbyEnemyRobots.length > 0 && !(nearbyEnemyRobots.length == 1 && (nearbyEnemyRobots[0].type == RobotType.GARDENER || nearbyEnemyRobots[0].type == RobotType.ARCHON))){
 			if(!inDistress){
@@ -42,11 +30,11 @@ public class Archon extends Bot {
 				inDistress = false;
 			}
 		}
-		if (Message.ARCHON_BUILD_NUM.getValue() > 0 && rc.getTeamBullets() > (100 + 
+		if ((Message.ARCHON_BUILD_NUM.getValue() > 0 && rc.getTeamBullets() > (100 + 
 				(inDistress ? 
 						((Message.ARCHON_DISTRESS_NUM.getValue() < Message.NUM_ARCHONS.getValue()) ? 
 								10 : nearbyEnemyRobots.length)
-						: (MapAnalysis.initialAlliedArchonLocations.length == 1 ? 0 : unitsBuilt * 2)))) {
+						: (MapAnalysis.initialAlliedArchonLocations.length == 1 ? 0 : unitsBuilt * 2))))) {
 			hireGardener();
 			unitsBuilt++;
 		}
