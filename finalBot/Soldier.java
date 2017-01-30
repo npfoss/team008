@@ -13,13 +13,13 @@ public class Soldier extends Bot {
     
 	public void takeTurn() throws Exception{
         //if(debug)System.out.println("In instantiation:"+Clock.getBytecodeNum());
-		if(!containing && nearbyEnemyRobots.length == 1 && here.distanceTo(nearbyEnemyRobots[0].location) < 5 && nearbyEnemyRobots[0].type == RobotType.ARCHON && nearbyAlliedRobots.length < (MapAnalysis.numSoldier > 4 ? 2 : 1)){
+		if(!containing && (MapAnalysis.initialEnemyArchonLocations.length - Message.ENEMY_ARCHONS_KILLED.getLength() < 2 || nearbyAlliedRobots.length > 5) && (nearbyEnemyRobots.length == 1 || nearbyEnemyRobots.length == 2 && nearbyEnemyRobots[1].type == RobotType.ARCHON) && here.distanceTo(nearbyEnemyRobots[0].location) < 5 && nearbyEnemyRobots[0].type == RobotType.ARCHON){
     		containing = true;
     	}
 		if(nearbyEnemyRobots.length == 0){
 			containing = false;
 		}
-        if(nearbyEnemyRobots.length > 0 && (containing || !(nearbyEnemyRobots.length == 1 && nearbyEnemyRobots[0].type == RobotType.ARCHON && here.distanceTo(nearbyEnemyRobots[0].location) < 5))){
+        if(nearbyEnemyRobots.length > 0 && (containing || !(nearbyEnemyRobots.length == 1 && nearbyEnemyRobots[0].type == RobotType.ARCHON))){
             notifyFriendsOfEnemies(nearbyEnemyRobots);
             RangedCombat.execute();
             turnsSinceSeenEnemy = 0;
@@ -30,13 +30,13 @@ public class Soldier extends Bot {
             assignNewTarget();
         }
         if (rc.getMoveCount() == 0) {
-        	/*System.out.println("here");
-        	if(nearbyBullets.length > 0){
+        	//System.out.println("here");
+        	if(nearbyBullets.length > 0 && turnsSinceSeenEnemy < 75 || nearbyBullets.length > 3){
         		Direction dirToMove = here.directionTo(nearbyBullets[0].location);
-        		if(nearbyAlliedRobots.length > 0)
-        			dirToMove = here.directionTo(nearbyAlliedRobots[0].location);
+        		if(target != null)
+        			dirToMove = here.directionTo(target);
         		RangedCombat.bulletMove(here.add(dirToMove, type.strideRadius), true);
-        	}*/
+        	}
         	if (target != null && turnsSinceSeenEnemy > 10 && ((here.distanceTo(target) < 3 || rc.canSenseLocation(target) && rc.isLocationOccupiedByTree(target)))) {
 				if(debug)rc.setIndicatorLine(here, target, 0, 255, 0); 
 				if(debug)System.out.println("removing");
