@@ -221,9 +221,9 @@ public class Bot {
 	public boolean edgesOfSpotAreOffMap(MapLocation loc) throws GameActionException{
 	    if(rc.canSenseLocation(loc)) {
             for (int i = 0; i < 4; i++) {
-                MapLocation spot = loc.add(90 * i, RobotType.GARDENER.bodyRadius);
+                MapLocation spot = loc.add( new Direction((float) ((Math.PI / 2) * i)), RobotType.GARDENER.bodyRadius);
                 if ( rc.canSenseLocation(spot) && !rc.onTheMap(spot)) {
-                    return true;
+                    return true; //its off the map
                 }
             }
         }
