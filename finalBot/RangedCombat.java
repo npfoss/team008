@@ -739,7 +739,7 @@ public class RangedCombat extends Bot {
 
 		}
 		for (TreeInfo friend : nearbyTrees) {
-			if(friend.team == enemy && nearbyAlliedRobots.length > 0){
+			if(friend.team == enemy && (nearbyAlliedRobots.length > 0 || target.type == RobotType.GARDENER)){
 				continue;
 			}
 			if(here.distanceTo(friend.location) - friend.radius - type.bodyRadius < 0.1 && here.distanceTo(target.location) - target.type.bodyRadius - type.bodyRadius < 0.1)
