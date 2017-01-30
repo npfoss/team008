@@ -213,7 +213,22 @@ public class Bot {
 		)){
 			Message.GARDENER_BUILD_LOCS.removeLocation(targetLoc);
 		}
+		if(edgesOfSpotAreOffMap(targetLoc)){
+            Message.GARDENER_BUILD_LOCS.removeLocation(targetLoc);
+        }
 	}
+
+	public boolean edgesOfSpotAreOffMap(MapLocation loc) throws GameActionException{
+	    if(rc.canSenseLocation(loc)) {
+            for (int i = 0; i < 4; i++) {
+                MapLocation spot = loc.add(90 * i, RobotType.GARDENER.bodyRadius);
+                if ( rc.canSenseLocation(spot) && !rc.onTheMap(spot)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 	
 	public boolean isCircleOccupiedByTree(MapLocation targetLoc, float i) throws GameActionException {
 		if(!rc.canSenseAllOfCircle(targetLoc, i)){
