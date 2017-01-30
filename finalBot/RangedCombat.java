@@ -25,20 +25,30 @@ public class RangedCombat extends Bot {
 	 * to call execute, number of enemies must be > 0
 	 */
 	public static void execute() throws GameActionException {
-
+		if(debug)System.out.println("here");
 	    //if(debug)System.out.println("Instantiation: "+ Clock.getBytecodeNum());
 		potentialAttackStats attack = chooseTargetAndShotType();
 		onlyHarmlessUnitsAround = onlyHarmlessUnitsNearby();
+		MapLocation targetLoc;
 		//if(debug)System.out.println("Shot Calc:"+Clock.getBytecodeNum());
 		if (attack == null) {
 			RobotInfo closestRobot = nearbyEnemyRobots[0];
-			safeDist = closestRobot.type.bodyRadius + type.bodyRadius + closestRobot.type.strideRadius
-					+ (closestRobot.type == RobotType.LUMBERJACK
-							? GameConstants.LUMBERJACK_STRIKE_RADIUS - closestRobot.type.bodyRadius
-							: closestRobot.type.bulletSpeed * 2);
-			if (closestRobot.type == RobotType.GARDENER)
-				safeDist = 0;
-			if (!onlyHarmlessUnitsAround || here.distanceTo(closestRobot.location) < 3.5) {
+			targetLoc = closestRobot.location;
+			safeDist = calcSafeDist(nearbyEnemyRobots[0]);
+			if(safeDist == -1){
+        		Direction dir = targetLoc.directionTo(here);
+        		RobotInfo tG = Util.closestSpecificType(nearbyAlliedRobots, here, RobotType.GARDENER);
+        		if(tG != null){
+        			dir = tG.location.directionTo(targetLoc);
+        		}
+        		targetLoc = targetLoc.add(dir, (float) 2.0001);
+        		if(here.distanceTo(targetLoc) > 0.5)
+        			goTo(targetLoc);
+        		else
+        			moveToBinary(targetLoc);
+        		rc.setIndicatorLine(here, targetLoc, 255, 0, 0);
+        	}
+			else if (!onlyHarmlessUnitsAround || here.distanceTo(closestRobot.location) < 3.5) {
 				Direction moveDir = calcMoveDir(closestRobot);
 				if (moveDir != null && rc.canMove(moveDir, MOVE_DIST))
 					rc.move(moveDir, MOVE_DIST);
@@ -48,7 +58,6 @@ public class RangedCombat extends Bot {
 			else {
 				goTo(closestRobot.location);
 			}
-
 			return;
 		}
 		BodyInfo target = attack.getTarget();
@@ -58,7 +67,7 @@ public class RangedCombat extends Bot {
 			return;
 		}
 		//if(debug)System.out.println("My Target is"+attack.getTarget().getID());
-		MapLocation targetLoc = target.getLocation();
+		targetLoc = target.getLocation();
 		//Direction targetDir = here.directionTo(attack.getTarget().getLocation());
 		//Direction moveDir = (targetDir);
 		Direction moveDir = null;
@@ -68,7 +77,20 @@ public class RangedCombat extends Bot {
         //if(debug)System.out.println("Move Calc:"+Clock.getBytecodeNum());
 
         if (moveDir != null || onlyHarmlessUnitsAround) {
-        	if(onlyHarmlessUnitsAround && here.distanceTo(targetLoc) > 3.5){
+        	if(safeDist == -1){
+        		Direction dir = targetLoc.directionTo(here);
+        		RobotInfo tG = Util.closestSpecificType(nearbyAlliedRobots, here, RobotType.GARDENER);
+        		if(tG != null){
+        			dir = tG.location.directionTo(targetLoc);
+        		}
+        		targetLoc = targetLoc.add(dir, (float) 2.0001);
+        		if(here.distanceTo(targetLoc) > 0.5)
+        			goTo(targetLoc);
+        		else
+        			moveToBinary(targetLoc);
+        		//rc.setIndicatorLine(here, targetLoc, 255, 0, 0);
+        	}
+        	else if(onlyHarmlessUnitsAround && here.distanceTo(targetLoc) > 3.5){
         		goTo(targetLoc);
         	}
         	else if (moveDir != null){
@@ -119,7 +141,7 @@ public class RangedCombat extends Bot {
 
 	private static boolean onlyHarmlessUnitsNearby() {
 		for(RobotInfo e: nearbyEnemyRobots){
-			if(e.type != RobotType.GARDENER && e.type != RobotType.ARCHON)
+			if(e.type != RobotType.GARDENER && e.type != RobotType.ARCHON && e.type != RobotType.SCOUT)
 				return false;
 		}
 		return true;
@@ -453,10 +475,10 @@ public class RangedCombat extends Bot {
 	}
 
 	private static float calcSafeDist(RobotInfo bestRobot) throws GameActionException {
-		if(bestRobot.type == RobotType.SCOUT && rc.canSenseLocation(bestRobot.location) && rc.isLocationOccupiedByTree(bestRobot.location) && rc.senseTreeAtLocation(bestRobot.location).team == us){//edge case for scouts in trees
+		if(bestRobot.type == RobotType.SCOUT && rc.canSenseLocation(bestRobot.location) && rc.isLocationOccupiedByTree(bestRobot.location)){//edge case for scouts in trees
 			return -1; //signal we are dealing with a scout
 		}
-		if(bestRobot.type == RobotType.GARDENER || bestRobot.type == RobotType.ARCHON){
+		if(bestRobot.type == RobotType.GARDENER || bestRobot.type == RobotType.ARCHON || bestRobot.type == RobotType.SCOUT){
 			return 0;
 		}
 		//if(bestRobot.type == RobotType.TANK){
@@ -503,6 +525,9 @@ public class RangedCombat extends Bot {
 		//Cast body info if its a robot
 		if(target == null)
 			return NO_SHOT;
+		if(safeDist == -1){
+			return SINGLE_SHOT;
+		}
 		RobotInfo targetRobot = null;
 		MapLocation targetLoc = target.getLocation();
 		Direction targetDir = here.directionTo(targetLoc);
@@ -695,11 +720,27 @@ public class RangedCombat extends Bot {
 			}
 
 		}
+		for (RobotInfo enemy: nearbyEnemyRobots) {
+			if(enemy.getID() == target.getID())
+				continue;
+			if (enemy.location.distanceTo(here) < here.distanceTo(target.location) - type.bodyRadius
+					- target.type.bodyRadius){ 
+				if (willHitLoc(intendedAttackDir, enemy.location, enemy.type.bodyRadius)) {
+					//if(debug)System.out.println("Direction is not safe");
+					return false;
+				}
+			} else {
+				break;
+			}
+
+		}
 		for (TreeInfo friend : nearbyTrees) {
 			if(friend.team == enemy && nearbyAlliedRobots.length > 0){
 				continue;
 			}
-			if (friend.location.distanceTo(here) - friend.radius - target.type.strideRadius < here.distanceTo(target.location)) {
+			if(here.distanceTo(friend.location) - friend.radius - type.bodyRadius < 0.1 && here.distanceTo(target.location) - target.type.bodyRadius - type.bodyRadius < 0.1)
+				continue;
+			if (friend.location.distanceTo(here) - friend.radius - target.type.bodyRadius < here.distanceTo(target.location)) {
 				if (willHitLoc(intendedAttackDir, friend.location, friend.radius)) {
 					//if(debug)System.out.println("Direction is not safe");
 					return false;
