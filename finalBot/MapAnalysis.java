@@ -110,6 +110,7 @@ public class MapAnalysis extends Bot {
 		//	combinedRadii += t.radius;
 		//}
 		//float treesNearMe = nearbyNeutralTrees.length;
+		float largestConflictDist = -1;
 		float conflictDistance = 999;
 		for (MapLocation ourLoc : initialAlliedArchonLocations) {
 			for (MapLocation theirLoc : initialEnemyArchonLocations) {
@@ -118,8 +119,12 @@ public class MapAnalysis extends Bot {
 					conflictDistance = temp;
 				}
 			}
+			if(conflictDistance > largestConflictDist){
+				largestConflictDist = conflictDistance;
+			}
+			conflictDistance = 999;
 		}
-		conflictDist = conflictDistance;
+		conflictDist = largestConflictDist;
 		int treesToClear = Message.CLEAR_TREES_PLEASE.getLength();
 		float rushHeuristic = 100 - conflictDist - treesToClear * 10;
 		initialSoldiers = (int)(rushHeuristic < 50 ? 0 : conflictDist > 10 ? 1 : 2);
