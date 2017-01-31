@@ -261,7 +261,7 @@ public class Gardener extends Bot {
 		if (!isExploring && RangedCombat.onlyHarmlessUnitsNearby()  && roundNum > 5 && (rc.readBroadcast(15) == 0 || roundNum < 40 && MapAnalysis.conflictDist > 10 * rc.getTreeCount()) && plantATree())
 			return;
 		else if (rc.getBuildCooldownTurns() == 0) {
-			if(myAdaptation != MapAnalysis.DEFEND_SOMETHING && (calcTrappedInHeuristic() > 5 + 15 * spotsICanPlant() * numLumberjacksInSightRadius() && myGenetics != MapAnalysis.RUSH_VP)){
+			if(myAdaptation != MapAnalysis.DEFEND_SOMETHING && (calcTrappedInHeuristic() > 10 + 10 * spotsICanPlant() + 20 * numLumberjacksInSightRadius() && myGenetics != MapAnalysis.RUSH_VP)){
 				if(debug)System.out.println("trying to build lumberjack");
 				if (buildRobot(RobotType.LUMBERJACK, false)) {
 					return;

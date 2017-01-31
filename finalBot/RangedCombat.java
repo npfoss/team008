@@ -38,7 +38,7 @@ public class RangedCombat extends Bot {
 			RobotInfo closestRobot = nearbyEnemyRobots[0];
 			targetLoc = closestRobot.location;
 			safeDist = calcSafeDist(nearbyEnemyRobots[0]);
-			RobotInfo tG = Util.closestSpecificType(nearbyAlliedRobots, here, RobotType.GARDENER);
+			RobotInfo tG = Util.closestSpecificType(nearbyEnemyRobots, here, RobotType.GARDENER);
 			if(safeDist == -1){
         		Direction dir = targetLoc.directionTo(here);
         		if(tG != null){
@@ -52,6 +52,7 @@ public class RangedCombat extends Bot {
         		//rc.setIndicatorLine(here, targetLoc, 255, 0, 0);
         	}
 			else if(tG != null){
+				rc.setIndicatorLine(here, tG.location, 255, 0, 0);
 				goTo(tG.location);
 			}
 			else if (!onlyHarmlessUnitsAround || here.distanceTo(closestRobot.location) < 3.5) {
@@ -83,7 +84,7 @@ public class RangedCombat extends Bot {
         //if(debug)System.out.println("Move Calc:"+Clock.getBytecodeNum());
 
         if (moveDir != null || onlyHarmlessUnitsAround) {
-			RobotInfo tG = Util.closestSpecificType(nearbyAlliedRobots, here, RobotType.GARDENER);
+			RobotInfo tG = Util.closestSpecificType(nearbyEnemyRobots, here, RobotType.GARDENER);
         	if(safeDist == -1){
         		Direction dir = targetLoc.directionTo(here);
         		if(tG != null){
@@ -97,6 +98,7 @@ public class RangedCombat extends Bot {
         		//rc.setIndicatorLine(here, targetLoc, 255, 0, 0);
         	}
         	else if(tG != null){
+        		rc.setIndicatorLine(here, tG.location, 255, 0, 0);
         		goTo(tG.location);
         	}
         	else if(onlyHarmlessUnitsAround && (here.distanceTo(targetLoc) > 3.5 || nearbyEnemyRobots[0].type == RobotType.ARCHON && nearbyEnemyRobots.length == 1)){
@@ -473,10 +475,19 @@ public class RangedCombat extends Bot {
 				bestScore = score;
 				bestRobot = robot;
 				shotValue = canWeHitThemValue;
+				//dirSafe = true;
 				if(attackingHarmlessUnit){
 					safeDist = 0;
 				}
 			}
+			/*
+			else if(robot.type == RobotType.GARDENER && score > bestScore){
+				dirSafe = false;
+				safeDist = 0;
+				bestScore = score;
+				bestRobot = robot;
+				shotValue = canWeHitThemValue;
+			}*/
 			calculated++;
 			if (calculated == robotsToCalculate){
 				break;
@@ -601,8 +612,8 @@ public class RangedCombat extends Bot {
 		    return PENTAD_SHOT;
         }*/
 
-		if(target == null || (rc.getTeamVictoryPoints() > 1000 - rc.getTreeCount() * 5 && rc.getTeamVictoryPoints() - rc.getOpponentVictoryPoints() < 50))
-			return NO_SHOT;
+		//if(!dirSafe || target == null || (rc.getTeamVictoryPoints() > 1000 - rc.getTreeCount() * 5 && rc.getTeamVictoryPoints() - rc.getOpponentVictoryPoints() < 50))
+		//	return NO_SHOT;
 		if(safeDist == -1){
 			return SINGLE_SHOT;
 		}
