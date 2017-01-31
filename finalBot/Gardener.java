@@ -255,7 +255,7 @@ public class Gardener extends Bot {
 		if (nearbyEnemyRobots.length == 0  && rc.getRoundNum() > 5 && (rc.readBroadcast(15) == 0 || rc.getRoundNum() < 40 && MapAnalysis.conflictDist > 10 * rc.getTreeCount()) && plantATree())
 			return;
 		else if (rc.getBuildCooldownTurns() == 0 && (rc.readBroadcast(15) > 0)) {
-			if((!canPlantTree() && rc.senseNearbyTrees(2, us).length < 2 && roundNum < 200) || (nearbyNeutralTrees.length > 10 && myGenetics != MapAnalysis.RUSH_VP && (myGenetics != MapAnalysis.RUSH_ENEMY))){
+			if(myAdaptation != MapAnalysis.DEFEND_SOMETHING && ((!canPlantTree() && rc.senseNearbyTrees(2, us).length < 3 && roundNum < 50) || (calcTrappedInHeuristic() > 7 + 2 * numLumberjacksInSightRadius() && myGenetics != MapAnalysis.RUSH_VP && myGenetics != MapAnalysis.RUSH_ENEMY))){
 				if (buildRobot(RobotType.LUMBERJACK, false)) {
 					return;
 				}
@@ -297,7 +297,25 @@ public class Gardener extends Bot {
 			buildRobot(RobotType.SOLDIER, false);
 		}
 	}
+	
+	private float calcTrappedInHeuristic() {
+		float ret = 0;
+		for(TreeInfo t: nearbyNeutralTrees){
+			float dist = here.distanceTo(t.location);
+			ret += (float)(t.radius * (type.sensorRadius - dist));
+		}
+		if(debug)System.out.println("trapped heuristic = " + ret);
+		return ret;
+	}
 
+	private int numLumberjacksInSightRadius() {
+		int ret = 0;
+		for(RobotInfo a: nearbyAlliedRobots){
+			ret += (a.type == RobotType.LUMBERJACK ? 1 : 0);
+		}
+		return ret;
+	}
+	
 	/**
      * Dont use broadcasted locations.
      */
