@@ -834,7 +834,7 @@ public class RangedCombat extends Bot {
 
 		}
 		int count = 0;
-		for (TreeInfo friend : rc.senseNearbyTrees(target.location, -1, Team.NEUTRAL)) {
+		for (TreeInfo friend : nearbyTrees) {
 			count++;
 			if(count > limit){
 				break;
