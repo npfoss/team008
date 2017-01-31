@@ -148,14 +148,17 @@ public class MapAnalysis extends Bot {
 		if (!startedGame && rc.getRoundNum() < 5) {
 			determineInitialStrategy();
 		}
-		if(rc.getTreeCount() > 20 && Message.ADAPTATION.getValue() == DEFEND_NOTHING){
-			Message.GENETICS.setValue(RUSH_VP);
-		}
 		int treesToClear = Message.CLEAR_TREES_PLEASE.getLength();
 		if(debug)System.out.println("treesToClear = " + treesToClear);
-		int numDistressSignals = Message.DISTRESS_SIGNALS.getLength();
 		int numEnemies = Message.ISOLATED_ENEMIES.getLength() + Message.ENEMY_ARMIES.getLength();
-		System.out.println("numEnemies = " + numEnemies);
+		if(rc.getTreeCount() > 20 && Message.ADAPTATION.getValue() == DEFEND_NOTHING && numEnemies < 10){
+			Message.GENETICS.setValue(RUSH_VP);
+		}
+		else if (numEnemies > 9 && Message.GENETICS.getValue() == RUSH_VP){
+			Message.GENETICS.setValue(treesToClear > 0 ? CLEAR_TREES: BUILD_TREES);
+		}
+		int numDistressSignals = Message.DISTRESS_SIGNALS.getLength();
+		if(debug)System.out.println("numEnemies = " + numEnemies);
 		float vpModifier = (rc.getOpponentVictoryPoints() > 500 && rc.getTeamVictoryPoints() - rc.getOpponentVictoryPoints() < 50 ? 2 : 0);
 		float distressModifier = (float) (1 - numDistressSignals * .5 - numEnemies * .03 > -1 ? 1 - numDistressSignals * .5 - numEnemies * .03 : -1);
 		if(area != 0){
@@ -189,7 +192,7 @@ public class MapAnalysis extends Bot {
 			}
 			switch (adaptation) {
 			case DEFEND_NOTHING:
-				if(rc.getTeamVictoryPoints() > 1000 - rc.getTreeCount() * 8 || rc.getTeamVictoryPoints() - rc.getOpponentVictoryPoints() < 50)
+				if(rc.getTeamVictoryPoints() > 1000 - rc.getTreeCount() * 8 || rc.getTeamVictoryPoints() - rc.getOpponentVictoryPoints() < 50 && rc.getOpponentVictoryPoints() > 700)
 					break;
 				if (numSoldier < initialSoldiers) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
@@ -200,7 +203,7 @@ public class MapAnalysis extends Bot {
 				}
 				break;
 			case DEFEND_SOMETHING:
-				if(rc.getTeamVictoryPoints() > 1000 - rc.getTreeCount() * 5 || rc.getTeamVictoryPoints() - rc.getOpponentVictoryPoints() < 50)
+				if(rc.getTeamVictoryPoints() > 1000 - rc.getTreeCount() * 5 || rc.getTeamVictoryPoints() - rc.getOpponentVictoryPoints() < 50 && rc.getOpponentVictoryPoints() > 700)
 					break;
 				if (numSoldier < initialSoldiers) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);
@@ -215,7 +218,7 @@ public class MapAnalysis extends Bot {
 		case RUSH_ENEMY:
 			if (numGardener == 0 ||  
 				    rc.getRoundNum() > 100 && Message.ADAPTATION.getValue() != DEFEND_SOMETHING && 
-				    (double)(rc.getTreeCount()) / numGardener > (rc.getTeamBullets() > roundNum ? 1.5: 2.5) && numGardener < 8
+				    (double)(rc.getTreeCount()) / numGardener > (rc.getTeamBullets() > roundNum ? 1.5: 2.5)
 					&& (numGardener == 1 || rc.getTeamBullets() > 150)) {
 				Message.ARCHON_BUILD_NUM.setValue(1);
 			}
@@ -269,7 +272,7 @@ public class MapAnalysis extends Bot {
 		case CLEAR_TREES:
 			if (numGardener == 0 ||  
 		    	rc.getRoundNum() > 100 && Message.ADAPTATION.getValue() != DEFEND_SOMETHING && 
-		    	(double)(rc.getTreeCount()) / numGardener > (rc.getTeamBullets() > roundNum ? 1.5: 2.5) && numGardener < 8
+		    	(double)(rc.getTreeCount()) / numGardener > (rc.getTeamBullets() > roundNum ? 1.5: 2.5) 
 				&& (numGardener == 1 || rc.getTeamBullets() > 150)) {
 				Message.ARCHON_BUILD_NUM.setValue(1);
 			}
@@ -305,7 +308,7 @@ public class MapAnalysis extends Bot {
 		case BUILD_TREES:
 			if (numGardener == 0 ||  
 	    	rc.getRoundNum() > 100 && Message.ADAPTATION.getValue() != DEFEND_SOMETHING && 
-	    	(double)(rc.getTreeCount()) / numGardener > (rc.getTeamBullets() > roundNum ? 1.5: 2.5) && numGardener < 8
+	    	(double)(rc.getTreeCount()) / numGardener > (rc.getTeamBullets() > roundNum ? 1.5: 2.5)
 			&& (numGardener == 1 || rc.getTeamBullets() > 150)) {
 			Message.ARCHON_BUILD_NUM.setValue(1);
 		}

@@ -146,7 +146,7 @@ public class RangedCombat extends Bot {
 	
 	//////////////////////////Movement Micro////////////////////////
 
-	private static boolean onlyHarmlessUnitsNearby() {
+	public static boolean onlyHarmlessUnitsNearby() {
 		for(RobotInfo e: nearbyEnemyRobots){
 			if(e.type != RobotType.GARDENER && e.type != RobotType.ARCHON && e.type != RobotType.SCOUT)
 				return false;
@@ -300,7 +300,6 @@ public class RangedCombat extends Bot {
 			}
 			score = 0;
 			MapLocation moveTo = here.add(dir, moveDist);
-			score += dodgingOptionsLimited(moveTo, targetLoc);
 			count = 0;
 			for(BulletInfo b: nearbyBullets){
 				//rc.setIndicatorLine(here, b.location, 255, 0, 0);
@@ -737,24 +736,29 @@ public class RangedCombat extends Bot {
 			}
 		}*/
 		int treeMod = rc.getTreeCount() / 4;
-		int victoryPointMod = (rc.getTeamVictoryPoints() - 700) / 20;
+		int victoryPointMod = (rc.getOpponentVictoryPoints() - rc.getTeamVictoryPoints() > - 50 ? (rc.getTeamVictoryPoints() - 700) / 20 : 0);
 		float opponentBulletsMod = (float) (numBulletsEnemyShot() * 4.5);
 		if(debug)System.out.println("opponentBulletsMod = " + opponentBulletsMod);
 		if(victoryPointMod < 0)
 			victoryPointMod = 0;
 		if (ableToShootPentad && pentadValue + treeMod - victoryPointMod + opponentBulletsMod + (type.attackPower + type.bulletSpeed) * 4 > 121 ) {
+			if(debug)System.out.println("Pentad");
 			return PENTAD_SHOT;
 		}
 		if (ableToShootTriad && triadValue + treeMod - victoryPointMod + opponentBulletsMod + (type.attackPower + type.bulletSpeed) * 4 > 106) {
+			if(debug)System.out.println("Triad");
 			return TRIAD_SHOT;
 		}
 		if(tempSV > 69 || targetRobot.type == RobotType.TANK){
+			if(debug)System.out.println("Single");
 			return SINGLE_SHOT;
 		}
 		//System.out.println(here.distanceTo(targetLoc));
 		if(type == RobotType.SOLDIER && here.distanceTo(targetLoc) < safeDist + (nearbyAlliedRobots.length - 3 > nearbyEnemyRobots.length ? (nearbyAlliedRobots.length - nearbyEnemyRobots.length) / 10.0 : 0)){
-			if(victoryPointMod < 10 || rc.getTeamVictoryPoints() - rc.getOpponentVictoryPoints() > 50)
+			if(victoryPointMod < 10){
+				if(debug)System.out.println("Triad");
 				return TRIAD_SHOT;
+			}
 		}
 		if(targetRobot.type == RobotType.GARDENER){
 			return SINGLE_SHOT;

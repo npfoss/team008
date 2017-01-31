@@ -40,6 +40,8 @@ public class Soldier extends Bot {
         		Direction dirToMove = here.directionTo(nearbyBullets[0].location);
         		if(target != null)
         			dirToMove = here.directionTo(target);
+        		RangedCombat.bulletMove(here.add(dirToMove, type.strideRadius), true);
+        		/*
         		Direction moveDir = RangedCombat.bulletMove(here.add(dirToMove, type.strideRadius), false);
         		if(moveDir != null){
         			MapLocation moveTo = here.add(moveDir, type.strideRadius);
@@ -55,7 +57,7 @@ public class Soldier extends Bot {
         		}
         		else{
         			RangedCombat.shootOpposingBullets();
-        		}
+        		}*/
         	}
         	if (target != null && turnsSinceSeenEnemy > 10 && ((here.distanceTo(target) < 3 || rc.canSenseLocation(target) && rc.isLocationOccupiedByTree(target)))) {
 				if(debug)rc.setIndicatorLine(here, target, 0, 255, 0); 
