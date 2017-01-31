@@ -4,6 +4,7 @@ import battlecode.common.*;
 public class Archon extends Bot {
 	private static int turnsTryingToReach = 0;
 	private static boolean initialBuilder;
+	private static int roundIBecameBuilder;
 
 	public Archon(RobotController r) throws GameActionException {
 		super(r);
@@ -17,18 +18,30 @@ public class Archon extends Bot {
 	public static int unitsBuilt = 0;
 	public static boolean inDistress = false;
 	public void takeTurn() throws Exception {
-		if(roundNum == 1){
+		if(roundNum == 1 && Message.INITIAL_BUILDER_HERE.getValue() == 0){
+			//System.out.println("conflict dist = " + MapAnalysis.conflictDist);
 			float myConflictDist = here.distanceTo(Util.closestLocation(MapAnalysis.initialEnemyArchonLocations));
-			if(Math.abs(myConflictDist - MapAnalysis.conflictDist) < 0.1){
-				initialBuilder = true;
+			//System.out.println("my conflict dist = " + myConflictDist);
+			if(Math.abs(myConflictDist - Message.CONFLICT_DIST.getFloatValue()) < 0.1){
+				if(!willTrapOurselvesIn() && canIHire() && !(Message.NUM_ARCHONS.getValue() == 1)){
+					initialBuilder = true;
+					roundIBecameBuilder = roundNum;
+				}
 			}
 		}
 		
 		if(initialBuilder){
-			Message.INITIAL_BUILDER_HERE.setValue(roundNum);
+			if(debug)System.out.println("i am initial builder");
+			if(Message.NUM_GARDENERS.getValue() == 0 && roundNum - roundIBecameBuilder > 0 && Message.NUM_ARCHONS.getValue() > 1){
+				initialBuilder = false;
+			}
+			else{
+				Message.INITIAL_BUILDER_HERE.setValue(roundNum);
+			}
 		}
-		else if (Message.INITIAL_BUILDER_HERE.getValue() - roundNum > 2){
+		else if (!willTrapOurselvesIn() && canIHire() && roundNum - Message.INITIAL_BUILDER_HERE.getValue() > 1){
 			initialBuilder = true;
+			roundIBecameBuilder = roundNum;
 			Message.INITIAL_BUILDER_HERE.setValue(roundNum);
 		}
 		
@@ -45,22 +58,62 @@ public class Archon extends Bot {
 				inDistress = false;
 			}
 		}
-		if(rc.getMoveCount() == 0 && willTrapOurselvesIn())
-			runAway();
+		if(rc.getMoveCount() == 0 && willTrapOurselvesIn()) {
+            if(debug){System.out.println("I think we're gonna get trapped");}
+            if(Message.NUM_GARDENERS.getValue() == 0){
+                if(debug){System.out.println("make dat room doe");}
+                makeRoomForGardener();
+            }
+            if(!rc.hasMoved()) {
+                runAway();
+            }
+        }
 		if(rc.getMoveCount() == 0){
-			clearRoom();
+            if(debug){System.out.println("I think im making room");}
+
+            clearRoom();
 		}
-		if (initialBuilder && (roundNum == 1 && Message.NUM_GARDENERS.getValue() == 0 || 
+		if (initialBuilder && (Message.NUM_GARDENERS.getValue() == 0 || 
 				(Message.ARCHON_BUILD_NUM.getValue() > 0 && rc.getTeamBullets() > (100 + 
 				(inDistress ? 
 						((Message.ARCHON_DISTRESS_NUM.getValue() < Message.NUM_ARCHONS.getValue()) ? 
 								10 : nearbyEnemyRobots.length)
 						: (MapAnalysis.initialAlliedArchonLocations.length == 1 ? 0 : unitsBuilt * 2)))))) {
-			if(!willTrapOurselvesIn() || roundNum > 50){
+			if(!willTrapOurselvesIn() || roundNum > 3){
 				hireGardener();
 				unitsBuilt++;
 			}
 		}
+
+	}
+    private void makeRoomForGardener() throws GameActionException {
+
+        if(nearbyNeutralTrees.length >= 1) {
+            goTo(here.directionTo(nearbyNeutralTrees[0].location).opposite());
+        } else if(nearbyAlliedTrees.length >= 1){
+            goTo(here.directionTo(nearbyAlliedTrees[0].location).opposite());
+        }
+
+    }
+
+	private boolean canIHire() {
+		Direction dir = here.directionTo(MapAnalysis.center);
+		if (rc.canHireGardener(dir)) {
+			return true;
+		}
+		Direction left = dir.rotateLeftDegrees(10);
+		Direction right = dir.rotateRightDegrees(10);
+		for (int i = 18; i-- > 0;) {
+			if (rc.canHireGardener(left)) {
+				return true;
+			}
+			if (rc.canHireGardener(right)) {
+				return true;
+			}
+			left = left.rotateLeftDegrees(10);
+			right = right.rotateRightDegrees(10);
+		}
+		return false;
 	}
 
 	private boolean willTrapOurselvesIn() throws GameActionException {
@@ -214,6 +267,6 @@ public class Archon extends Bot {
 			if (bestScore != 10000) {
 				tryMoveDirectionDangerous(bestDir);
 			}
-}
+        }
 
-}
+    }

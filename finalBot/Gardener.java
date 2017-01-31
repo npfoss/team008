@@ -6,8 +6,6 @@ public class Gardener extends Bot {
     public static Direction dirIAmMoving;
     public static boolean updatedLocs;
     public static int turnsIHaveBeenTrying;
-    public static boolean tankBuilder;
-    public static int turnsTank;
     public static float myPatience;
     public static float dLastTurn;
     public static MapLocation targetLoc;
@@ -88,7 +86,7 @@ public class Gardener extends Bot {
         }
 
         float dist = here.distanceTo(targetLoc);
-        if( dist < type.sensorRadius && edgesOfSpotAreOffMap(targetLoc)){
+        if( dist < type.sensorRadius && edgesOfSpotAreOffMap(targetLoc, RobotType.GARDENER.bodyRadius)){
             Message.GARDENER_BUILD_LOCS.removeLocation(targetLoc);
         }
 
@@ -140,6 +138,7 @@ public class Gardener extends Bot {
             tankBuilder = false;
             Message.DIST_TO_CENTER.setValue((float)(999));
         }*/
+        if(debug){System.out.println("Started with " +Clock.getBytecodeNum());}
         waterLowestHealthTree();
         if (nearbyEnemyRobots.length > 0) {
             //System.out.println("sent target d");
@@ -147,6 +146,8 @@ public class Gardener extends Bot {
         		Message.DISTRESS_SIGNALS.addLocation(nearbyEnemyRobots[0].location);
         }
         if (isExploring) {
+            if(debug){System.out.println("Am exploring" +Clock.getBytecodeNum());}
+
             myPatience++;
 
             if(targetLoc == null || (here.distanceTo(targetLoc) - dLastTurn < -.5)) {
@@ -154,7 +155,7 @@ public class Gardener extends Bot {
             }
 
             if(myPatienceIsUp(targetLoc)){
-                if(debug){System.out.println("GOD DAMNIT I NEED TO SIT");}
+                if(debug){System.out.println("Patience Up " +Clock.getBytecodeNum());}
                 if(notTerribleSpot()){
                     //just sit down
                     isExploring = false;
@@ -162,8 +163,11 @@ public class Gardener extends Bot {
                 } else {
                     grabAnOpenSpot();
                 }
+                if(debug){System.out.println("End of Patience up " +Clock.getBytecodeNum());}
+
             }
 
+            if(debug){System.out.println("Finding new loc" +Clock.getBytecodeNum());}
 
             while (isBadLocation(targetLoc)) {
 
@@ -171,7 +175,12 @@ public class Gardener extends Bot {
                 targetLoc = Message.GARDENER_BUILD_LOCS.getClosestLocation(here);
             }
 
+            if(debug){System.out.println("end of finding new loc" +Clock.getBytecodeNum());}
+
+
             if (targetLoc == null) {
+                if(debug){System.out.println("No good loc " +Clock.getBytecodeNum());}
+
 
                 if (dirIAmMoving == null || myRand.nextDouble() < .5
                         + (double) (-rc.getRoundNum()) / (double) (2 * rc.getRoundLimit())) {
@@ -218,11 +227,13 @@ public class Gardener extends Bot {
                 isExploring = false;
             }
         }
+        if(debug){System.out.println("almost done " +Clock.getBytecodeNum());}
+
         if (!isExploring
                 || nearbyEnemyRobots.length > 0) {
             buildSomething();
         }
-        if(!isExploring && /*noTreesFartherThan2() &&*/ (!updatedLocs || (rc.getRoundNum() + rc.getID()) % 100 == 0)){
+        if(!isExploring && (!updatedLocs || (rc.getRoundNum() + rc.getID()) % 100 == 0)){
             //this should check if we're in a decent spot
         	if(debug)System.out.println("here");
             updateLocs();
@@ -230,14 +241,6 @@ public class Gardener extends Bot {
         }
     }
 
-    private boolean noTreesFartherThan2() {
-        for(TreeInfo tree: nearbyAlliedTrees){
-            if(tree.location.distanceTo(here) > 2){
-                return false;
-            }
-        }
-        return true;
-    }
 
 	public void buildSomething() throws GameActionException {
 		int typeToBuild = Message.GARDENER_BUILD_ORDERS.getValue();

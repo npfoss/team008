@@ -213,15 +213,22 @@ public class Bot {
 		)){
 			Message.GARDENER_BUILD_LOCS.removeLocation(targetLoc);
 		}
-		if(edgesOfSpotAreOffMap(targetLoc)){
+		if(edgesOfSpotAreOffMap(targetLoc, RobotType.GARDENER.bodyRadius) || isntLastHopeAndSucks(targetLoc)){
             Message.GARDENER_BUILD_LOCS.removeLocation(targetLoc);
         }
 	}
 
-	public boolean edgesOfSpotAreOffMap(MapLocation loc) throws GameActionException{
+    private boolean isntLastHopeAndSucks(MapLocation targetLoc) throws GameActionException{
+        if(Message.GARDENER_BUILD_LOCS.getLength() > 1){
+            return edgesOfSpotAreOffMap(targetLoc, 3);
+        }
+        return false;
+    }
+
+    public boolean edgesOfSpotAreOffMap(MapLocation loc, float radius) throws GameActionException{
 	    if(rc.canSenseLocation(loc)) {
             for (int i = 0; i < 4; i++) {
-                MapLocation spot = loc.add( new Direction((float) ((Math.PI / 2) * i)), RobotType.GARDENER.bodyRadius);
+                MapLocation spot = loc.add( new Direction((float) ((Math.PI / 2) * i)),radius);
                 if ( rc.canSenseLocation(spot) && !rc.onTheMap(spot)) {
                     return true; //its off the map
                 }
