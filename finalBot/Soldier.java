@@ -17,13 +17,14 @@ public class Soldier extends Bot {
     		if(debug)System.out.println("containing");
 			containing = true;
     	}
+		boolean targetIsSingleScoutInNeutralTree = false;
 		if(nearbyEnemyRobots.length == 0){
 			containing = false;
 		}
 		else{
-			boolean targetIsSingleScoutInNeutralTree = nearbyEnemyRobots.length == 1 && nearbyEnemyRobots[0].type == RobotType.SCOUT && rc.senseTreeAtLocation(nearbyEnemyRobots[0].location) != null && rc.senseTreeAtLocation(nearbyEnemyRobots[0].location).team == Team.NEUTRAL;
+			targetIsSingleScoutInNeutralTree = nearbyEnemyRobots.length == 1 && nearbyEnemyRobots[0].type == RobotType.SCOUT && rc.senseTreeAtLocation(nearbyEnemyRobots[0].location) != null && rc.senseTreeAtLocation(nearbyEnemyRobots[0].location).team == Team.NEUTRAL;
 		}
-        if(nearbyEnemyRobots.length > 0 && (containing || !(nearbyEnemyRobots.length == 1 && nearbyEnemyRobots[0].type == RobotType.ARCHON))){
+        if(!targetIsSingleScoutInNeutralTree && nearbyEnemyRobots.length > 0 && (containing || !(nearbyEnemyRobots.length == 1 && nearbyEnemyRobots[0].type == RobotType.ARCHON))){
             notifyFriendsOfEnemies(nearbyEnemyRobots);
             RangedCombat.execute();
             turnsSinceSeenEnemy = 0;

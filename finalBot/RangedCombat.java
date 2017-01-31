@@ -789,7 +789,7 @@ public class RangedCombat extends Bot {
 	 * @throws GameActionException
 	 */
 	private static boolean isDirectionSafe(RobotInfo target) throws GameActionException {
-		int limit = 5;
+		int limit = 15;
 		float dist = here.distanceTo(target.location);
 		//if(debug)System.out.println("starting isDirSafe " + Clock.getBytecodeNum());
 		Direction intendedAttackDir = here.directionTo(target.location);
@@ -825,7 +825,7 @@ public class RangedCombat extends Bot {
 			if(count > limit){
 				break;
 			}
-			if(friend.team == enemy){
+			if(friend.team == enemy && nearbyAlliedRobots.length > 0){
 				continue;
 			}
 			if(here.distanceTo(friend.location) - friend.radius - type.bodyRadius < 0.1 && dist - target.type.bodyRadius - type.bodyRadius < 0.1)
