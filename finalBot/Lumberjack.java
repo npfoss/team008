@@ -10,7 +10,7 @@ public class Lumberjack extends Bot {
     public Lumberjack(RobotController r) throws GameActionException{
         super(r);
         myRandomDirection = Util.randomDirection();
-        debug = true;
+        debug = false;
         DAMAGE_THEM_MOD = 2f; // tested and determined to be better than 2.5
         TREE_DAMAGE_MOD = .2f;
     }
@@ -26,7 +26,7 @@ public class Lumberjack extends Bot {
 //    public boolean[] checkEnemiesToRemove = { true,                     false,                    false,               true};
 
     public void takeTurn() throws Exception{
-    	treesWithinRange = rc.senseNearbyTrees(here, 2, Team.NEUTRAL).length;
+//    	treesWithinRange = rc.senseNearbyTrees(here, 2, Team.NEUTRAL).length;
         attacked = false;
         moved = false;
         if(rc.getRoundNum() % 23 == 0){
@@ -53,7 +53,7 @@ public class Lumberjack extends Bot {
         } else {
         	updateTarget(1);
         }
-        if(target != null && !moved && treesWithinRange == 0){
+        if(target != null && !moved ){//&& treesWithinRange == 0){
             if(clearAroundLoc == null
                     || here.distanceTo(clearAroundLoc) > 5
                     || nearbyNeutralTrees.length > 0 && clearAroundLoc.distanceTo(nearbyNeutralTrees[0].location) > 6 + nearbyNeutralTrees[0].radius) {
@@ -97,7 +97,7 @@ public class Lumberjack extends Bot {
             if (targetD != null && here.distanceTo(targetD) < howFarToGoForMessage[i]*howDesperate && (target == null || (here.distanceTo(targetD) < here.distanceTo(target) && here.distanceTo(targetD) < 7))) {
                 //if(debug)System.out.println("targetD = " + targetD);
                 target = targetD;
-                if (messagesToTry[i] == Message.CLEAR_TREES_PLEASE && treesWithinRange == 0){
+                if (messagesToTry[i] == Message.CLEAR_TREES_PLEASE ){//&& treesWithinRange == 0){
                     clearAroundLoc = target;
                 }
             }
@@ -206,7 +206,7 @@ public class Lumberjack extends Bot {
                 if(calculatedMove != null && here.distanceTo(moveTo.getLocation()) + TOLERANCE > here.add(calculatedMove).distanceTo(moveTo.getLocation())){
                     rc.move(calculatedMove, type.strideRadius);
                 }
-            } else if(treesWithinRange == 0){
+            } else {// if(treesWithinRange == 0){
                 goTo(moveTo.location);
             }
             moved = true;

@@ -13,7 +13,7 @@ public class Gardener extends Bot {
 
     public Gardener(RobotController r) throws GameActionException {
         super(r);
-        debug = true;
+        debug = false;
         isExploring = true;
         updatedLocs = false;
         //tankBuilder = false;

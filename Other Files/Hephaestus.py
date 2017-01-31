@@ -21,6 +21,8 @@ Hephaestus will then play team a and team b against eachother on all the selecte
 
 When the starting positions are flipped the output will keep the original names.
 
+**NOTE** may not work if you print a ton of stuff... it'll also be a lot slower regardless
+
 Enjoy!
 '''
 import subprocess
