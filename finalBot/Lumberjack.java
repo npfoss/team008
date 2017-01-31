@@ -21,7 +21,7 @@ public class Lumberjack extends Bot {
 //    public TreeInfo closestNeutralWithUnit;
     static MapLocation clearAroundLoc;
     public Message[] messagesToTry = {Message.DISTRESS_SIGNALS, Message.TREES_WITH_UNITS, Message.CLEAR_TREES_PLEASE, Message.ENEMY_TREES, Message.ENEMY_ARCHONS};
-    public int[] howFarToGoForMessage = {     25,                       15,                       25,                         20,                  20};
+    public int[] howFarToGoForMessage = {     15,                        10,                       15,                         10,                  10};
 //    public boolean[] checkEnemiesToRemove = { true,                     false,                    false,               true};
 
     public void takeTurn() throws Exception{
@@ -40,18 +40,16 @@ public class Lumberjack extends Bot {
                 notifyFriendsOfEnemies(nearbyEnemyRobots);
             }
         }
-        if(nearbyEnemyRobots.length > 0){
-
-
+        if(nearbyEnemyRobots.length > 0 // pickier micro condition because LJs suck at fighting
+                && (nearbyEnemyRobots[0].type == RobotType.GARDENER
+                    || nearbyEnemyRobots[0].type == RobotType.ARCHON
+                    || nearbyEnemyRobots[0].type == RobotType.LUMBERJACK && here.distanceTo(nearbyEnemyRobots[0].location) < 6
+                    || nearbyEnemyRobots[0].type == RobotType.SCOUT && here.distanceTo(nearbyEnemyRobots[0].location) < 5
+                    || nearbyEnemyRobots[0].type == RobotType.SOLDIER && here.distanceTo(nearbyEnemyRobots[0].location) < 4
+                    || nearbyEnemyRobots[0].type == RobotType.TANK && here.distanceTo(nearbyEnemyRobots[0].location) < 5)){
             doMicro();
         } else {
         	updateTarget(1);
-        	if(target == null){
-        	    updateTarget(2);
-            }
-            if(target == null){
-        	    updateTarget(10);
-            }
         }
         if(target != null && !moved){
             if(clearAroundLoc == null
@@ -125,6 +123,13 @@ public class Lumberjack extends Bot {
                 target = null;
             }
         }
+
+        // may have to be less strict
+        if(target == null && howDesperate == 1) {
+            updateTarget(2);
+        } else if(target == null && howDesperate == 2){
+            updateTarget(10);
+        }
     }
 
     public float DIST_TO_ME_MOD = .3f;
@@ -182,7 +187,7 @@ public class Lumberjack extends Bot {
         }
 
         if(attackMe != null){
-            if(Util.numBodiesTouchingRadius(nearbyAlliedRobots, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS) == 0
+            if(attackMe.health > 5 && Util.numBodiesTouchingRadius(nearbyAlliedRobots, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS) == 0
                     && Util.numBodiesTouchingRadius(nearbyNeutralTrees, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS, 5)
                     + Util.numBodiesTouchingRadius(nearbyEnemyTrees, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS, 5) > 2){
                 rc.strike();
