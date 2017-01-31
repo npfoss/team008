@@ -143,7 +143,7 @@ public class Gardener extends Bot {
         waterLowestHealthTree();
         if (nearbyEnemyRobots.length > 0) {
             //System.out.println("sent target d");
-        	if(nearbyEnemyRobots[0].type != RobotType.ARCHON && nearbyEnemyRobots[0].type != RobotType.GARDENER)
+        	if(nearbyEnemyRobots[0].type != RobotType.ARCHON && nearbyEnemyRobots[0].type != RobotType.GARDENER && nearbyEnemyRobots[0].type != RobotType.SCOUT)
         		Message.DISTRESS_SIGNALS.addLocation(nearbyEnemyRobots[0].location);
         }
         if (isExploring) {
@@ -256,42 +256,45 @@ public class Gardener extends Bot {
 		if (nearbyEnemyRobots.length == 0  && roundNum > 5 && (rc.readBroadcast(15) == 0 || roundNum < 40 && MapAnalysis.conflictDist > 10 * rc.getTreeCount()) && plantATree())
 			return;
 		else if (rc.getBuildCooldownTurns() == 0 && (rc.readBroadcast(15) > 0)) {
-			if(myAdaptation != MapAnalysis.DEFEND_SOMETHING && ((!canPlantTree() && rc.senseNearbyTrees(2, us).length < 3 && roundNum < 50) || (calcTrappedInHeuristic() > 7 + 2 * numLumberjacksInSightRadius() && myGenetics != MapAnalysis.RUSH_VP && myGenetics != MapAnalysis.RUSH_ENEMY))){
+			if(myAdaptation != MapAnalysis.DEFEND_SOMETHING && ((!canPlantTree() && rc.senseNearbyTrees(2, us).length < 3 && roundNum < 50) || (calcTrappedInHeuristic() > 7 + 2 * numLumberjacksInSightRadius() && myGenetics != MapAnalysis.RUSH_VP))){
+				System.out.println("trying to build lumberjack");
 				if (buildRobot(RobotType.LUMBERJACK, false)) {
 					return;
 				}
 			}
-			switch (typeToBuild) {
-			case 0:
-				break;
-			case 1:
-				if (buildRobot(RobotType.SOLDIER, true)) {
-					return;
+			else{
+				switch (typeToBuild) {
+				case 0:
+					break;
+				case 1:
+					if (buildRobot(RobotType.SOLDIER, true)) {
+						return;
+					}
+					break;
+				case 2:
+					/*
+					if(tankBuilder && debug)
+						System.out.println("trying to build tank");
+					if (tankBuilder && buildRobot(RobotType.TANK, true)) {
+						return;
+					}
+					else if(tankBuilder && rc.getTeamBullets() > 300){
+						turnsTank++;
+					}*/
+					break;
+				case 3:
+					if (buildRobot(RobotType.SCOUT, true)) {
+						return;
+					}
+					break;
+				case 4:
+					if (buildRobot(RobotType.LUMBERJACK, true)) {
+						return;
+					}
+					break;
+				case 5:
+					break;
 				}
-				break;
-			case 2:
-				/*
-				if(tankBuilder && debug)
-					System.out.println("trying to build tank");
-				if (tankBuilder && buildRobot(RobotType.TANK, true)) {
-					return;
-				}
-				else if(tankBuilder && rc.getTeamBullets() > 300){
-					turnsTank++;
-				}*/
-				break;
-			case 3:
-				if (buildRobot(RobotType.SCOUT, true)) {
-					return;
-				}
-				break;
-			case 4:
-				if (buildRobot(RobotType.LUMBERJACK, true)) {
-					return;
-				}
-				break;
-			case 5:
-				break;
 			}
 		}
 		else if(rc.getBuildCooldownTurns() == 0 && nearbyEnemyRobots.length > 0 && (nearbyEnemyRobots.length != 1 || nearbyEnemyRobots[0].type != RobotType.ARCHON)){
