@@ -51,7 +51,7 @@ public class Bot {
 		MapAnalysis.center = MapAnalysis.findCenter();
 		bugState = BugState.DIRECT;
 		nearbyAlliedRobots = rc.senseNearbyRobots(-1, us);
-		if (nearbyAlliedRobots.length > 0) {
+		if (nearbyAlliedRobots.length > 0||rc.getRoundNum() == 1) {
 			RobotInfo closestG = Util.closestSpecificType(nearbyAlliedRobots, here, RobotType.GARDENER);
 			RobotInfo closestA = Util.closestSpecificType(nearbyAlliedRobots, here, RobotType.ARCHON);
 			switch (type) {
@@ -143,6 +143,9 @@ public class Bot {
 					switch (type) {
 					case ARCHON:
 						Message.NUM_ARCHONS.setValue(Message.NUM_ARCHONS.getValue() - 1);
+						if (Archon.inDistress) {
+							Message.ARCHON_DISTRESS_NUM.setValue(Message.ARCHON_DISTRESS_NUM.getValue() - 1);
+						}
 						break;
 					case GARDENER:
 						Message.NUM_GARDENERS.setValue(Message.NUM_GARDENERS.getValue() - 1);
@@ -709,7 +712,7 @@ public class Bot {
 			System.out.println("bugMovesSinceSeenObstacle = " + bugMovesSinceSeenObstacle);
 			System.out.println("wall side = " + bugWallSide);
 		}
-		return bugMovesSinceSeenObstacle >= 4 && here.distanceSquaredTo(dest) <= bugStartDistSq + 2 || (nearbyTrees.length == 0 || here.distanceTo(nearbyTrees[0].location) > 4);
+		return bugMovesSinceSeenObstacle >= 4 && here.distanceSquaredTo(dest) <= bugStartDistSq + 2 || (nearbyTrees.length == 0 );
 		// if (bugMovesSinceSeenObstacle >= 4)
 		// return true;
 		// return (bugRotationCount <= 0 || bugRotationCount >= 18) &&
