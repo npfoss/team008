@@ -21,7 +21,7 @@ public class Lumberjack extends Bot {
 //    public TreeInfo closestNeutralWithUnit;
     static MapLocation clearAroundLoc;
     public Message[] messagesToTry = {Message.DISTRESS_SIGNALS, Message.TREES_WITH_UNITS, Message.CLEAR_TREES_PLEASE, Message.ENEMY_TREES, Message.ENEMY_ARCHONS};
-    public int[] howFarToGoForMessage = {     5,                        10,                       15,                         10,                  10};
+    public int[] howFarToGoForMessage = {     15,                        10,                       15,                         10,                  10};
 //    public boolean[] checkEnemiesToRemove = { true,                     false,                    false,               true};
 
     public void takeTurn() throws Exception{
