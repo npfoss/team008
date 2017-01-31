@@ -366,8 +366,8 @@ public class Gardener extends Bot {
     			Message.GARDENER_TRAPPED_NUM.setValue(Message.GARDENER_TRAPPED_NUM.getValue() + 1);
     		}
     	}
-        if(targetLoc == null) {return myPatience > 50;}
-        return myPatience > 100 && here.distanceTo(targetLoc) > 5;
+        if(targetLoc == null) {return myPatience > 80;}
+        return myPatience > 130 && here.distanceTo(targetLoc) > 5;
     }
 	
 	public boolean buildRobot(RobotType type, boolean dec) throws GameActionException {

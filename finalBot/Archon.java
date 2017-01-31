@@ -9,6 +9,7 @@ public class Archon extends Bot {
 	public Archon(RobotController r) throws GameActionException {
 		super(r);
 		initialBuilder = false;
+		debug = true;
 		//System.out.println("here");
 		// anything else archon specific
 	}
@@ -75,12 +76,21 @@ public class Archon extends Bot {
             if(!rc.hasMoved()) {
                 runAway();
             }
+
+
+        }
+        MapLocation nearByTree = treesSide();
+        if(nearByTree!=null){
+            if(debug){System.out.println("clear for me");}
+
+            Message.CLEAR_TREES_PLEASE.addLocation(nearByTree);
         }
 		if(rc.getMoveCount() == 0){
             if(debug){System.out.println("I think im making room");}
             clearRoom();
             if(!rc.hasMoved())
             makeRoomForGardener();
+
 		}
 		if (initialBuilder && (Message.NUM_GARDENERS.getValue() == 0 || 
 				(Message.ARCHON_BUILD_NUM.getValue() > 0 && rc.getTeamBullets() > (100)))) {
@@ -94,7 +104,19 @@ public class Archon extends Bot {
 			}
 		}
 
+
 	}
+
+	private MapLocation treesSide() throws GameActionException{
+        Direction dir = new Direction(0);
+        for(int i = 0; i < 8; i++){
+            if(isCircleOccupiedByTree(here.add(dir,2), 2)){
+                return here.add(dir,2);
+            }
+            dir = dir.rotateLeftDegrees(45);
+        }
+        return null;
+    }
     private void makeRoomForGardener() throws GameActionException {
         Direction dirToWall = closestWall();
 	    if(dirToWall != null){
@@ -153,6 +175,7 @@ public class Archon extends Bot {
 	}
 
 	private void clearRoom() throws GameActionException {
+
 	    if(Message.GARDENER_BUILD_LOCS.getLength() > 0){
 	    	MapLocation closestLoc = Message.GARDENER_BUILD_LOCS.getClosestLocation(here);
 	    	if(debug)rc.setIndicatorLine(here, closestLoc, 255, 0, 0);
