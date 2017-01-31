@@ -252,7 +252,7 @@ public class Gardener extends Bot {
 				return;
 			}
 		}*/
-		if (nearbyEnemyRobots.length == 0  && rc.getRoundNum() > 5 && (rc.readBroadcast(15) == 0 || rc.getRoundNum() < 40 && MapAnalysis.conflictDist > 10 * rc.getTreeCount()) && plantATree())
+		if (nearbyEnemyRobots.length == 0  && roundNum > 5 && (rc.readBroadcast(15) == 0 || roundNum < 40 && MapAnalysis.conflictDist > 10 * rc.getTreeCount()) && plantATree())
 			return;
 		else if (rc.getBuildCooldownTurns() == 0 && (rc.readBroadcast(15) > 0)) {
 			if(myAdaptation != MapAnalysis.DEFEND_SOMETHING && ((!canPlantTree() && rc.senseNearbyTrees(2, us).length < 3 && roundNum < 50) || (calcTrappedInHeuristic() > 7 + 2 * numLumberjacksInSightRadius() && myGenetics != MapAnalysis.RUSH_VP && myGenetics != MapAnalysis.RUSH_ENEMY))){
