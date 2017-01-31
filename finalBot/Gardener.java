@@ -11,6 +11,7 @@ public class Gardener extends Bot {
     public static float myPatience;
     public static float dLastTurn;
     public static MapLocation targetLoc;
+    public static boolean trapped = false;
 
     public Gardener(RobotController r) throws GameActionException {
         super(r);
@@ -448,6 +449,10 @@ public class Gardener extends Bot {
 				}
 			}
 			dir = dir.rotateLeftDegrees(10);
+		}
+		if (!trapped) {
+			trapped = true;
+			Message.GARDENER_TRAPPED_NUM.setValue(Message.GARDENER_TRAPPED_NUM.getValue() + 1);
 		}
 		return false;
 	}
