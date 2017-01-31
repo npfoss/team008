@@ -35,7 +35,22 @@ public class Soldier extends Bot {
         		Direction dirToMove = here.directionTo(nearbyBullets[0].location);
         		if(target != null)
         			dirToMove = here.directionTo(target);
-        		RangedCombat.bulletMove(here.add(dirToMove, type.strideRadius), true);
+        		Direction moveDir = RangedCombat.bulletMove(here.add(dirToMove, type.strideRadius), false);
+        		if(moveDir != null){
+        			MapLocation moveTo = here.add(moveDir, type.strideRadius);
+        			if(target != null){
+        				if(moveTo.distanceTo(target) < here.distanceTo(target)){
+        					
+        				}
+        			}
+        			RangedCombat.shootOpposingBullets();
+        			if(rc.getMoveCount() == 0){
+        				rc.move(moveDir, type.strideRadius);
+        			}
+        		}
+        		else{
+        			RangedCombat.shootOpposingBullets();
+        		}
         	}
         	if (target != null && turnsSinceSeenEnemy > 10 && ((here.distanceTo(target) < 3 || rc.canSenseLocation(target) && rc.isLocationOccupiedByTree(target)))) {
 				if(debug)rc.setIndicatorLine(here, target, 0, 255, 0); 
@@ -51,13 +66,13 @@ public class Soldier extends Bot {
 				Message.DISTRESS_SIGNALS.removeLocation(target);
 				assignNewTarget();
         	}
-			else if (target != null) {
+			else if (target != null && rc.getMoveCount() == 0) {
 				if (debug) {
 		        	rc.setIndicatorLine(here, target, 255, 0, 0); 
 				}
 				goTo(target);
 			} 
-			else {
+			else if (rc.getMoveCount() == 0) {
 				if(nearbyAlliedRobots.length > 0 && here.distanceTo(nearbyAlliedRobots[0].location) > 4)
 					tryMoveDirection(here.directionTo(nearbyAlliedRobots[0].location), true, true);
 				else{
