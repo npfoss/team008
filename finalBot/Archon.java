@@ -84,7 +84,8 @@ public class Archon extends Bot {
 						: (MapAnalysis.initialAlliedArchonLocations.length == 1 ? 0 : unitsBuilt * 2)))))) {
 			if (!willTrapOurselvesIn() || roundNum > 3) {
 				if (Message.NUM_GARDENERS.getValue()
-						- Message.GARDENER_TRAPPED_NUM.getValue() <= (rc.getRoundNum() > 100 ? 1 : 0)) {
+						- Message.GARDENER_TRAPPED_NUM.getValue() <= ((Message.NUM_GARDENERS.getValue() > 4 )? 1 : 0)) {
+					System.out.println("We have " + Message.GARDENER_TRAPPED_NUM.getValue() + "/" + Message.NUM_GARDENERS.getValue() + " gardeners" );
 					hireGardener();
 					unitsBuilt++;
 				}

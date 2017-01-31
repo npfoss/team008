@@ -441,6 +441,9 @@ public class Gardener extends Bot {
 	}
 	
 	public boolean canPlantTree() throws GameActionException {
+		if(rc.getTeamBullets() < GameConstants.BULLET_TREE_COST){
+			return false;
+		}
 		Direction dir = here.directionTo(MapAnalysis.center);
 		Boolean skipped = false;
 		for (int i = 36; i-- > 0;) {
