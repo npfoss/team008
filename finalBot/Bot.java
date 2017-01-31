@@ -302,7 +302,12 @@ public class Bot {
 					.addLocation(Util.closestSpecificType(nearbyEnemyRobots, here, RobotType.ARCHON).location);
 		}
 		if(enemies.length == 1 && enemies[0].type != RobotType.SCOUT && enemies[0].type != RobotType.ARCHON){
-			Message.ISOLATED_ENEMIES.addLocation(enemies[0].location);
+			if(enemies[0].type == RobotType.GARDENER){
+				Message.ENEMY_ARMIES.addLocation(enemies[0].location);
+			}
+			else{
+				Message.ISOLATED_ENEMIES.addLocation(enemies[0].location);
+			}
 		} else if (enemies.length > 1) {
 			for (RobotInfo e : nearbyEnemyRobots) {
 				if (e.type != RobotType.SCOUT) {

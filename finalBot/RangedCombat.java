@@ -15,6 +15,7 @@ public class RangedCombat extends Bot {
 	private static final int TRIAD_SPREAD_DEGREES = 20;
 
 	//Globals
+	private static int blockedByTree = 0;
 	private static float MOVE_DIST = type.strideRadius;
 	private static float safeDist = 0;
 	private static boolean bulletSafe;
@@ -26,7 +27,8 @@ public class RangedCombat extends Bot {
 	 * to call execute, number of enemies must be > 0
 	 */
 	public static void execute() throws GameActionException {
-		if(debug)System.out.println("here");
+		blockedByTree = 0;
+		//if(debug)System.out.println("here");
 	    //if(debug)System.out.println("Instantiation: "+ Clock.getBytecodeNum());
 		potentialAttackStats attack = chooseTargetAndShotType();
 		onlyHarmlessUnitsAround = onlyHarmlessUnitsNearby();
@@ -626,6 +628,11 @@ public class RangedCombat extends Bot {
 			ableToShootTriad = isDirSafe(leftTriadDir) && isDirSafe(rightTriadDir);
 			ableToShootPentad = isDirSafe(leftPentadDir) && isDirSafe(rightPentadDir);
 		}
+		if(blockedByTree > 1){
+			//in tight corridor aka line of fire, magic wood
+			if(debug)System.out.println("in tight corridor");
+			return SINGLE_SHOT;
+		}
 		int tempSV = singleValue;
 		
 		if(targetRobot != null && here.distanceTo(targetLoc) - type.bodyRadius - targetRobot.type.bodyRadius < type.bulletSpeed){
@@ -827,7 +834,7 @@ public class RangedCombat extends Bot {
 
 		}
 		int count = 0;
-		for (TreeInfo friend : nearbyTrees) {
+		for (TreeInfo friend : rc.senseNearbyTrees(target.location, -1, Team.NEUTRAL)) {
 			count++;
 			if(count > limit){
 				break;
@@ -864,19 +871,9 @@ public class RangedCombat extends Bot {
 	public static boolean isDirSafe(Direction dir) throws GameActionException {
 		//if(debug)System.out.println("starting isDirSafe " + Clock.getBytecodeNum());
 		Direction intendedAttackDir = dir;
-		int limit = 5;
+		int limit = 10;
 		int count = 0;
-		for (RobotInfo friend : nearbyAlliedRobots) {
-			count++;
-			if(count > limit)
-				break;
-			if (willHitLoc(intendedAttackDir, friend.location, friend.type.bodyRadius)) {
-				//if(debug)System.out.println("Direction is not safe");
-				return false;
-			}
-		}
-		count = 0;
-		for (TreeInfo friend : nearbyTrees) {
+		for (TreeInfo friend : rc.senseNearbyTrees(here.add(dir, type.sensorRadius), -1, Team.NEUTRAL)) {
 			count++;
 			if(count > limit)
 				break;
@@ -884,6 +881,19 @@ public class RangedCombat extends Bot {
 				continue;
 			}
 			if (willHitLoc(intendedAttackDir, friend.location, friend.radius)) {
+				System.out.println(blockedByTree);
+				blockedByTree++;
+				//if(debug)System.out.println("Direction is not safe");
+				return false;
+			}
+		}
+		limit = 5;
+		count = 0;
+		for (RobotInfo friend : nearbyAlliedRobots) {
+			count++;
+			if(count > limit)
+				break;
+			if (willHitLoc(intendedAttackDir, friend.location, friend.type.bodyRadius)) {
 				//if(debug)System.out.println("Direction is not safe");
 				return false;
 			}
