@@ -282,7 +282,8 @@ public class MapAnalysis extends Bot {
 				} else if (numScout < 1) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SCOUT);
 					Message.GARDENER_BUILD_NUM.setValue(1);
-         else if ((numLumberjack * 2 < treesToClear + numUnitTrees / 5) && numLumberjack < rc.getTreeCount() && rc.getTreeCount() > 3) {
+				}
+				else if ((numLumberjack * 2 < treesToClear + numUnitTrees / 5) && numLumberjack < rc.getTreeCount() && rc.getTreeCount() > 3) {
 					Message.GARDENER_BUILD_ORDERS.setValue(LUMBERJACK);
 					Message.GARDENER_BUILD_NUM.setValue(1);
 				} else if (numSoldier >= initialSoldiers && numSoldier < rc.getTreeCount() / treeToSoldierRatio) {
