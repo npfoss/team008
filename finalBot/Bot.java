@@ -5,7 +5,7 @@ import battlecode.common.*;
 
 public class Bot {
 	// for debugging
-	public static boolean debug = true;
+	public static boolean debug = false;
 
 	// for everyone to use
 	public static RobotController rc;
@@ -426,6 +426,7 @@ public class Bot {
 	}
 	
 	private static int tryMoveBinary(Direction dir, float dist, boolean makeMove) throws GameActionException {
+		if(debug) System.out.println("whee binary");
 		float highDist = dist;
 		float lowDist = 0;
 		float midDist = (float)(dist/2);
@@ -461,11 +462,15 @@ public class Bot {
 			throws GameActionException {
 //		if (debug) System.out.println("trying to move in dir " + dir);
 
-		Direction bestDir = dir;
-		int bestDanger = tryMove(dir, type.strideRadius, makeMove, false);
-		int tempDanger = 0;
-		if (bestDanger == 0) {
+		Direction bestDir = null;
+		int bestDanger = 9999;
+		int tempDanger = tryMove(dir, type.strideRadius, makeMove, false);
+		if (tempDanger == 0) {
 			return true;
+		}
+		if(tempDanger < bestDanger){
+			bestDir = dir;
+			bestDanger = tempDanger;
 		}
 		Direction left = dir.rotateLeftDegrees(30);
 		Direction right = dir.rotateRightDegrees(30);
@@ -495,9 +500,8 @@ public class Bot {
 			bestDir = null;
 			bestDanger = tempDanger;
 		}
-		if (bestDir != null) {
-			calculatedMove = bestDir;
-		}
+
+		calculatedMove = bestDir;
 		if (bestDir != null && makeMove) {
 			rc.move(bestDir, type.strideRadius);
 			here = rc.getLocation();
