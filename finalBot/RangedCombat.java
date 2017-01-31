@@ -453,15 +453,15 @@ public class RangedCombat extends Bot {
 		int calculated = 0;
 		for (int i = 0; i < nearbyEnemyRobots.length; i++) {
 			RobotInfo robot = nearbyEnemyRobots[i];
-			if(robot.health < robot.type.maxHealth && nearbyEnemyRobots.length > i + 1){
+			if(robot.health < robot.type.maxHealth && robotsToCalculate > i + 1){
 				RobotInfo[] nearbyEnemiesToThatRobot = rc.senseNearbyRobots(robot.location, 2, enemy);
 				if(nearbyEnemiesToThatRobot.length > 1 && nearbyEnemiesToThatRobot[1].type == RobotType.GARDENER){
 					continue;
 				}
 			}
-			if(robot.type == RobotType.ARCHON && nearbyEnemyRobots.length > i + 1)
+			if(robot.type == RobotType.ARCHON && nearbyEnemyRobots.length > robotsToCalculate + 1)
 				continue;
-			if(robot.type == RobotType.SCOUT && nearbyEnemyRobots.length > i + 1)
+			if(robot.type == RobotType.SCOUT && nearbyEnemyRobots.length > robotsToCalculate + 1)
 				continue;
 			canWeHitThemValue = canWeHitHeuristic(robot);
 			score = (int) (canWeHitThemValue);
