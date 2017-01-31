@@ -150,7 +150,7 @@ public class Lumberjack extends Bot {
                 ;
     }
 
-    public int WHEN_TO_STOP_SCORING_TREES_AND_MOVE = 4000;
+    public int WHEN_TO_STOP_SCORING_TREES_AND_MOVE = 5000;
     public void goForTrees() throws GameActionException {
 //        int s = Clock.getBytecodeNum();
 //        System.out.println("getting closest " + nearbyNeutralTrees.length + " neutral took " + (Clock.getBytecodeNum() - s));
@@ -169,7 +169,7 @@ public class Lumberjack extends Bot {
 //            if(debug) System.out.print("loopy");
             if(nearbyTrees[i].getTeam() == us) continue;
             score = scoreTree(nearbyTrees[i]);
-            if(debug) System.out.println("loc: " + nearbyTrees[i].location.x + " " + nearbyTrees[i].location.y + " score: " + score);
+//            if(debug) System.out.println("loc: " + nearbyTrees[i].location.x + " " + nearbyTrees[i].location.y + " score: " + score);
             if(!moved && score > bestMoveScore){
                 bestMoveScore = score;
                 moveTo = nearbyTrees[i];
