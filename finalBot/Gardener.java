@@ -236,7 +236,7 @@ public class Gardener extends Bot {
         		buildRobot(RobotType.LUMBERJACK,true);
         	}
         	else{
-            buildSomething();
+        		buildSomething();
         	}
         }
         if(!isExploring && (!updatedLocs || (rc.getRoundNum() + rc.getID()) % 100 == 0)){
@@ -258,7 +258,7 @@ public class Gardener extends Bot {
 				return;
 			}
 		}*/
-		if (!isExploring && RangedCombat.onlyHarmlessUnitsNearby()  && roundNum > 5 && (rc.readBroadcast(15) == 0 || roundNum < 40 && MapAnalysis.conflictDist > 10 * rc.getTreeCount()) && plantATree())
+		if (!isExploring && RangedCombat.onlyHarmlessUnitsNearby()  && roundNum > 5 && (rc.readBroadcast(15) < 1 || roundNum < 40 && MapAnalysis.conflictDist > 10 * rc.getTreeCount()) && plantATree())
 			return;
 		else if (rc.getBuildCooldownTurns() == 0) {
 			if(myAdaptation != MapAnalysis.DEFEND_SOMETHING && (calcTrappedInHeuristic() > 10 + 10 * spotsICanPlant() + 20 * numLumberjacksInSightRadius() && myGenetics != MapAnalysis.RUSH_VP)){
