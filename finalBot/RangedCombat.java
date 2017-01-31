@@ -628,7 +628,7 @@ public class RangedCombat extends Bot {
 			ableToShootTriad = isDirSafe(leftTriadDir) && isDirSafe(rightTriadDir);
 			ableToShootPentad = isDirSafe(leftPentadDir) && isDirSafe(rightPentadDir);
 		}
-		if(blockedByTree > 1){
+		if(blockedByTree > 1 && nearbyNeutralTrees.length > 7){
 			//in tight corridor aka line of fire, magic wood
 			if(debug)System.out.println("in tight corridor");
 			return SINGLE_SHOT;
