@@ -23,7 +23,7 @@ public class Archon extends Bot {
 			float myConflictDist = here.distanceTo(Util.closestLocation(MapAnalysis.initialEnemyArchonLocations));
 			//System.out.println("my conflict dist = " + myConflictDist);
 			if(Math.abs(myConflictDist - Message.CONFLICT_DIST.getFloatValue()) < 0.1){
-				if(!willTrapOurselvesIn() && canIHire() && !(Message.NUM_ARCHONS.getValue() == 1)){
+				if(!willTrapOurselvesIn() && canIHire() || MapAnalysis.initialEnemyArchonLocations.length == 1){
 					initialBuilder = true;
 					roundIBecameBuilder = roundNum;
 				}
@@ -74,7 +74,6 @@ public class Archon extends Bot {
         }
 		if(rc.getMoveCount() == 0){
             if(debug){System.out.println("I think im making room");}
-
             clearRoom();
 		}
 		if (initialBuilder && (Message.NUM_GARDENERS.getValue() == 0 || 
