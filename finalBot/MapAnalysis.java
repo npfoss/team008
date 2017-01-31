@@ -196,6 +196,9 @@ public class MapAnalysis extends Bot {
 			if(numGardener < 8){
 				Message.ARCHON_BUILD_NUM.setValue(1);
 			}
+			else{
+				Message.ARCHON_BUILD_NUM.setValue(0);
+			}
 			switch (adaptation) {
 			case DEFEND_NOTHING:
 				if(rc.getTeamVictoryPoints() > 1000 - rc.getTreeCount() * 8 || rc.getTeamVictoryPoints() - rc.getOpponentVictoryPoints() < 50 && rc.getOpponentVictoryPoints() > 700)
@@ -225,8 +228,11 @@ public class MapAnalysis extends Bot {
 			if (numGardener == 0 ||  
 				    rc.getRoundNum() > 100 && (Message.ADAPTATION.getValue() != DEFEND_SOMETHING || rc.getTeamBullets() > 150) && 
 				    (double)(rc.getTreeCount()) / numGardener > (rc.getTeamBullets() > roundNum ? 1.5: 2.5)
-					&& (numGardener == 1 || rc.getTeamBullets() > 150)) {
+					&& (numGardener == 1 && numEnemies == 0 || rc.getTeamBullets() > 150)) {
 				Message.ARCHON_BUILD_NUM.setValue(1);
+			}
+			else{
+				Message.ARCHON_BUILD_NUM.setValue(0);
 			}
 			switch (adaptation) {
 			case 0:
@@ -279,8 +285,11 @@ public class MapAnalysis extends Bot {
 			if (numGardener == 0 ||  
 		    	rc.getRoundNum() > 100 && (Message.ADAPTATION.getValue() != DEFEND_SOMETHING || rc.getTeamBullets() > 150) && 
 		    	(double)(rc.getTreeCount()) / numGardener > (rc.getTeamBullets() > roundNum ? 1.5: 2.5) 
-				&& (numGardener == 1 || rc.getTeamBullets() > 150)) {
+				&& (numGardener == 1 && numEnemies == 0 || rc.getTeamBullets() > 150)) {
 				Message.ARCHON_BUILD_NUM.setValue(1);
+			}
+			else{
+				Message.ARCHON_BUILD_NUM.setValue(0);
 			}
 			switch (adaptation) {
 			case 0:
@@ -315,9 +324,12 @@ public class MapAnalysis extends Bot {
 			if (numGardener == 0 ||  
 	    	rc.getRoundNum() > 100 && (Message.ADAPTATION.getValue() != DEFEND_SOMETHING || rc.getTeamBullets() > 150) && 
 	    	(double)(rc.getTreeCount()) / numGardener > (rc.getTeamBullets() > roundNum ? 1.5: 2.5)
-			&& (numGardener == 1 || rc.getTeamBullets() > 150)) {
+			&& (numGardener == 1 && numEnemies == 0 || rc.getTeamBullets() > 150)) {
 			Message.ARCHON_BUILD_NUM.setValue(1);
 		}
+			else{
+				Message.ARCHON_BUILD_NUM.setValue(0);
+			}
 			switch (adaptation) {
 			case 0:
 			case DEFEND_NOTHING:
