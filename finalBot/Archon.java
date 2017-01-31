@@ -43,7 +43,6 @@ public class Archon extends Bot {
 			}
 		}
 		else if (canIHire()&&(!willTrapOurselvesIn()||rc.getRoundNum()>2)  && roundNum - Message.INITIAL_BUILDER_HERE.getValue() > 1){
-
 			if(debug)System.out.println("i am the initial builder now");
 			initialBuilder = true;
 			roundIBecameBuilder = roundNum;
@@ -52,8 +51,8 @@ public class Archon extends Bot {
 		
 		if(nearbyEnemyRobots.length > 0 && !(nearbyEnemyRobots.length == 1 && (nearbyEnemyRobots[0].type == RobotType.GARDENER || nearbyEnemyRobots[0].type == RobotType.ARCHON))){
 			if(!inDistress){
-			Message.ARCHON_DISTRESS_NUM.setValue(Message.ARCHON_DISTRESS_NUM.getValue()+1);
-			inDistress = true;
+				Message.ARCHON_DISTRESS_NUM.setValue(Message.ARCHON_DISTRESS_NUM.getValue()+1);
+				inDistress = true;
 			}
 			if(Message.NUM_ARCHONS.getValue() > 1 && Message.ARCHON_DISTRESS_NUM.getValue() < Message.NUM_ARCHONS.getValue()){
 				initialBuilder = false;
