@@ -73,7 +73,7 @@ public class Gardener extends Bot {
         if(targetLoc == null || here.distanceTo(targetLoc) < type.bodyRadius){
             return false;
         }
-        if(here.distanceTo(targetLoc) > 25){
+        if(here.distanceTo(targetLoc) > 20){
         	return true;
         }
         if(turnsIHaveBeenTrying > 70){
@@ -112,7 +112,7 @@ public class Gardener extends Bot {
         	Direction dir = new Direction((float) (Math.PI/3 * i));
         	MapLocation loc = here.add(dir, (float) (type.sensorRadius - .1));
         	if(rc.onTheMap(loc) && !rc.isLocationOccupiedByTree(loc)){
-        		Message.GARDENER_BUILD_LOCS.addLocation(here.add(dir, (float) 8.5));
+        		Message.GARDENER_BUILD_LOCS.addLocation(here.add(dir, (float) 7));
         	}
         	else if(rc.isLocationOccupiedByTree(loc) && nearbyNeutralTrees.length > 0){
         		Message.CLEAR_TREES_PLEASE.addLocation(loc);
@@ -155,6 +155,9 @@ public class Gardener extends Bot {
                 targetLoc = Message.GARDENER_BUILD_LOCS.getClosestLocation(here);
             }
 
+            if(targetLoc.distanceTo(here) > 15){
+                targetLoc = null;
+            }
             if(myPatienceIsUp(targetLoc)){
                 if(debug){System.out.println("Patience Up " +Clock.getBytecodeNum());}
                 if(notTerribleSpot()){
@@ -204,7 +207,9 @@ public class Gardener extends Bot {
                 if(debug){System.out.println("going to target");}
                 if(debug){System.out.println(here.distanceTo(targetLoc));}
 
-                goToDangerous(targetLoc);
+                if(!rc.hasMoved()){
+                    goToDangerous(targetLoc);
+                }
                 if (here.distanceTo(targetLoc) < .5) {
                     if(debug){System.out.println("done exploring");}
                     isExploring = false;
@@ -345,7 +350,7 @@ public class Gardener extends Bot {
      * @return Boolean true if the spot is decent
      */
     private boolean notTerribleSpot() {
-        return (nearbyAlliedTrees.length == 0 || here.distanceTo(nearbyAlliedTrees[0].location) > 3);
+        return (nearbyAlliedTrees.length == 0 || here.distanceTo(nearbyAlliedTrees[0].location) > 4);
     }
     
     /**
@@ -361,8 +366,8 @@ public class Gardener extends Bot {
     			Message.GARDENER_TRAPPED_NUM.setValue(Message.GARDENER_TRAPPED_NUM.getValue() + 1);
     		}
     	}
-        if(targetLoc == null) {return myPatience > 150;}
-        return myPatience > 200 && here.distanceTo(targetLoc) > 5;
+        if(targetLoc == null) {return myPatience > 50;}
+        return myPatience > 100 && here.distanceTo(targetLoc) > 5;
     }
 	
 	public boolean buildRobot(RobotType type, boolean dec) throws GameActionException {
