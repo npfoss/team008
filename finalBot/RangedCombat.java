@@ -36,9 +36,9 @@ public class RangedCombat extends Bot {
 			RobotInfo closestRobot = nearbyEnemyRobots[0];
 			targetLoc = closestRobot.location;
 			safeDist = calcSafeDist(nearbyEnemyRobots[0]);
+			RobotInfo tG = Util.closestSpecificType(nearbyAlliedRobots, here, RobotType.GARDENER);
 			if(safeDist == -1){
         		Direction dir = targetLoc.directionTo(here);
-        		RobotInfo tG = Util.closestSpecificType(nearbyAlliedRobots, here, RobotType.GARDENER);
         		if(tG != null){
         			dir = tG.location.directionTo(targetLoc);
         		}
@@ -47,8 +47,11 @@ public class RangedCombat extends Bot {
         			goTo(targetLoc);
         		else
         			moveToBinary(targetLoc);
-        		rc.setIndicatorLine(here, targetLoc, 255, 0, 0);
+        		//rc.setIndicatorLine(here, targetLoc, 255, 0, 0);
         	}
+			else if(tG != null){
+				goTo(tG.location);
+			}
 			else if (!onlyHarmlessUnitsAround || here.distanceTo(closestRobot.location) < 3.5) {
 				Direction moveDir = calcMoveDir(closestRobot);
 				if (moveDir != null && rc.canMove(moveDir, MOVE_DIST))
@@ -78,9 +81,9 @@ public class RangedCombat extends Bot {
         //if(debug)System.out.println("Move Calc:"+Clock.getBytecodeNum());
 
         if (moveDir != null || onlyHarmlessUnitsAround) {
+			RobotInfo tG = Util.closestSpecificType(nearbyAlliedRobots, here, RobotType.GARDENER);
         	if(safeDist == -1){
         		Direction dir = targetLoc.directionTo(here);
-        		RobotInfo tG = Util.closestSpecificType(nearbyAlliedRobots, here, RobotType.GARDENER);
         		if(tG != null){
         			dir = tG.location.directionTo(targetLoc);
         		}
@@ -90,6 +93,9 @@ public class RangedCombat extends Bot {
         		else
         			moveToBinary(targetLoc);
         		//rc.setIndicatorLine(here, targetLoc, 255, 0, 0);
+        	}
+        	else if(tG != null){
+        		goTo(tG.location);
         	}
         	else if(onlyHarmlessUnitsAround && here.distanceTo(targetLoc) > 3.5){
         		goTo(targetLoc);
@@ -443,10 +449,16 @@ public class RangedCombat extends Bot {
 		int bestScore = -999999;
 		RobotInfo bestRobot = null;
 		int canWeHitThemValue;
-		int robotsToCalculate = 5;
+		int robotsToCalculate = 3;
 		int calculated = 0;
 		for (int i = 0; i < nearbyEnemyRobots.length; i++) {
 			RobotInfo robot = nearbyEnemyRobots[i];
+			if(robot.health < robot.type.maxHealth && nearbyEnemyRobots.length > i + 1){
+				RobotInfo[] nearbyEnemiesToThatRobot = rc.senseNearbyRobots(robot.location, 2, enemy);
+				if(nearbyEnemiesToThatRobot.length > 1 && nearbyEnemiesToThatRobot[1].type == RobotType.GARDENER){
+					continue;
+				}
+			}
 			if(robot.type == RobotType.ARCHON && nearbyEnemyRobots.length > i + 1)
 				continue;
 			if(robot.type == RobotType.SCOUT && nearbyEnemyRobots.length > i + 1)
@@ -813,7 +825,7 @@ public class RangedCombat extends Bot {
 			if(count > limit){
 				break;
 			}
-			if(friend.team == enemy && nearbyAlliedRobots.length > 0){
+			if(friend.team == enemy){
 				continue;
 			}
 			if(here.distanceTo(friend.location) - friend.radius - type.bodyRadius < 0.1 && dist - target.type.bodyRadius - type.bodyRadius < 0.1)

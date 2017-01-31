@@ -14,10 +14,14 @@ public class Soldier extends Bot {
 	public void takeTurn() throws Exception{
         //if(debug)System.out.println("In instantiation:"+Clock.getBytecodeNum());
 		if(!containing && (MapAnalysis.initialEnemyArchonLocations.length - Message.ENEMY_ARCHONS_KILLED.getLength() < 2 || nearbyAlliedRobots.length > 5) && (nearbyEnemyRobots.length == 1 || nearbyEnemyRobots.length == 2 && nearbyEnemyRobots[1].type == RobotType.ARCHON) && here.distanceTo(nearbyEnemyRobots[0].location) < 5 && nearbyEnemyRobots[0].type == RobotType.ARCHON){
-    		containing = true;
+    		if(debug)System.out.println("containing");
+			containing = true;
     	}
 		if(nearbyEnemyRobots.length == 0){
 			containing = false;
+		}
+		else{
+			boolean targetIsSingleScoutInNeutralTree = nearbyEnemyRobots.length == 1 && nearbyEnemyRobots[0].type == RobotType.SCOUT && rc.senseTreeAtLocation(nearbyEnemyRobots[0].location) != null && rc.senseTreeAtLocation(nearbyEnemyRobots[0].location).team == Team.NEUTRAL;
 		}
         if(nearbyEnemyRobots.length > 0 && (containing || !(nearbyEnemyRobots.length == 1 && nearbyEnemyRobots[0].type == RobotType.ARCHON))){
             notifyFriendsOfEnemies(nearbyEnemyRobots);
