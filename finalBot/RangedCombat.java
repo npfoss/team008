@@ -10,22 +10,26 @@ public class RangedCombat extends Bot {
 	private static final String PENTAD_SHOT = "pentad shot";
 	private static final String NO_SHOT = "no shot";
 	private static final float TREE_HIT_VALUE = 5 * type.attackPower;
-	private static final float ENEMY_HIT_VALUE = 15 * type.attackPower;
+	private static final float ENEMY_HIT_VALUE = 10 * type.attackPower;
 	private static final int PENTAD_SPREAD_DEGREES = 30;
 	private static final int TRIAD_SPREAD_DEGREES = 20;
 
 	//Globals
-	private static float MOVE_DIST = type.strideRadius;
+	private static int blockedByTree = 0;
 	private static float safeDist = 0;
 	private static boolean bulletSafe;
 	private static boolean onlyHarmlessUnitsAround;
+	public static float MOVE_DIST = type.strideRadius;
+	public static BulletInfo bulletTarget;
 	
 
 	/**
 	 * to call execute, number of enemies must be > 0
 	 */
 	public static void execute() throws GameActionException {
-		if(debug)System.out.println("here");
+		MOVE_DIST = type.strideRadius;
+		blockedByTree = 0;
+		//if(debug)System.out.println("here");
 	    //if(debug)System.out.println("Instantiation: "+ Clock.getBytecodeNum());
 		potentialAttackStats attack = chooseTargetAndShotType();
 		onlyHarmlessUnitsAround = onlyHarmlessUnitsNearby();
@@ -35,9 +39,9 @@ public class RangedCombat extends Bot {
 			RobotInfo closestRobot = nearbyEnemyRobots[0];
 			targetLoc = closestRobot.location;
 			safeDist = calcSafeDist(nearbyEnemyRobots[0]);
+			RobotInfo tG = Util.closestSpecificType(nearbyEnemyRobots, here, RobotType.GARDENER);
 			if(safeDist == -1){
         		Direction dir = targetLoc.directionTo(here);
-        		RobotInfo tG = Util.closestSpecificType(nearbyAlliedRobots, here, RobotType.GARDENER);
         		if(tG != null){
         			dir = tG.location.directionTo(targetLoc);
         		}
@@ -46,8 +50,12 @@ public class RangedCombat extends Bot {
         			goTo(targetLoc);
         		else
         			moveToBinary(targetLoc);
-        		rc.setIndicatorLine(here, targetLoc, 255, 0, 0);
+        		//rc.setIndicatorLine(here, targetLoc, 255, 0, 0);
         	}
+			else if(tG != null){
+				rc.setIndicatorLine(here, tG.location, 255, 0, 0);
+				goTo(tG.location);
+			}
 			else if (!onlyHarmlessUnitsAround || here.distanceTo(closestRobot.location) < 3.5) {
 				Direction moveDir = calcMoveDir(closestRobot);
 				if (moveDir != null && rc.canMove(moveDir, MOVE_DIST))
@@ -77,9 +85,9 @@ public class RangedCombat extends Bot {
         //if(debug)System.out.println("Move Calc:"+Clock.getBytecodeNum());
 
         if (moveDir != null || onlyHarmlessUnitsAround) {
+			RobotInfo tG = Util.closestSpecificType(nearbyEnemyRobots, here, RobotType.GARDENER);
         	if(safeDist == -1){
         		Direction dir = targetLoc.directionTo(here);
-        		RobotInfo tG = Util.closestSpecificType(nearbyAlliedRobots, here, RobotType.GARDENER);
         		if(tG != null){
         			dir = tG.location.directionTo(targetLoc);
         		}
@@ -90,11 +98,15 @@ public class RangedCombat extends Bot {
         			moveToBinary(targetLoc);
         		//rc.setIndicatorLine(here, targetLoc, 255, 0, 0);
         	}
-        	else if(onlyHarmlessUnitsAround && here.distanceTo(targetLoc) > 3.5){
+        	else if(tG != null){
+        		rc.setIndicatorLine(here, tG.location, 255, 0, 0);
+        		goTo(tG.location);
+        	}
+        	else if(onlyHarmlessUnitsAround && (here.distanceTo(targetLoc) > 3.5 || nearbyEnemyRobots[0].type == RobotType.ARCHON && nearbyEnemyRobots.length == 1)){
         		goTo(targetLoc);
         	}
         	else if (moveDir != null){
-				MapLocation nextLoc = here.add(moveDir, type.strideRadius);
+				MapLocation nextLoc = here.add(moveDir, MOVE_DIST);
 				if (nextLoc.distanceTo(targetLoc) < here.distanceTo(targetLoc)) {
 					//if(debug){System.out.println("moved before shooting");}
 					rc.move(moveDir, MOVE_DIST);
@@ -106,7 +118,7 @@ public class RangedCombat extends Bot {
 		}
 
 		//If we've moved recalculate the shot type but not the shot
-		if(rc.hasMoved()) {
+		if(rc.hasMoved() && Clock.getBytecodesLeft() > 3000) {
 			attack.setShotType(calculateShotType(attack.getTarget(),attack.getShotValue()));
 		}
         //if(debug)System.out.println("Shot recalc:"+Clock.getBytecodeNum());
@@ -139,7 +151,7 @@ public class RangedCombat extends Bot {
 	
 	//////////////////////////Movement Micro////////////////////////
 
-	private static boolean onlyHarmlessUnitsNearby() {
+	public static boolean onlyHarmlessUnitsNearby() {
 		for(RobotInfo e: nearbyEnemyRobots){
 			if(e.type != RobotType.GARDENER && e.type != RobotType.ARCHON && e.type != RobotType.SCOUT)
 				return false;
@@ -265,7 +277,7 @@ public class RangedCombat extends Bot {
 		//if(debug)System.out.println("safeDist = " + safeDist);
 		//if(debug)System.out.println("bytecodes = " + Clock.getBytecodeNum() + " at start.");
 		//int precision = 5;
-		int dirsToCheck = 12;
+		int dirsToCheck = nearbyBullets.length < 7 ? 12 : 8;
 		int score = 0;
 		for(BulletInfo b: nearbyBullets){
 			float dist = here.distanceTo(b.location);
@@ -285,10 +297,8 @@ public class RangedCombat extends Bot {
 		Direction dir = here.directionTo(nearbyBullets[0].location).opposite();
 		int count;
 		int limit = 5;
-		for(int i = 0; i < dirsToCheck; i++){
-			if(Clock.getBytecodesLeft() < 1000)
-				break;
-			float moveDist = type.strideRadius;
+		for(int i = 0; i < dirsToCheck * 2; i++){
+			float moveDist = (i < dirsToCheck ? type.strideRadius: type.strideRadius/2);
 			if(!rc.canMove(dir, moveDist)){
 				dir = dir.rotateLeftDegrees(360/dirsToCheck);
 				continue;
@@ -300,7 +310,7 @@ public class RangedCombat extends Bot {
 				//rc.setIndicatorLine(here, b.location, 255, 0, 0);
 				count++;
 				float dist = here.distanceTo(b.location);
-				if(Clock.getBytecodesLeft() < 1000){
+				if(Clock.getBytecodesLeft() < 1500){
 					score = 9999;
 					break;
 				}
@@ -321,23 +331,26 @@ public class RangedCombat extends Bot {
 			}
 			if(score < bestScore){
 				bestScore = score;
-				score = i;
 				bestDist = moveTo.distanceTo(targetLoc);
 				bestDir = dir;
+				MOVE_DIST = moveDist;
 			}
-			else if(score == bestScore){
+			else if(Math.abs(score - bestScore) < 0.1){
 				float dist = moveTo.distanceTo(targetLoc);
 				if(bestDist > safeDist && dist > safeDist ? dist < bestDist: dist > bestDist){
 					bestDist = dist;
 					bestDir = dir;
+					MOVE_DIST = moveDist;
 				}
 			}
+			if(Clock.getBytecodesLeft() < 1500)
+				break;
 			dir = dir.rotateLeftDegrees(360/dirsToCheck);
 		}
 		//if(debug)System.out.println("bytecodes = " + Clock.getBytecodeNum() + " at end");
 		//if(debug)System.out.println("chose direction " + bestDir + " with score of " + bestScore + " and dist of " + bestDist);
 		if(makeMove && bestDir != null){
-			rc.move(bestDir, type.strideRadius);
+			rc.move(bestDir, MOVE_DIST);
 		}
 		return bestDir;
 	}
@@ -441,13 +454,19 @@ public class RangedCombat extends Bot {
 		int bestScore = -999999;
 		RobotInfo bestRobot = null;
 		int canWeHitThemValue;
-		int robotsToCalculate = 5;
+		int robotsToCalculate = 3;
 		int calculated = 0;
 		for (int i = 0; i < nearbyEnemyRobots.length; i++) {
 			RobotInfo robot = nearbyEnemyRobots[i];
-			if(robot.type == RobotType.ARCHON && nearbyEnemyRobots.length > i + 1)
+			if(robot.health < robot.type.maxHealth && robotsToCalculate > i + 1){
+				RobotInfo[] nearbyEnemiesToThatRobot = rc.senseNearbyRobots(robot.location, 2, enemy);
+				if(nearbyEnemiesToThatRobot.length > 1 && nearbyEnemiesToThatRobot[1].type == RobotType.GARDENER){
+					continue;
+				}
+			}
+			if(robot.type == RobotType.ARCHON && nearbyEnemyRobots.length > robotsToCalculate + 1)
 				continue;
-			if(robot.type == RobotType.SCOUT && nearbyEnemyRobots.length > i + 1)
+			if(robot.type == RobotType.SCOUT && nearbyEnemyRobots.length > robotsToCalculate + 1)
 				continue;
 			canWeHitThemValue = canWeHitHeuristic(robot);
 			score = (int) (canWeHitThemValue);
@@ -458,10 +477,19 @@ public class RangedCombat extends Bot {
 				bestScore = score;
 				bestRobot = robot;
 				shotValue = canWeHitThemValue;
+				//dirSafe = true;
 				if(attackingHarmlessUnit){
 					safeDist = 0;
 				}
 			}
+			/*
+			else if(robot.type == RobotType.GARDENER && score > bestScore){
+				dirSafe = false;
+				safeDist = 0;
+				bestScore = score;
+				bestRobot = robot;
+				shotValue = canWeHitThemValue;
+			}*/
 			calculated++;
 			if (calculated == robotsToCalculate){
 				break;
@@ -472,15 +500,58 @@ public class RangedCombat extends Bot {
 		}
 		if(bestRobot != null)
 			return new potentialAttackStats(bestRobot, calculateShotType(bestRobot, shotValue), shotValue);
-		return null;
+
+        return null;
 	}
 
-	private static float calcSafeDist(RobotInfo bestRobot) throws GameActionException {
+    /**
+     * Hopefully this mean we're getting shot at but might not see them
+     * @return
+     */
+    public static int numBulletsEnemyShot() {
+        int count = 0;
+	    if(nearbyBullets.length > 10){
+	        for(BulletInfo bullet: nearbyBullets){
+                if((Math.abs(bullet.getLocation().directionTo(here).radiansBetween(bullet.getDir()))) < Math.PI/6){
+	                count++;
+	                bulletTarget = bullet;
+                }
+            }
+        }
+	    if(debug)System.out.println("numBulletsEnemyShot = " + count);
+        return count;
+    }
+
+    public static void shootOpposingBullets() throws GameActionException{
+    	int bulletsToShoot = numBulletsEnemyShot();
+    	if(bulletsToShoot < 7)
+    		return;
+    	Direction targetDir = here.directionTo(bulletTarget.location);
+    	Direction leftTriadDir = targetDir.rotateLeftDegrees(20);
+		Direction rightTriadDir = targetDir.rotateRightDegrees(20);
+		Direction leftPentadDir = targetDir.rotateLeftDegrees(30);
+		Direction rightPentadDir = targetDir.rotateRightDegrees(30);
+		boolean ableToShootTriad = isDirSafe(leftTriadDir) && isDirSafe(rightTriadDir);
+		boolean ableToShootPentad = isDirSafe(leftPentadDir) && isDirSafe(rightPentadDir);
+		if(ableToShootPentad && bulletsToShoot > 10)
+			rc.firePentadShot(targetDir);
+		else if(ableToShootTriad)
+			rc.fireTriadShot(targetDir);
+    }
+
+    private static float calcSafeDist(RobotInfo bestRobot) throws GameActionException {
 		if(bestRobot.type == RobotType.SCOUT && rc.canSenseLocation(bestRobot.location) && rc.isLocationOccupiedByTree(bestRobot.location)){//edge case for scouts in trees
 			return -1; //signal we are dealing with a scout
 		}
 		if(bestRobot.type == RobotType.GARDENER || bestRobot.type == RobotType.ARCHON || bestRobot.type == RobotType.SCOUT){
 			return 0;
+		}
+		if(bestRobot.health < bestRobot.type.maxHealth){
+			RobotInfo[] nearbyEnemiesToThatRobot = rc.senseNearbyRobots(bestRobot.location, 2, enemy);
+			if(nearbyEnemiesToThatRobot.length > 1 && nearbyEnemiesToThatRobot[1].type == RobotType.GARDENER){
+				return 0;
+				//is being built
+			}
 		}
 		//if(bestRobot.type == RobotType.TANK){
 		//	return (float) (type.sensorRadius);
@@ -491,13 +562,27 @@ public class RangedCombat extends Bot {
 		if(bestRobot.type == RobotType.TANK){
 			return (float)(type.sensorRadius + RobotType.TANK.bodyRadius - .1);
 		}
-		float safeDistance = bestRobot.type.bodyRadius + type.bodyRadius + bestRobot.type.strideRadius + 
-				(bestRobot.type == RobotType.LUMBERJACK ? GameConstants.LUMBERJACK_STRIKE_RADIUS - bestRobot.type.bodyRadius : ((float)(bestRobot.type.bulletSpeed * (bestRobot.type == RobotType.SCOUT ? 1 : 2) - (nearbyAlliedRobots.length > nearbyEnemyRobots.length ? (nearbyAlliedRobots.length - nearbyEnemyRobots.length) / 10.0 : 0))));//for now ki
+		float safeDistance = /*dodgingOptionsLimited(here, bestRobot.location) +*/ bestRobot.type.bodyRadius + type.bodyRadius + bestRobot.type.strideRadius + 
+				(bestRobot.type == RobotType.LUMBERJACK ? GameConstants.LUMBERJACK_STRIKE_RADIUS - bestRobot.type.bodyRadius : ((float)(bestRobot.type.bulletSpeed * (bestRobot.type == RobotType.SCOUT ? 1 : 1.8) - (nearbyAlliedRobots.length - 3 > nearbyEnemyRobots.length ? (nearbyAlliedRobots.length - nearbyEnemyRobots.length) / 10.0 : 0))));//for now ki
 		/*if(safeDistance > type.sensorRadius - 0.05){
 			safeDistance = (float)(type.sensorRadius - 0.05);
 		}*/
-		if(debug)System.out.println("safeDist = " + safeDist);
+		//if(debug)System.out.println("safeDist = " + safeDist);
 		return safeDistance;
+	}
+
+	private static float dodgingOptionsLimited(MapLocation toHere, MapLocation targetLoc) throws GameActionException {
+		Direction dir = here.directionTo(targetLoc);
+		int count = 0;
+		for(int i = 0; i < 4; i++){
+			MapLocation check = toHere.add(dir, type.strideRadius);
+			if(rc.isLocationOccupied(check) && !(rc.senseRobotAtLocation(here.add(dir, type.strideRadius)) != null && rc.senseRobotAtLocation(here.add(dir, type.strideRadius)).team == us)){
+				count++;
+			}
+			dir = dir.rotateLeftDegrees(90);
+		}
+		if(debug)System.out.println("limited options = " + count);
+		return (float) (count * 0.5);
 	}
 
 	/**
@@ -524,8 +609,13 @@ public class RangedCombat extends Bot {
 	 */
 	public static String calculateShotType(BodyInfo target, int singleValue) throws GameActionException {
 		//Cast body info if its a robot
-		if(target == null || (rc.getTeamVictoryPoints() > 1000 - rc.getTreeCount() * 5 && rc.getTeamVictoryPoints() - rc.getOpponentVictoryPoints() < 50))
-			return NO_SHOT;
+		/*
+		if(target.isBullet()){
+		    return PENTAD_SHOT;
+        }*/
+
+		//if(!dirSafe || target == null || (rc.getTeamVictoryPoints() > 1000 - rc.getTreeCount() * 5 && rc.getTeamVictoryPoints() - rc.getOpponentVictoryPoints() < 50))
+		//	return NO_SHOT;
 		if(safeDist == -1){
 			return SINGLE_SHOT;
 		}
@@ -538,18 +628,24 @@ public class RangedCombat extends Bot {
 				if(targetRobot.health < 10 && (Message.ENEMY_ARCHONS_KILLED.getClosestLocation(targetRobot.location) == null || Message.ENEMY_ARCHONS_KILLED.getClosestLocation(targetRobot.location).distanceTo(targetRobot.location) > 2)){
 					Message.ENEMY_ARCHONS_KILLED.addLocation(targetRobot.location);
 				}
-				return (nearbyAlliedRobots.length > 5 || rc.getInitialArchonLocations(enemy).length < 2 || rc.getTreeCount() > 10 || rc.getTeamBullets() > 500 ? SINGLE_SHOT: NO_SHOT);
+				return (nearbyAlliedRobots.length > 5 || (rc.getInitialArchonLocations(enemy).length - Message.ENEMY_ARCHONS_KILLED.getLength() < 2 && Message.GENETICS.getValue() != MapAnalysis.RUSH_ENEMY && rc.getTeamBullets() > 100) || rc.getTreeCount() > 10 || rc.getTeamBullets() > 500 ? SINGLE_SHOT: NO_SHOT);
 			}
 		}
-		if(type == RobotType.TANK && targetRobot != null){
-			return PENTAD_SHOT;
-		}
-		boolean ableToShootTriad = true;
-		boolean ableToShootPentad = true;
 		Direction leftTriadDir = targetDir.rotateLeftDegrees(20);
 		Direction rightTriadDir = targetDir.rotateRightDegrees(20);
 		Direction leftPentadDir = targetDir.rotateLeftDegrees(30);
 		Direction rightPentadDir = targetDir.rotateRightDegrees(30);
+		boolean ableToShootTriad = true;
+		boolean ableToShootPentad = true;
+		if(Clock.getBytecodesLeft() > 3000){
+			ableToShootTriad = isDirSafe(leftTriadDir) && isDirSafe(rightTriadDir);
+			ableToShootPentad = isDirSafe(leftPentadDir) && isDirSafe(rightPentadDir);
+		}
+		if(blockedByTree > 1 && nearbyNeutralTrees.length > 7){
+			//in tight corridor aka line of fire, magic wood
+			if(debug)System.out.println("in tight corridor");
+			return SINGLE_SHOT;
+		}
 		int tempSV = singleValue;
 		
 		if(targetRobot != null && here.distanceTo(targetLoc) - type.bodyRadius - targetRobot.type.bodyRadius < type.bulletSpeed){
@@ -595,22 +691,25 @@ public class RangedCombat extends Bot {
 		// come up with some sort of formula for choosing the kind of shot
 
         //System.out.println("singleValue = " + singleValue);
-
-		for(TreeInfo t: nearbyEnemyTrees){
-			Direction dirToT = here.directionTo(t.location);
-			float deg = Math.abs(targetDir.degreesBetween(dirToT));
-			if(deg < PENTAD_SPREAD_DEGREES){
-				if(debug)System.out.println("added enemy tree to pentad");
-				pentadValue += TREE_HIT_VALUE;
-				if(deg < TRIAD_SPREAD_DEGREES){
-					triadValue += TREE_HIT_VALUE;
+		if(Clock.getBytecodesLeft() > 2000){
+			for(TreeInfo t: nearbyEnemyTrees){
+				Direction dirToT = here.directionTo(t.location);
+				float deg = Math.abs(targetDir.degreesBetween(dirToT));
+				if(deg < PENTAD_SPREAD_DEGREES){
+					//if(debug)System.out.println("added enemy tree to pentad");
+					pentadValue += TREE_HIT_VALUE;
+					if(deg < TRIAD_SPREAD_DEGREES){
+						triadValue += TREE_HIT_VALUE;
+					}
 				}
 			}
 		}
 		
 		//Its better if we can deal collateral dmg to other enemies
 		for(RobotInfo r: nearbyEnemyRobots){
-			if(!ableToShootTriad){
+			if(Clock.getBytecodesLeft() < 1000)
+				break;
+			if(!ableToShootTriad && !ableToShootPentad){
 				break;
 			}
 			if(r == targetRobot){
@@ -660,22 +759,35 @@ public class RangedCombat extends Bot {
 			}
 		}*/
 		int treeMod = rc.getTreeCount() / 4;
-		int victoryPointMod = (rc.getTeamVictoryPoints() - 700) / 20;
+		int victoryPointMod = (rc.getOpponentVictoryPoints() - rc.getTeamVictoryPoints() > - 50 ? (rc.getTeamVictoryPoints() - 700) / 20 : 0);
+		float opponentBulletsMod = (float) 40.0; //probably a ton of bullets if doesn't update on next line
+		if(Clock.getBytecodesLeft() > 3000){
+			opponentBulletsMod = (float) (numBulletsEnemyShot() * 4.5);
+		}
+		if(debug)System.out.println("opponentBulletsMod = " + opponentBulletsMod);
 		if(victoryPointMod < 0)
 			victoryPointMod = 0;
-		if (ableToShootPentad && pentadValue + treeMod - victoryPointMod + (type.attackPower + type.bulletSpeed) * 4 > 121) {
+		if (ableToShootPentad && pentadValue + treeMod - victoryPointMod + opponentBulletsMod + (type.attackPower + type.bulletSpeed) * 4 > 121 ) {
+			if(debug)System.out.println("Pentad");
 			return PENTAD_SHOT;
 		}
-		if (ableToShootTriad && triadValue + treeMod - victoryPointMod + (type.attackPower + type.bulletSpeed) * 4 > 106) {
+		if (ableToShootTriad && triadValue + treeMod - victoryPointMod + opponentBulletsMod + (type.attackPower + type.bulletSpeed) * 4 > 106) {
+			if(debug)System.out.println("Triad");
 			return TRIAD_SHOT;
 		}
 		if(tempSV > 69 || targetRobot.type == RobotType.TANK){
+			if(debug)System.out.println("Single");
 			return SINGLE_SHOT;
 		}
 		//System.out.println(here.distanceTo(targetLoc));
-		if(type == RobotType.SOLDIER && here.distanceTo(targetLoc) < safeDist + (nearbyAlliedRobots.length > nearbyEnemyRobots.length ? (nearbyAlliedRobots.length - nearbyEnemyRobots.length) / 10.0 : 0)){
-			if(victoryPointMod < 10 || rc.getTeamVictoryPoints() - rc.getOpponentVictoryPoints() > 50)
+		if(type == RobotType.SOLDIER && here.distanceTo(targetLoc) < safeDist + (nearbyAlliedRobots.length - 3 > nearbyEnemyRobots.length ? (nearbyAlliedRobots.length - nearbyEnemyRobots.length) / 10.0 : 0)){
+			if(victoryPointMod < 10){
+				if(debug)System.out.println("Triad");
 				return TRIAD_SHOT;
+			}
+		}
+		if(targetRobot.type == RobotType.GARDENER){
+			return SINGLE_SHOT;
 		}
 		return NO_SHOT;
 
@@ -710,10 +822,12 @@ public class RangedCombat extends Bot {
 	 * @throws GameActionException
 	 */
 	private static boolean isDirectionSafe(RobotInfo target) throws GameActionException {
+		int limit = 15;
+		float dist = here.distanceTo(target.location);
 		//if(debug)System.out.println("starting isDirSafe " + Clock.getBytecodeNum());
 		Direction intendedAttackDir = here.directionTo(target.location);
 		for (RobotInfo friend : nearbyAlliedRobots) {
-			if (friend.location.distanceTo(here) < here.distanceTo(target.location) - type.bodyRadius
+			if (friend.location.distanceTo(here) < dist - type.bodyRadius
 					- target.type.bodyRadius){ 
 				if (willHitLoc(intendedAttackDir, friend.location, friend.type.bodyRadius)) {
 					//if(debug)System.out.println("Direction is not safe");
@@ -727,7 +841,7 @@ public class RangedCombat extends Bot {
 		for (RobotInfo enemy: nearbyEnemyRobots) {
 			if(enemy.getID() == target.getID())
 				continue;
-			if (enemy.location.distanceTo(here) < here.distanceTo(target.location) - type.bodyRadius
+			if (enemy.location.distanceTo(here) < dist - type.bodyRadius
 					- target.type.bodyRadius){ 
 				if (willHitLoc(intendedAttackDir, enemy.location, enemy.type.bodyRadius)) {
 					//if(debug)System.out.println("Direction is not safe");
@@ -738,13 +852,18 @@ public class RangedCombat extends Bot {
 			}
 
 		}
+		int count = 0;
 		for (TreeInfo friend : nearbyTrees) {
+			count++;
+			if(count > limit){
+				break;
+			}
 			if(friend.team == enemy && nearbyAlliedRobots.length > 0){
 				continue;
 			}
-			if(here.distanceTo(friend.location) - friend.radius - type.bodyRadius < 0.1 && here.distanceTo(target.location) - target.type.bodyRadius - type.bodyRadius < 0.1)
+			if(here.distanceTo(friend.location) - friend.radius - type.bodyRadius < 0.1 && dist - target.type.bodyRadius - type.bodyRadius < 0.1)
 				continue;
-			if (friend.location.distanceTo(here) - friend.radius - target.type.bodyRadius < here.distanceTo(target.location)) {
+			if (friend.location.distanceTo(here) - friend.radius - target.type.bodyRadius < dist) {
 				if (willHitLoc(intendedAttackDir, friend.location, friend.radius)) {
 					//if(debug)System.out.println("Direction is not safe");
 					return false;
@@ -755,7 +874,52 @@ public class RangedCombat extends Bot {
 		}
 		//if(debug)System.out.println("end dir safe " + Clock.getBytecodeNum());
 //		for (TreeInfo friend : nearbyNeutralTrees) {
-//			if (friend.location.distanceTo(here) < here.distanceTo(target.location) - type.bodyRadius
+//			if (friend.location.distanceTo(here) < dist - type.bodyRadius
+//					- target.type.bodyRadius) {
+//				if (intendedAttackDir.radiansBetween(here.directionTo(friend.location)) < Math.PI / 12) {
+//					return false;
+//				}
+//			} else {
+//				break;
+//			}
+//		}
+		return true;
+	}
+	
+	//like above but takes location rather than ri
+	public static boolean isDirSafe(Direction dir) throws GameActionException {
+		//if(debug)System.out.println("starting isDirSafe " + Clock.getBytecodeNum());
+		Direction intendedAttackDir = dir;
+		int limit = 10;
+		int count = 0;
+		for (TreeInfo friend : rc.senseNearbyTrees(here.add(dir, type.sensorRadius), -1, Team.NEUTRAL)) {
+			count++;
+			if(count > limit)
+				break;
+			if(friend.team == enemy){
+				continue;
+			}
+			if (willHitLoc(intendedAttackDir, friend.location, friend.radius)) {
+				System.out.println(blockedByTree);
+				blockedByTree++;
+				//if(debug)System.out.println("Direction is not safe");
+				return false;
+			}
+		}
+		limit = 5;
+		count = 0;
+		for (RobotInfo friend : nearbyAlliedRobots) {
+			count++;
+			if(count > limit)
+				break;
+			if (willHitLoc(intendedAttackDir, friend.location, friend.type.bodyRadius)) {
+				//if(debug)System.out.println("Direction is not safe");
+				return false;
+			}
+		}
+		//if(debug)System.out.println("end dir safe " + Clock.getBytecodeNum());
+//		for (TreeInfo friend : nearbyNeutralTrees) {
+//			if (friend.location.distanceTo(here) < dist - type.bodyRadius
 //					- target.type.bodyRadius) {
 //				if (intendedAttackDir.radiansBetween(here.directionTo(friend.location)) < Math.PI / 12) {
 //					return false;
