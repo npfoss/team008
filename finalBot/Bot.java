@@ -146,6 +146,7 @@ public class Bot {
 						break;
 					case GARDENER:
 						Message.NUM_GARDENERS.setValue(Message.NUM_GARDENERS.getValue() - 1);
+						Message.GARDENER_TRAPPED_NUM.setValue(Message.GARDENER_TRAPPED_NUM.getValue()-1);
 						break;
 					case SOLDIER:
 						Message.NUM_SOLDIERS.setValue(Message.NUM_SOLDIERS.getValue() - 1);
