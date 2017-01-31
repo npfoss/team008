@@ -58,10 +58,20 @@ public class Archon extends Bot {
 				inDistress = false;
 			}
 		}
-		if(willTrapOurselvesIn())
-			runAway();
+		if(willTrapOurselvesIn()) {
+            if(debug){System.out.println("I think we're gonna get trapped");}
+            if(Message.NUM_GARDENERS.getValue() == 0){
+                if(debug){System.out.println("make dat room doe");}
+                makeRoomForGardener();
+            }
+            if(!rc.hasMoved()) {
+                runAway();
+            }
+        }
 		if(rc.getMoveCount() == 0){
-			clearRoom();
+            if(debug){System.out.println("I think im making room");}
+
+            clearRoom();
 		}
 		if (initialBuilder && (Message.NUM_GARDENERS.getValue() == 0 || 
 				(Message.ARCHON_BUILD_NUM.getValue() > 0 && rc.getTeamBullets() > (100 + 
@@ -74,7 +84,17 @@ public class Archon extends Bot {
 				unitsBuilt++;
 			}
 		}
+
 	}
+    private void makeRoomForGardener() throws GameActionException {
+
+        if(nearbyNeutralTrees.length >= 1) {
+            goTo(here.directionTo(nearbyNeutralTrees[0].location).opposite());
+        } else if(nearbyAlliedTrees.length >= 1){
+            goTo(here.directionTo(nearbyAlliedTrees[0].location).opposite());
+        }
+
+    }
 
 	private boolean canIHire() {
 		Direction dir = here.directionTo(MapAnalysis.center);
@@ -251,6 +271,6 @@ public class Archon extends Bot {
 			if (bestScore != 10000) {
 				tryMoveDirectionDangerous(bestDir);
 			}
-}
+        }
 
-}
+    }
