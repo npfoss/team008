@@ -18,7 +18,7 @@ public class Archon extends Bot {
 	public static int unitsBuilt = 0;
 	public static boolean inDistress = false;
 	public void takeTurn() throws Exception {
-		if(roundNum == 1 && Message.INITIAL_BUILDER_HERE.getValue() == 0){
+		if(roundNum == 1 && Message.INITIAL_BUILDER_HERE.getValue() <1){
 			//System.out.println("conflict dist = " + MapAnalysis.conflictDist);
 			float myConflictDist = here.distanceTo(Util.closestLocation(MapAnalysis.initialEnemyArchonLocations));
 			//System.out.println("my conflict dist = " + myConflictDist);
@@ -32,14 +32,17 @@ public class Archon extends Bot {
 		
 		if(initialBuilder){
 			if(debug)System.out.println("i am initial builder");
-			if(Message.NUM_GARDENERS.getValue() == 0 && roundNum - roundIBecameBuilder > 0 && Message.NUM_ARCHONS.getValue() > 1){
+			if(((willTrapOurselvesIn() || rc.isBuildReady() && !canIHire())&&rc.getTeamBullets() > 100 ||Message.NUM_GARDENERS.getValue() == 0 && roundNum - roundIBecameBuilder > 0) && Message.NUM_ARCHONS.getValue() > 1){
+				if(debug)System.out.println("i am no longer the builder");
 				initialBuilder = false;
+				Message.INITIAL_BUILDER_HERE.setValue(0);
 			}
 			else{
 				Message.INITIAL_BUILDER_HERE.setValue(roundNum);
 			}
 		}
-		else if (canIHire() && roundNum - Message.INITIAL_BUILDER_HERE.getValue() > 1){
+		else if (canIHire()&&(!willTrapOurselvesIn()||rc.getRoundNum()>2)  && roundNum - Message.INITIAL_BUILDER_HERE.getValue() > 1){
+			if(debug)System.out.println("i am the initial builder now");
 			initialBuilder = true;
 			roundIBecameBuilder = roundNum;
 			Message.INITIAL_BUILDER_HERE.setValue(roundNum);
@@ -47,17 +50,17 @@ public class Archon extends Bot {
 		
 		if(nearbyEnemyRobots.length > 0 && !(nearbyEnemyRobots.length == 1 && (nearbyEnemyRobots[0].type == RobotType.GARDENER || nearbyEnemyRobots[0].type == RobotType.ARCHON))){
 			if(!inDistress){
-			Message.ARCHON_DISTRESS_NUM.setValue(Message.ARCHON_DISTRESS_NUM.getValue()+1);
-			inDistress = true;
+				Message.ARCHON_DISTRESS_NUM.setValue(Message.ARCHON_DISTRESS_NUM.getValue()+1);
+				inDistress = true;
 			}
-			if(Message.NUM_ARCHONS.getValue() > 1){
+			if(Message.NUM_ARCHONS.getValue() > 1 && Message.ARCHON_DISTRESS_NUM.getValue() < Message.NUM_ARCHONS.getValue()){
 				initialBuilder = false;
 				Message.INITIAL_BUILDER_HERE.setValue(0);
 			}
 			runAway();
 		}
 		else{
-			if(inDistress){
+			if(inDistress && rc.getHealth()>=9){
 				Message.ARCHON_DISTRESS_NUM.setValue(Message.ARCHON_DISTRESS_NUM.getValue()-1);
 				inDistress = false;
 			}
@@ -77,11 +80,7 @@ public class Archon extends Bot {
             clearRoom();
 		}
 		if (initialBuilder && (Message.NUM_GARDENERS.getValue() == 0 || 
-				(Message.ARCHON_BUILD_NUM.getValue() > 0 && rc.getTeamBullets() > (100 + 
-				(inDistress ? 
-						((Message.ARCHON_DISTRESS_NUM.getValue() < Message.NUM_ARCHONS.getValue()) ? 
-								10 : nearbyEnemyRobots.length)
-						: (MapAnalysis.initialAlliedArchonLocations.length == 1 ? 0 : unitsBuilt * 2)))))) {
+				(Message.ARCHON_BUILD_NUM.getValue() > 0 && rc.getTeamBullets() > (100)))) {
 			if (!willTrapOurselvesIn() || roundNum > 3) {
 				System.out.println("We have " + Message.GARDENER_TRAPPED_NUM.getValue() + "/" + Message.NUM_GARDENERS.getValue() + " gardeners" );
 				if (Message.NUM_GARDENERS.getValue()

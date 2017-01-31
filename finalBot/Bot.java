@@ -5,7 +5,7 @@ import battlecode.common.*;
 
 public class Bot {
 	// for debugging
-	public static boolean debug = true;
+	public static boolean debug = false;
 
 	// for everyone to use
 	public static RobotController rc;
@@ -51,7 +51,7 @@ public class Bot {
 		MapAnalysis.center = MapAnalysis.findCenter();
 		bugState = BugState.DIRECT;
 		nearbyAlliedRobots = rc.senseNearbyRobots(-1, us);
-		if (nearbyAlliedRobots.length > 0) {
+		if (nearbyAlliedRobots.length > 0||rc.getRoundNum() == 1) {
 			RobotInfo closestG = Util.closestSpecificType(nearbyAlliedRobots, here, RobotType.GARDENER);
 			RobotInfo closestA = Util.closestSpecificType(nearbyAlliedRobots, here, RobotType.ARCHON);
 			switch (type) {
@@ -143,6 +143,9 @@ public class Bot {
 					switch (type) {
 					case ARCHON:
 						Message.NUM_ARCHONS.setValue(Message.NUM_ARCHONS.getValue() - 1);
+						if (Archon.inDistress) {
+							Message.ARCHON_DISTRESS_NUM.setValue(Message.ARCHON_DISTRESS_NUM.getValue() - 1);
+						}
 						break;
 					case GARDENER:
 						Message.NUM_GARDENERS.setValue(Message.NUM_GARDENERS.getValue() - 1);
@@ -423,6 +426,7 @@ public class Bot {
 	}
 	
 	private static int tryMoveBinary(Direction dir, float dist, boolean makeMove) throws GameActionException {
+		if(debug) System.out.println("whee binary");
 		float highDist = dist;
 		float lowDist = 0;
 		float midDist = (float)(dist/2);
@@ -458,11 +462,15 @@ public class Bot {
 			throws GameActionException {
 //		if (debug) System.out.println("trying to move in dir " + dir);
 
-		Direction bestDir = dir;
-		int bestDanger = tryMove(dir, type.strideRadius, makeMove, false);
-		int tempDanger = 0;
-		if (bestDanger == 0) {
+		Direction bestDir = null;
+		int bestDanger = 9999;
+		int tempDanger = tryMove(dir, type.strideRadius, makeMove, false);
+		if (tempDanger == 0) {
 			return true;
+		}
+		if(tempDanger < bestDanger){
+			bestDir = dir;
+			bestDanger = tempDanger;
 		}
 		Direction left = dir.rotateLeftDegrees(30);
 		Direction right = dir.rotateRightDegrees(30);
@@ -492,9 +500,8 @@ public class Bot {
 			bestDir = null;
 			bestDanger = tempDanger;
 		}
-		if (bestDir != null) {
-			calculatedMove = bestDir;
-		}
+
+		calculatedMove = bestDir;
 		if (bestDir != null && makeMove) {
 			rc.move(bestDir, type.strideRadius);
 			here = rc.getLocation();
@@ -709,7 +716,7 @@ public class Bot {
 			System.out.println("bugMovesSinceSeenObstacle = " + bugMovesSinceSeenObstacle);
 			System.out.println("wall side = " + bugWallSide);
 		}
-		return bugMovesSinceSeenObstacle >= 4 && here.distanceSquaredTo(dest) <= bugStartDistSq + 2 || (nearbyTrees.length == 0 || here.distanceTo(nearbyTrees[0].location) > 4);
+		return bugMovesSinceSeenObstacle >= 4 && here.distanceSquaredTo(dest) <= bugStartDistSq + 2 || (nearbyTrees.length == 0 );
 		// if (bugMovesSinceSeenObstacle >= 4)
 		// return true;
 		// return (bugRotationCount <= 0 || bugRotationCount >= 18) &&
