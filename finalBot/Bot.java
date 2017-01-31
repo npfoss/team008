@@ -691,7 +691,7 @@ public class Bot {
 		}
 		Direction left = dir.rotateLeftDegrees(15);
 		Direction right = dir.rotateRightDegrees(15);
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < 5; i++) {
 			if (tryMove(left, type.strideRadius, true, false) == 0) {
 				return true;
 			}
@@ -709,7 +709,7 @@ public class Bot {
 			System.out.println("bugMovesSinceSeenObstacle = " + bugMovesSinceSeenObstacle);
 			System.out.println("wall side = " + bugWallSide);
 		}
-		return bugMovesSinceSeenObstacle >= 4 && here.distanceSquaredTo(dest) <= bugStartDistSq + 5;
+		return bugMovesSinceSeenObstacle >= 4 && here.distanceSquaredTo(dest) <= bugStartDistSq + 2 || (nearbyTrees.length == 0 || here.distanceTo(nearbyTrees[0].location) > 4);
 		// if (bugMovesSinceSeenObstacle >= 4)
 		// return true;
 		// return (bugRotationCount <= 0 || bugRotationCount >= 18) &&

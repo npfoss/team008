@@ -232,7 +232,12 @@ public class Gardener extends Bot {
 
         if (!isExploring
                 || nearbyEnemyRobots.length > 0) {
+        	if(nearbyEnemyRobots.length > 0 && nearbyEnemyRobots[0].type == RobotType.SCOUT){
+        		buildRobot(RobotType.LUMBERJACK,true);
+        	}
+        	else{
             buildSomething();
+        	}
         }
         if(!isExploring && (!updatedLocs || (rc.getRoundNum() + rc.getID()) % 100 == 0)){
             //this should check if we're in a decent spot
