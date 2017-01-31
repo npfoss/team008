@@ -133,8 +133,8 @@ public class MapAnalysis extends Bot {
 		conflictDist = largestConflictDist;
 		Message.CONFLICT_DIST.setValue(conflictDist);
 		int treesToClear = Message.CLEAR_TREES_PLEASE.getLength();
-		rushHeuristic = 120 - conflictDist - trappedHeuristic/(float)(2.1);
-		initialSoldiers = (int)(rushHeuristic < 50 ? 0 : rushHeuristic < 70 ? 1 : 2);
+		rushHeuristic = 110 - conflictDist - trappedHeuristic/(float)(2.0);
+		initialSoldiers = (int)(rushHeuristic < 50 ? 0 : rushHeuristic < 90 ? 1 : 2);
 		treeToSoldierRatio = (120 - rushHeuristic)/(float)(25.0);
 		if(debug)System.out.println("Rush Heuristic = " + rushHeuristic + " initialSoldiers = " + initialSoldiers + "tree to soldier ratio = " + treeToSoldierRatio + " trapped heuristic = " + trappedHeuristic);
 		if (rushHeuristic > 50) {
@@ -228,7 +228,7 @@ public class MapAnalysis extends Bot {
 			if (numGardener == 0 ||  
 				    rc.getRoundNum() > 100 && (Message.ADAPTATION.getValue() != DEFEND_SOMETHING || rc.getTeamBullets() > 150) && 
 				    (double)(rc.getTreeCount()) / numGardener > (rc.getTeamBullets() > roundNum ? 1.5: 2.5)
-					&& (numGardener == 1 && numEnemies == 0 || rc.getTeamBullets() > 150)) {
+					&& (numGardener == 1 && numEnemies < initialEnemyArchonLocations.length + 2 || rc.getTeamBullets() > 175)) {
 				Message.ARCHON_BUILD_NUM.setValue(1);
 			}
 			else{
@@ -285,7 +285,7 @@ public class MapAnalysis extends Bot {
 			if (numGardener == 0 ||  
 		    	rc.getRoundNum() > 100 && (Message.ADAPTATION.getValue() != DEFEND_SOMETHING || rc.getTeamBullets() > 150) && 
 		    	(double)(rc.getTreeCount()) / numGardener > (rc.getTeamBullets() > roundNum ? 1.5: 2.5) 
-				&& (numGardener == 1 && numEnemies == 0 || rc.getTeamBullets() > 150)) {
+				&& (numGardener == 1 && numEnemies < initialEnemyArchonLocations.length + 2 || rc.getTeamBullets() > 175)) {
 				Message.ARCHON_BUILD_NUM.setValue(1);
 			}
 			else{
@@ -324,7 +324,7 @@ public class MapAnalysis extends Bot {
 			if (numGardener == 0 ||  
 	    	rc.getRoundNum() > 100 && (Message.ADAPTATION.getValue() != DEFEND_SOMETHING || rc.getTeamBullets() > 150) && 
 	    	(double)(rc.getTreeCount()) / numGardener > (rc.getTeamBullets() > roundNum ? 1.5: 2.5)
-			&& (numGardener == 1 && numEnemies == 0 || rc.getTeamBullets() > 150)) {
+			&& (numGardener == 1 && numEnemies < initialEnemyArchonLocations.length + 2 || rc.getTeamBullets() > 175)) {
 			Message.ARCHON_BUILD_NUM.setValue(1);
 		}
 			else{
@@ -347,6 +347,7 @@ public class MapAnalysis extends Bot {
 					Message.GARDENER_BUILD_NUM
 							.setValue((int) ((int)(rc.getTreeCount() / treeToSoldierRatio) - numSoldier));
 				}
+			break;
 			case DEFEND_SOMETHING:
 				if (numSoldier < initialSoldiers) {
 					Message.GARDENER_BUILD_ORDERS.setValue(SOLDIER);

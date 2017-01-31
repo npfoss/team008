@@ -40,10 +40,11 @@ public class RangedCombat extends Bot {
 			targetLoc = closestRobot.location;
 			safeDist = calcSafeDist(nearbyEnemyRobots[0]);
 			RobotInfo tG = Util.closestSpecificType(nearbyEnemyRobots, here, RobotType.GARDENER);
+			RobotInfo aG = Util.closestSpecificType(nearbyAlliedRobots, here, RobotType.GARDENER);
 			if(safeDist == -1){
         		Direction dir = targetLoc.directionTo(here);
-        		if(tG != null){
-        			dir = tG.location.directionTo(targetLoc);
+        		if(aG != null){
+        			dir = aG.location.directionTo(targetLoc);
         		}
         		targetLoc = targetLoc.add(dir, (float) 2.0001);
         		if(here.distanceTo(targetLoc) > 0.5)
@@ -54,7 +55,8 @@ public class RangedCombat extends Bot {
         	}
 			else if(tG != null){
 				rc.setIndicatorLine(here, tG.location, 255, 0, 0);
-				goTo(tG.location);
+				if(here.distanceTo(tG.location) > 3.5)
+					goTo(tG.location);
 			}
 			else if (!onlyHarmlessUnitsAround || here.distanceTo(closestRobot.location) < 3.5) {
 				Direction moveDir = calcMoveDir(closestRobot);
@@ -86,10 +88,11 @@ public class RangedCombat extends Bot {
 
         if (moveDir != null || onlyHarmlessUnitsAround) {
 			RobotInfo tG = Util.closestSpecificType(nearbyEnemyRobots, here, RobotType.GARDENER);
-        	if(safeDist == -1){
+			RobotInfo aG = Util.closestSpecificType(nearbyAlliedRobots, here, RobotType.GARDENER);
+			if(safeDist == -1){
         		Direction dir = targetLoc.directionTo(here);
-        		if(tG != null){
-        			dir = tG.location.directionTo(targetLoc);
+        		if(aG != null){
+        			dir = aG.location.directionTo(targetLoc);
         		}
         		targetLoc = targetLoc.add(dir, (float) 2.0001);
         		if(here.distanceTo(targetLoc) > 0.5)
@@ -98,10 +101,11 @@ public class RangedCombat extends Bot {
         			moveToBinary(targetLoc);
         		//rc.setIndicatorLine(here, targetLoc, 255, 0, 0);
         	}
-        	else if(tG != null){
-        		rc.setIndicatorLine(here, tG.location, 255, 0, 0);
-        		goTo(tG.location);
-        	}
+			else if(tG != null){
+				rc.setIndicatorLine(here, tG.location, 255, 0, 0);
+				if(here.distanceTo(tG.location) > 3.5)
+					goTo(tG.location);
+			}
         	else if(onlyHarmlessUnitsAround && (here.distanceTo(targetLoc) > 3.5 || nearbyEnemyRobots[0].type == RobotType.ARCHON && nearbyEnemyRobots.length == 1)){
         		goTo(targetLoc);
         	}
