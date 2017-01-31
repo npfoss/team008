@@ -231,7 +231,7 @@ public class Gardener extends Bot {
         if(debug){System.out.println("almost done " +Clock.getBytecodeNum());}
 
         if (!isExploring
-                || nearbyEnemyRobots.length > 0) {
+                || nearbyEnemyRobots.length > 0 || nearbyNeutralTrees.length > 0) {
         	if(nearbyEnemyRobots.length > 0 && nearbyEnemyRobots[0].type == RobotType.SCOUT && numLumberjacksInSightRadius() < 2){
         		buildRobot(RobotType.LUMBERJACK,true);
         	}
@@ -258,10 +258,10 @@ public class Gardener extends Bot {
 				return;
 			}
 		}*/
-		if (RangedCombat.onlyHarmlessUnitsNearby()  && roundNum > 5 && (rc.readBroadcast(15) == 0 || roundNum < 40 && MapAnalysis.conflictDist > 10 * rc.getTreeCount()) && plantATree())
+		if (!isExploring && RangedCombat.onlyHarmlessUnitsNearby()  && roundNum > 5 && (rc.readBroadcast(15) == 0 || roundNum < 40 && MapAnalysis.conflictDist > 10 * rc.getTreeCount()) && plantATree())
 			return;
 		else if (rc.getBuildCooldownTurns() == 0) {
-			if(myAdaptation != MapAnalysis.DEFEND_SOMETHING && ((!canPlantTree() && rc.senseNearbyTrees(2, us).length < 3 && roundNum < 50) || (!canPlantTree() && calcTrappedInHeuristic() > 5 + 15 * numLumberjacksInSightRadius() && myGenetics != MapAnalysis.RUSH_VP))){
+			if(myAdaptation != MapAnalysis.DEFEND_SOMETHING && (calcTrappedInHeuristic() > 5 + 15 * spotsICanPlant() * numLumberjacksInSightRadius() && myGenetics != MapAnalysis.RUSH_VP)){
 				if(debug)System.out.println("trying to build lumberjack");
 				if (buildRobot(RobotType.LUMBERJACK, false)) {
 					return;
@@ -453,6 +453,25 @@ public class Gardener extends Bot {
 			Message.GARDENER_TRAPPED_NUM.setValue(Message.GARDENER_TRAPPED_NUM.getValue() + 1);
 		}
 		return false;
+	}
+	
+	public int spotsICanPlant() throws GameActionException {
+		int spots = 0;
+		boolean skipped = false;
+		Direction dir = here.directionTo(MapAnalysis.center);
+		for (int i = 36; i-- > 0;) {
+			if (rc.canPlantTree(dir)) {
+				if (skipped) {
+					spots++;
+				} else {
+					skipped = true;
+					dir = dir.rotateLeftDegrees(60);
+					i -= 6;
+				}
+			}
+			dir = dir.rotateLeftDegrees(10);
+		}
+		return spots;
 	}
 	
 	public boolean canPlantTree() throws GameActionException {
