@@ -75,6 +75,8 @@ public class Archon extends Bot {
 		if(rc.getMoveCount() == 0){
             if(debug){System.out.println("I think im making room");}
             clearRoom();
+            if(!rc.hasMoved())
+            makeRoomForGardener();
 		}
 		if (initialBuilder && (Message.NUM_GARDENERS.getValue() == 0 || 
 				(Message.ARCHON_BUILD_NUM.getValue() > 0 && rc.getTeamBullets() > (100 + 
@@ -94,12 +96,27 @@ public class Archon extends Bot {
 
 	}
     private void makeRoomForGardener() throws GameActionException {
-
+        Direction dirToWall = closestWall();
+	    if(dirToWall != null){
+	        goTo(dirToWall.opposite());
+        }
         if(nearbyNeutralTrees.length >= 1) {
             goTo(here.directionTo(nearbyNeutralTrees[0].location).opposite());
         } else if(nearbyAlliedTrees.length >= 1){
             goTo(here.directionTo(nearbyAlliedTrees[0].location).opposite());
         }
+
+    }
+
+    private Direction closestWall() throws GameActionException{
+        Direction dir = new Direction(0);
+        for(int i = 0; i < 8; i++){
+            if(!rc.onTheMap(here.add(dir,4))){
+                return dir;
+            }
+            dir = dir.rotateLeftDegrees(45);
+        }
+        return null;
 
     }
 
