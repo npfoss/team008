@@ -50,6 +50,10 @@ public class Archon extends Bot {
 			Message.ARCHON_DISTRESS_NUM.setValue(Message.ARCHON_DISTRESS_NUM.getValue()+1);
 			inDistress = true;
 			}
+			if(Message.NUM_ARCHONS.getValue() > 1){
+				initialBuilder = false;
+				Message.INITIAL_BUILDER_HERE.setValue(0);
+			}
 			runAway();
 		}
 		else{
@@ -79,9 +83,12 @@ public class Archon extends Bot {
 						((Message.ARCHON_DISTRESS_NUM.getValue() < Message.NUM_ARCHONS.getValue()) ? 
 								10 : nearbyEnemyRobots.length)
 						: (MapAnalysis.initialAlliedArchonLocations.length == 1 ? 0 : unitsBuilt * 2)))))) {
-			if(!willTrapOurselvesIn() || roundNum > 3){
-				hireGardener();
-				unitsBuilt++;
+			if (!willTrapOurselvesIn() || roundNum > 3) {
+				if (Message.NUM_GARDENERS.getValue()
+						- Message.GARDENER_TRAPPED_NUM.getValue() <= (rc.getRoundNum() > 100 ? 1 : 0)) {
+					hireGardener();
+					unitsBuilt++;
+				}
 			}
 		}
 
@@ -120,7 +127,7 @@ public class Archon extends Bot {
 		int directionsWereScrewedIn = 0;
 		Direction dir = new Direction(0);
 		for(int i = 0; i < 4; i++){
-			if(rc.onTheMap(here.add(dir,4))){
+			if(!rc.onTheMap(here.add(dir,4))){
 					directionsWereScrewedIn++;
 			}
 			dir = dir.rotateLeftDegrees(90);
