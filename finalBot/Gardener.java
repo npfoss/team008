@@ -463,10 +463,10 @@ public class Gardener extends Bot {
 			if (rc.canPlantTree(dir)) {
 				if (skipped) {
 					spots++;
-					dir = dir.rotateLeftDegrees(50);
+					dir = dir.rotateLeftDegrees(60);
 				} else {
 					skipped = true;
-					dir = dir.rotateLeftDegrees(50);
+					dir = dir.rotateLeftDegrees(60);
 					i -= 6;
 				}
 			}

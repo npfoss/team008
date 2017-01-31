@@ -40,7 +40,7 @@ public class Soldier extends Bot {
         		Direction dirToMove = here.directionTo(nearbyBullets[0].location);
         		if(target != null)
         			dirToMove = here.directionTo(target);
-        		RangedCombat.bulletMove(here.add(dirToMove, type.strideRadius), true);
+        		RangedCombat.bulletMove(here.add(dirToMove, RangedCombat.MOVE_DIST), true);
         		/*
         		Direction moveDir = RangedCombat.bulletMove(here.add(dirToMove, type.strideRadius), false);
         		if(moveDir != null){

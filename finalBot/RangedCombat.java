@@ -16,10 +16,10 @@ public class RangedCombat extends Bot {
 
 	//Globals
 	private static int blockedByTree = 0;
-	private static float MOVE_DIST = type.strideRadius;
 	private static float safeDist = 0;
 	private static boolean bulletSafe;
 	private static boolean onlyHarmlessUnitsAround;
+	public static float MOVE_DIST = type.strideRadius;
 	public static BulletInfo bulletTarget;
 	
 
@@ -27,6 +27,7 @@ public class RangedCombat extends Bot {
 	 * to call execute, number of enemies must be > 0
 	 */
 	public static void execute() throws GameActionException {
+		MOVE_DIST = type.strideRadius;
 		blockedByTree = 0;
 		//if(debug)System.out.println("here");
 	    //if(debug)System.out.println("Instantiation: "+ Clock.getBytecodeNum());
@@ -105,7 +106,7 @@ public class RangedCombat extends Bot {
         		goTo(targetLoc);
         	}
         	else if (moveDir != null){
-				MapLocation nextLoc = here.add(moveDir, type.strideRadius);
+				MapLocation nextLoc = here.add(moveDir, MOVE_DIST);
 				if (nextLoc.distanceTo(targetLoc) < here.distanceTo(targetLoc)) {
 					//if(debug){System.out.println("moved before shooting");}
 					rc.move(moveDir, MOVE_DIST);
@@ -117,7 +118,7 @@ public class RangedCombat extends Bot {
 		}
 
 		//If we've moved recalculate the shot type but not the shot
-		if(rc.hasMoved()) {
+		if(rc.hasMoved() && Clock.getBytecodesLeft() > 3000) {
 			attack.setShotType(calculateShotType(attack.getTarget(),attack.getShotValue()));
 		}
         //if(debug)System.out.println("Shot recalc:"+Clock.getBytecodeNum());
@@ -276,7 +277,7 @@ public class RangedCombat extends Bot {
 		//if(debug)System.out.println("safeDist = " + safeDist);
 		//if(debug)System.out.println("bytecodes = " + Clock.getBytecodeNum() + " at start.");
 		//int precision = 5;
-		int dirsToCheck = 12;
+		int dirsToCheck = nearbyBullets.length < 7 ? 12 : 8;
 		int score = 0;
 		for(BulletInfo b: nearbyBullets){
 			float dist = here.distanceTo(b.location);
@@ -296,8 +297,8 @@ public class RangedCombat extends Bot {
 		Direction dir = here.directionTo(nearbyBullets[0].location).opposite();
 		int count;
 		int limit = 5;
-		for(int i = 0; i < dirsToCheck; i++){
-			float moveDist = type.strideRadius;
+		for(int i = 0; i < dirsToCheck * 2; i++){
+			float moveDist = (i < dirsToCheck ? type.strideRadius: type.strideRadius/2);
 			if(!rc.canMove(dir, moveDist)){
 				dir = dir.rotateLeftDegrees(360/dirsToCheck);
 				continue;
@@ -309,7 +310,7 @@ public class RangedCombat extends Bot {
 				//rc.setIndicatorLine(here, b.location, 255, 0, 0);
 				count++;
 				float dist = here.distanceTo(b.location);
-				if(Clock.getBytecodesLeft() < 1000){
+				if(Clock.getBytecodesLeft() < 1500){
 					score = 9999;
 					break;
 				}
@@ -330,25 +331,26 @@ public class RangedCombat extends Bot {
 			}
 			if(score < bestScore){
 				bestScore = score;
-				score = i;
 				bestDist = moveTo.distanceTo(targetLoc);
 				bestDir = dir;
+				MOVE_DIST = moveDist;
 			}
-			else if(score == bestScore){
+			else if(Math.abs(score - bestScore) < 0.1){
 				float dist = moveTo.distanceTo(targetLoc);
 				if(bestDist > safeDist && dist > safeDist ? dist < bestDist: dist > bestDist){
 					bestDist = dist;
 					bestDir = dir;
+					MOVE_DIST = moveDist;
 				}
 			}
-			if(Clock.getBytecodesLeft() < 2500)
+			if(Clock.getBytecodesLeft() < 1500)
 				break;
 			dir = dir.rotateLeftDegrees(360/dirsToCheck);
 		}
 		//if(debug)System.out.println("bytecodes = " + Clock.getBytecodeNum() + " at end");
 		//if(debug)System.out.println("chose direction " + bestDir + " with score of " + bestScore + " and dist of " + bestDist);
 		if(makeMove && bestDir != null){
-			rc.move(bestDir, type.strideRadius);
+			rc.move(bestDir, MOVE_DIST);
 		}
 		return bestDir;
 	}
@@ -689,22 +691,25 @@ public class RangedCombat extends Bot {
 		// come up with some sort of formula for choosing the kind of shot
 
         //System.out.println("singleValue = " + singleValue);
-
-		for(TreeInfo t: nearbyEnemyTrees){
-			Direction dirToT = here.directionTo(t.location);
-			float deg = Math.abs(targetDir.degreesBetween(dirToT));
-			if(deg < PENTAD_SPREAD_DEGREES){
-				//if(debug)System.out.println("added enemy tree to pentad");
-				pentadValue += TREE_HIT_VALUE;
-				if(deg < TRIAD_SPREAD_DEGREES){
-					triadValue += TREE_HIT_VALUE;
+		if(Clock.getBytecodesLeft() > 2000){
+			for(TreeInfo t: nearbyEnemyTrees){
+				Direction dirToT = here.directionTo(t.location);
+				float deg = Math.abs(targetDir.degreesBetween(dirToT));
+				if(deg < PENTAD_SPREAD_DEGREES){
+					//if(debug)System.out.println("added enemy tree to pentad");
+					pentadValue += TREE_HIT_VALUE;
+					if(deg < TRIAD_SPREAD_DEGREES){
+						triadValue += TREE_HIT_VALUE;
+					}
 				}
 			}
 		}
 		
 		//Its better if we can deal collateral dmg to other enemies
 		for(RobotInfo r: nearbyEnemyRobots){
-			if(!ableToShootTriad){
+			if(Clock.getBytecodesLeft() < 1000)
+				break;
+			if(!ableToShootTriad && !ableToShootPentad){
 				break;
 			}
 			if(r == targetRobot){
@@ -755,7 +760,10 @@ public class RangedCombat extends Bot {
 		}*/
 		int treeMod = rc.getTreeCount() / 4;
 		int victoryPointMod = (rc.getOpponentVictoryPoints() - rc.getTeamVictoryPoints() > - 50 ? (rc.getTeamVictoryPoints() - 700) / 20 : 0);
-		float opponentBulletsMod = (float) (numBulletsEnemyShot() * 4.5);
+		float opponentBulletsMod = (float) 40.0; //probably a ton of bullets if doesn't update on next line
+		if(Clock.getBytecodesLeft() > 3000){
+			opponentBulletsMod = (float) (numBulletsEnemyShot() * 4.5);
+		}
 		if(debug)System.out.println("opponentBulletsMod = " + opponentBulletsMod);
 		if(victoryPointMod < 0)
 			victoryPointMod = 0;
