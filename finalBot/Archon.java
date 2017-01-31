@@ -39,7 +39,7 @@ public class Archon extends Bot {
 				Message.INITIAL_BUILDER_HERE.setValue(roundNum);
 			}
 		}
-		else if (!willTrapOurselvesIn() && canIHire() && roundNum - Message.INITIAL_BUILDER_HERE.getValue() > 1){
+		else if (canIHire() && roundNum - Message.INITIAL_BUILDER_HERE.getValue() > 1){
 			initialBuilder = true;
 			roundIBecameBuilder = roundNum;
 			Message.INITIAL_BUILDER_HERE.setValue(roundNum);
