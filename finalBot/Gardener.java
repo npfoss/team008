@@ -232,7 +232,7 @@ public class Gardener extends Bot {
 
         if (!isExploring
                 || nearbyEnemyRobots.length > 0) {
-        	if(nearbyEnemyRobots.length > 0 && nearbyEnemyRobots[0].type == RobotType.SCOUT){
+        	if(nearbyEnemyRobots.length > 0 && nearbyEnemyRobots[0].type == RobotType.SCOUT && numLumberjacksInSightRadius() < 2){
         		buildRobot(RobotType.LUMBERJACK,true);
         	}
         	else{
