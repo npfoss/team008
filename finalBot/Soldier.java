@@ -14,12 +14,17 @@ public class Soldier extends Bot {
 	public void takeTurn() throws Exception{
         //if(debug)System.out.println("In instantiation:"+Clock.getBytecodeNum());
 		if(!containing && (MapAnalysis.initialEnemyArchonLocations.length - Message.ENEMY_ARCHONS_KILLED.getLength() < 2 || nearbyAlliedRobots.length > 5) && (nearbyEnemyRobots.length == 1 || nearbyEnemyRobots.length == 2 && nearbyEnemyRobots[1].type == RobotType.ARCHON) && here.distanceTo(nearbyEnemyRobots[0].location) < 5 && nearbyEnemyRobots[0].type == RobotType.ARCHON){
-    		containing = true;
+    		if(debug)System.out.println("containing");
+			containing = true;
     	}
+		boolean targetIsSingleScoutInNeutralTree = false;
 		if(nearbyEnemyRobots.length == 0){
 			containing = false;
 		}
-        if(nearbyEnemyRobots.length > 0 && (containing || !(nearbyEnemyRobots.length == 1 && nearbyEnemyRobots[0].type == RobotType.ARCHON))){
+		else{
+			targetIsSingleScoutInNeutralTree = nearbyEnemyRobots.length == 1 && nearbyEnemyRobots[0].type == RobotType.SCOUT && rc.senseTreeAtLocation(nearbyEnemyRobots[0].location) != null && rc.senseTreeAtLocation(nearbyEnemyRobots[0].location).team == Team.NEUTRAL;
+		}
+        if(!targetIsSingleScoutInNeutralTree && nearbyEnemyRobots.length > 0 && (containing || !(nearbyEnemyRobots.length == 1 && nearbyEnemyRobots[0].type == RobotType.ARCHON))){
             notifyFriendsOfEnemies(nearbyEnemyRobots);
             RangedCombat.execute();
             turnsSinceSeenEnemy = 0;
@@ -35,6 +40,8 @@ public class Soldier extends Bot {
         		Direction dirToMove = here.directionTo(nearbyBullets[0].location);
         		if(target != null)
         			dirToMove = here.directionTo(target);
+        		RangedCombat.bulletMove(here.add(dirToMove, RangedCombat.MOVE_DIST), true);
+        		/*
         		Direction moveDir = RangedCombat.bulletMove(here.add(dirToMove, type.strideRadius), false);
         		if(moveDir != null){
         			MapLocation moveTo = here.add(moveDir, type.strideRadius);
@@ -50,7 +57,7 @@ public class Soldier extends Bot {
         		}
         		else{
         			RangedCombat.shootOpposingBullets();
-        		}
+        		}*/
         	}
         	if (target != null && turnsSinceSeenEnemy > 10 && ((here.distanceTo(target) < 3 || rc.canSenseLocation(target) && rc.isLocationOccupiedByTree(target)))) {
 				if(debug)rc.setIndicatorLine(here, target, 0, 255, 0); 

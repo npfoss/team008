@@ -143,7 +143,7 @@ public class Gardener extends Bot {
         waterLowestHealthTree();
         if (nearbyEnemyRobots.length > 0) {
             //System.out.println("sent target d");
-        	if(nearbyEnemyRobots[0].type != RobotType.ARCHON && nearbyEnemyRobots[0].type != RobotType.GARDENER && nearbyEnemyRobots[0].type != RobotType.SCOUT)
+        	if(nearbyEnemyRobots[0].type != RobotType.ARCHON && nearbyEnemyRobots[0].type != RobotType.GARDENER && (nearbyEnemyRobots[0].type != RobotType.SCOUT || nearbyEnemyRobots[0].location.distanceTo(here) < 3))
         		Message.DISTRESS_SIGNALS.addLocation(nearbyEnemyRobots[0].location);
         }
         if (isExploring) {
@@ -231,8 +231,13 @@ public class Gardener extends Bot {
         if(debug){System.out.println("almost done " +Clock.getBytecodeNum());}
 
         if (!isExploring
-                || nearbyEnemyRobots.length > 0) {
+                || nearbyEnemyRobots.length > 0 || nearbyNeutralTrees.length > 0) {
+        	if(nearbyEnemyRobots.length > 0 && nearbyEnemyRobots[0].type == RobotType.SCOUT && numLumberjacksInSightRadius() < 2){
+        		buildRobot(RobotType.LUMBERJACK,true);
+        	}
+        	else{
             buildSomething();
+        	}
         }
         if(!isExploring && (!updatedLocs || (rc.getRoundNum() + rc.getID()) % 100 == 0)){
             //this should check if we're in a decent spot
@@ -253,16 +258,16 @@ public class Gardener extends Bot {
 				return;
 			}
 		}*/
-		if (nearbyEnemyRobots.length == 0  && roundNum > 5 && (rc.readBroadcast(15) == 0 || roundNum < 40 && MapAnalysis.conflictDist > 10 * rc.getTreeCount()) && plantATree())
+		if (!isExploring && RangedCombat.onlyHarmlessUnitsNearby()  && roundNum > 5 && (rc.readBroadcast(15) == 0 || roundNum < 40 && MapAnalysis.conflictDist > 10 * rc.getTreeCount()) && plantATree())
 			return;
-		else if (rc.getBuildCooldownTurns() == 0 && (rc.readBroadcast(15) > 0)) {
-			if(myAdaptation != MapAnalysis.DEFEND_SOMETHING && ((!canPlantTree() && rc.senseNearbyTrees(2, us).length < 3 && roundNum < 50) || (calcTrappedInHeuristic() > 7 + 2 * numLumberjacksInSightRadius() && myGenetics != MapAnalysis.RUSH_VP))){
-				System.out.println("trying to build lumberjack");
+		else if (rc.getBuildCooldownTurns() == 0) {
+			if(myAdaptation != MapAnalysis.DEFEND_SOMETHING && (calcTrappedInHeuristic() > 10 + 10 * spotsICanPlant() + 20 * numLumberjacksInSightRadius() && myGenetics != MapAnalysis.RUSH_VP)){
+				if(debug)System.out.println("trying to build lumberjack");
 				if (buildRobot(RobotType.LUMBERJACK, false)) {
 					return;
 				}
 			}
-			else{
+			if(rc.readBroadcast(15) > 0){
 				switch (typeToBuild) {
 				case 0:
 					break;
@@ -296,9 +301,8 @@ public class Gardener extends Bot {
 					break;
 				}
 			}
-		}
-		else if(rc.getBuildCooldownTurns() == 0 && nearbyEnemyRobots.length > 0 && (nearbyEnemyRobots.length != 1 || nearbyEnemyRobots[0].type != RobotType.ARCHON)){
-			buildRobot(RobotType.SOLDIER, false);
+			else if(rc.getBuildCooldownTurns() == 0 && !RangedCombat.onlyHarmlessUnitsNearby())
+				buildRobot(RobotType.SOLDIER, false);
 		}
 	}
 	
@@ -306,7 +310,7 @@ public class Gardener extends Bot {
 		float ret = 0;
 		for(TreeInfo t: nearbyNeutralTrees){
 			float dist = here.distanceTo(t.location);
-			ret += (float)(t.radius * (type.sensorRadius - dist));
+			ret += (float)((t.radius + 1) * (type.sensorRadius - dist));
 		}
 		if(debug)System.out.println("trapped heuristic = " + ret);
 		return ret;
@@ -348,8 +352,15 @@ public class Gardener extends Bot {
      * rough method for checking how long weve been waiting
      * @param targetLoc
      * @return
+     * @throws GameActionException 
      */
-    private boolean myPatienceIsUp(MapLocation targetLoc) {
+    private boolean myPatienceIsUp(MapLocation targetLoc) throws GameActionException {
+    	if(myPatience > 75){
+    		if (!trapped) {
+    			trapped = true;
+    			Message.GARDENER_TRAPPED_NUM.setValue(Message.GARDENER_TRAPPED_NUM.getValue() + 1);
+    		}
+    	}
         if(targetLoc == null) {return myPatience > 150;}
         return myPatience > 200 && here.distanceTo(targetLoc) > 5;
     }
@@ -437,7 +448,31 @@ public class Gardener extends Bot {
 			}
 			dir = dir.rotateLeftDegrees(10);
 		}
+		if (!trapped) {
+			trapped = true;
+			Message.GARDENER_TRAPPED_NUM.setValue(Message.GARDENER_TRAPPED_NUM.getValue() + 1);
+		}
 		return false;
+	}
+	
+	public int spotsICanPlant() throws GameActionException {
+		int spots = 0;
+		boolean skipped = false;
+		Direction dir = here.directionTo(MapAnalysis.center);
+		for (int i = 36; i-- > 0;) {
+			if (rc.canPlantTree(dir)) {
+				if (skipped) {
+					spots++;
+					dir = dir.rotateLeftDegrees(60);
+				} else {
+					skipped = true;
+					dir = dir.rotateLeftDegrees(60);
+					i -= 6;
+				}
+			}
+			dir = dir.rotateLeftDegrees(10);
+		}
+		return spots;
 	}
 	
 	public boolean canPlantTree() throws GameActionException {
