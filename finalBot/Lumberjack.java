@@ -10,7 +10,7 @@ public class Lumberjack extends Bot {
     public Lumberjack(RobotController r) throws GameActionException{
         super(r);
         myRandomDirection = Util.randomDirection();
-        debug = true;
+        debug = false;
         DAMAGE_THEM_MOD = 2f; // tested and determined to be better than 2.5
         TREE_DAMAGE_MOD = .2f;
     }
@@ -97,7 +97,7 @@ public class Lumberjack extends Bot {
             if (targetD != null && here.distanceTo(targetD) < howFarToGoForMessage[i]*howDesperate && (target == null || (here.distanceTo(targetD) < here.distanceTo(target) && here.distanceTo(targetD) < 7))) {
                 //if(debug)System.out.println("targetD = " + targetD);
                 target = targetD;
-                if (messagesToTry[i] == Message.CLEAR_TREES_PLEASE && treesWithinRange == 0){
+                if (messagesToTry[i] == Message.CLEAR_TREES_PLEASE ){//&& treesWithinRange == 0){
                     clearAroundLoc = target;
                 }
             }
