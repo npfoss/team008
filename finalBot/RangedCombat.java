@@ -97,7 +97,7 @@ public class RangedCombat extends Bot {
         	else if(tG != null){
         		goTo(tG.location);
         	}
-        	else if(onlyHarmlessUnitsAround && here.distanceTo(targetLoc) > 3.5){
+        	else if(onlyHarmlessUnitsAround && (here.distanceTo(targetLoc) > 3.5 || nearbyEnemyRobots[0].type == RobotType.ARCHON && nearbyEnemyRobots.length == 1)){
         		goTo(targetLoc);
         	}
         	else if (moveDir != null){
@@ -755,6 +755,9 @@ public class RangedCombat extends Bot {
 		if(type == RobotType.SOLDIER && here.distanceTo(targetLoc) < safeDist + (nearbyAlliedRobots.length - 3 > nearbyEnemyRobots.length ? (nearbyAlliedRobots.length - nearbyEnemyRobots.length) / 10.0 : 0)){
 			if(victoryPointMod < 10 || rc.getTeamVictoryPoints() - rc.getOpponentVictoryPoints() > 50)
 				return TRIAD_SHOT;
+		}
+		if(targetRobot.type == RobotType.GARDENER){
+			return SINGLE_SHOT;
 		}
 		return NO_SHOT;
 
