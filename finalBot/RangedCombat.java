@@ -536,7 +536,7 @@ public class RangedCombat extends Bot {
 		if(bestRobot.type == RobotType.TANK){
 			return (float)(type.sensorRadius + RobotType.TANK.bodyRadius - .1);
 		}
-		float safeDistance = dodgingOptionsLimited(here, bestRobot.location) + bestRobot.type.bodyRadius + type.bodyRadius + bestRobot.type.strideRadius + 
+		float safeDistance = /*dodgingOptionsLimited(here, bestRobot.location) +*/ bestRobot.type.bodyRadius + type.bodyRadius + bestRobot.type.strideRadius + 
 				(bestRobot.type == RobotType.LUMBERJACK ? GameConstants.LUMBERJACK_STRIKE_RADIUS - bestRobot.type.bodyRadius : ((float)(bestRobot.type.bulletSpeed * (bestRobot.type == RobotType.SCOUT ? 1 : 1.8) - (nearbyAlliedRobots.length - 3 > nearbyEnemyRobots.length ? (nearbyAlliedRobots.length - nearbyEnemyRobots.length) / 10.0 : 0))));//for now ki
 		/*if(safeDistance > type.sensorRadius - 0.05){
 			safeDistance = (float)(type.sensorRadius - 0.05);
