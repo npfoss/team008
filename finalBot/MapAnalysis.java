@@ -133,8 +133,8 @@ public class MapAnalysis extends Bot {
 		conflictDist = largestConflictDist;
 		Message.CONFLICT_DIST.setValue(conflictDist);
 		int treesToClear = Message.CLEAR_TREES_PLEASE.getLength();
-		rushHeuristic = 120 - conflictDist - trappedHeuristic/(float)(2.1);
-		initialSoldiers = (int)(rushHeuristic < 50 ? 0 : rushHeuristic < 70 ? 1 : 2);
+		rushHeuristic = 110 - conflictDist - trappedHeuristic/(float)(2.0);
+		initialSoldiers = (int)(rushHeuristic < 50 ? 0 : rushHeuristic < 90 ? 1 : 2);
 		treeToSoldierRatio = (120 - rushHeuristic)/(float)(25.0);
 		if(debug)System.out.println("Rush Heuristic = " + rushHeuristic + " initialSoldiers = " + initialSoldiers + "tree to soldier ratio = " + treeToSoldierRatio + " trapped heuristic = " + trappedHeuristic);
 		if (rushHeuristic > 50) {
