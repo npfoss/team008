@@ -40,9 +40,13 @@ public class Lumberjack extends Bot {
                 notifyFriendsOfEnemies(nearbyEnemyRobots);
             }
         }
-        if(nearbyEnemyRobots.length > 0){
-
-
+        if(nearbyEnemyRobots.length > 0 // pickier micro condition because LJs suck at fighting
+                && (nearbyEnemyRobots[0].type == RobotType.GARDENER
+                    || nearbyEnemyRobots[0].type == RobotType.ARCHON
+                    || nearbyEnemyRobots[0].type == RobotType.LUMBERJACK && here.distanceTo(nearbyEnemyRobots[0].location) < 6
+                    || nearbyEnemyRobots[0].type == RobotType.SCOUT && here.distanceTo(nearbyEnemyRobots[0].location) < 5
+                    || nearbyEnemyRobots[0].type == RobotType.SOLDIER && here.distanceTo(nearbyEnemyRobots[0].location) < 4
+                    || nearbyEnemyRobots[0].type == RobotType.TANK && here.distanceTo(nearbyEnemyRobots[0].location) < 5)){
             doMicro();
         } else {
         	updateTarget(1);
@@ -183,7 +187,7 @@ public class Lumberjack extends Bot {
         }
 
         if(attackMe != null){
-            if(Util.numBodiesTouchingRadius(nearbyAlliedRobots, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS) == 0
+            if(attackMe.health > 5 && Util.numBodiesTouchingRadius(nearbyAlliedRobots, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS) == 0
                     && Util.numBodiesTouchingRadius(nearbyNeutralTrees, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS, 5)
                     + Util.numBodiesTouchingRadius(nearbyEnemyTrees, rc.getLocation(), GameConstants.LUMBERJACK_STRIKE_RADIUS, 5) > 2){
                 rc.strike();
