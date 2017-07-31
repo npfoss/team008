@@ -2,7 +2,7 @@
 
 ## Battlecode 2017
 
-sdrawrofsitisaemaseht (team #8)
+sdrawrofsitisaemaseht (team #8) (<-- literally a palendrome, by definition)
 
 Ranked 5th overall by hundreds of automatic ELO-ranked matchups, but... unluckily got knocked out in the round of 32 :(
 
