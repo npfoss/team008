@@ -4,6 +4,7 @@
 
 sdrawrofsitisaemaseht (team #8)
 
+Ranked 5th overall by hundreds of automatic ELO-ranked matchups, but... unluckily got knocked out in the round of 32 :(
 
 ## Battlecode 2016
 
